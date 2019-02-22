@@ -33,6 +33,9 @@ foreach my $a (@ARGV){
             $opts{device}=$1;
         }
     }
+    elsif($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/){
+        $opts{do}=$1;
+    }
 }
 if(-f "maint/version.m4"){
     $srcdir = ".";
@@ -54,14 +57,6 @@ if($srcdir ne "."){
 }
 if(!-d "mymake"){
     mkdir "mymake" or die "can't mkdir mymake\n";
-}
-if($need_save_args){
-    my $t = join(' ', @ARGV);
-    open Out, ">mymake/args" or die "Can't write mymake/args.\n";
-    print Out $t;
-    close Out;
-    system "rm -f mymake/Makefile.orig";
-    system "rm -f src/mpl/include/mplconfig.h src/openpa/src/opa_config.h";
 }
 my @realclean_list;
 push @realclean_list, "subsys_include.m4";
@@ -87,6 +82,8 @@ if(-d "$moddir/libfabric"){
     push @realclean_list, "$moddir/libfabric/config.h";
 }
 push @realclean_list, "src/pm/hydra/mymake/Makefile.orig";
+push @realclean_list, "src/mpi/errhan/defmsg.h";
+push @realclean_list, "src/include/mpir_cvars.h";
 foreach my $t (@realclean_list){
     system "rm -fv $t";
 }

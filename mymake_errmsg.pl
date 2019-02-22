@@ -55,6 +55,9 @@ foreach my $a (@ARGV){
             $opts{device}=$1;
         }
     }
+    elsif($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/){
+        $opts{do}=$1;
+    }
 }
 if(-f "maint/version.m4"){
     $srcdir = ".";
@@ -76,14 +79,6 @@ if($srcdir ne "."){
 }
 if(!-d "mymake"){
     mkdir "mymake" or die "can't mkdir mymake\n";
-}
-if($need_save_args){
-    my $t = join(' ', @ARGV);
-    open Out, ">mymake/args" or die "Can't write mymake/args.\n";
-    print Out $t;
-    close Out;
-    system "rm -f mymake/Makefile.orig";
-    system "rm -f src/mpl/include/mplconfig.h src/openpa/src/opa_config.h";
 }
 my (@classnames, %generics);
 open In, "src/mpi/errhan/baseerrnames.txt" or die "Can't open src/mpi/errhan/baseerrnames.txt.\n";

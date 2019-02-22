@@ -80,6 +80,9 @@ foreach my $a (@ARGV){
             $opts{device}=$1;
         }
     }
+    elsif($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/){
+        $opts{do}=$1;
+    }
 }
 if(-f "maint/version.m4"){
     $srcdir = ".";
@@ -101,14 +104,6 @@ if($srcdir ne "."){
 }
 if(!-d "mymake"){
     mkdir "mymake" or die "can't mkdir mymake\n";
-}
-if($need_save_args){
-    my $t = join(' ', @ARGV);
-    open Out, ">mymake/args" or die "Can't write mymake/args.\n";
-    print Out $t;
-    close Out;
-    system "rm -f mymake/Makefile.orig";
-    system "rm -f src/mpl/include/mplconfig.h src/openpa/src/opa_config.h";
 }
 my $dir="src/pm/hydra";
 my $srcdir="../../..";
@@ -529,7 +524,7 @@ while (my ($k, $v) = each %special_targets){
     }
     print Out "\n";
 }
-my (%dirs, @install_list, @lns_list);
+my (%dirs, @install_list, @install_deps, @lns_list);
 while (my ($k, $v) = each %dst_hash){
     if($k=~/^LN_S-(.*)/){
         push @lns_list, "rm -f $1 && ln -s $v $1";
@@ -540,9 +535,11 @@ while (my ($k, $v) = each %dst_hash){
         }
         if($v=~/\/lib$/){
             push @install_list, "/bin/sh ./libtool --mode=install $lt_opt install $k $v";
+            push @install_deps, $k;
         }
         elsif($v=~/\/bin$/){
             push @install_list, "install $k $v";
+            push @install_deps, $k;
         }
     }
 }
@@ -561,7 +558,7 @@ push @install_list, sort @lns_list;
 if(@install_list){
     print Out "\x23 --------------------\n";
     print Out ".PHONY: install\n";
-    print Out "install:\n";
+    print Out "install: @install_deps\n";
     foreach my $l (@install_list){
         print Out "\t$l\n";
     }
