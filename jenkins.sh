@@ -28,6 +28,6 @@ salloc -J "${JOB_NAME}:${BUILD_NUMBER}:${GIT_BRANCH}" -p ${label} -N 1 --nice=10
 
 else
     BUILD_SCRIPT="./jenkins-scripts/test-worker.sh"
-    ${BUILD_SCRIPT} -b ${GIT_BRANCH} -h $WORKSPACE -c $compiler -o $jenkins_configure -q $label -m ch3:tcp
+    sh ${BUILD_SCRIPT} -b ${GIT_BRANCH} -h $WORKSPACE -c $compiler -o $jenkins_configure -q $label -m ch3:tcp
 fi
 
