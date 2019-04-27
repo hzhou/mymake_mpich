@@ -5,7 +5,7 @@ B="./jenkins-scripts/test-worker.sh"
 chmod +x $A $B
 
 compiler=gnu
-jenkins_configure=strict
+jenkins_configure=stricterror
 queue=ib64
 export compiler jenkins_configure queue
 # export GIT_BRANCH="master"

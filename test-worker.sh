@@ -383,6 +383,9 @@ SetConfigOpt() {
         "strict")
             config_opt="--enable-strict"
             ;;
+        "stricterror")
+            config_opt="--enable-strict=error"
+            ;;
         "fast")
             config_opt="--enable-fast=all"
             ;;
