@@ -32,6 +32,7 @@ MPIEXEC=""
 echo "For manual testing, run the script with the following options"
 echo "./test-worker.sh $@"
 
+WORKSPACE=$PWD
 #####################################################################
 ## Functions
 #####################################################################
@@ -41,21 +42,7 @@ CollectResults() {
         return
     fi
 
-    pushd "$WORKSPACE"
-    # if [[ "$BUILD_MODE" != "per-commit" ]]; then
-        # find . \
-            # \( -name "filtered-make.txt" \
-            # -o -name "apply-xfail.sh" \
-            # -o -name "autogen.log" \
-            # -o -name "config.log" \
-            # -o -name "c.txt" \
-            # -o -name "m.txt" \
-            # -o -name "mi.txt" \
-            # -o -name "summary.junit.xml" \) \
-            # | while read -r line; do echo "$SLURM_SUBMIT_DIR/$DIRNAME"; done \
-            # | xargs ssh $SLURM_SUBMIT_HOST "mkdir -p"
-    # fi
-
+    pushd $WORKSPACE
     find . \
         \( -name "filtered-make.txt" -o \
         -name "apply-xfail.sh" -o \
@@ -542,11 +529,6 @@ SetConfigOpt() {
 #####################################################################
 ## Main() { Setup Environment and Build
 #####################################################################
-if test -n $WORKSPACE; then
-	cd $WORKSPACE
-else
-	WORKSPACE='.'
-fi
 
 if test "$GIT_BRANCH" = "" ; then
     BUILD_MODE="nightly"
@@ -558,30 +540,30 @@ fi
 
 case "$BUILD_MODE" in
     "nightly")
-        if [[ -x $WORKSPACE/jenkins-scripts/skip_test.sh ]]; then
-            $WORKSPACE/jenkins-scripts/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod \
-                -s $WORKSPACE/mpich-master/test/mpi/summary.junit.xml
-            if [[ -f $WORKSPACE/mpich-master/test/mpi/summary.junit.xml ]]; then
+        if [[ -x ./jenkins-scripts/skip_test.sh ]]; then
+            ./jenkins-scripts/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod \
+                -s ./mpich-master/test/mpi/summary.junit.xml
+            if [[ -f ./mpich-master/test/mpi/summary.junit.xml ]]; then
                 CollectResults
                 exit 0
             fi
         fi
         ;;
     "stable")
-        if [[ -x $WORKSPACE/jenkins-scripts/skip_test.sh ]]; then
-            $WORKSPACE/jenkins-scripts/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod \
-                -s $WORKSPACE/mpich-stable/test/mpi/summary.junit.xml
-            if [[ -f $WORKSPACE/mpich-stable/test/mpi/summary.junit.xml ]]; then
+        if [[ -x ./jenkins-scripts/skip_test.sh ]]; then
+            ./jenkins-scripts/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod \
+                -s ./mpich-stable/test/mpi/summary.junit.xml
+            if [[ -f ./mpich-stable/test/mpi/summary.junit.xml ]]; then
                 CollectResults
                 exit 0
             fi
         fi
         ;;
     "per-commit")
-        if [[ -x $WORKSPACE/jenkins-scripts/skip_test.sh ]]; then
-            $WORKSPACE/jenkins-scripts/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod \
-                -s $WORKSPACE/test/mpi/summary.junit.xml
-            if [[ -f $WORKSPACE/test/mpi/summary.junit.xml ]]; then
+        if [[ -x ./jenkins-scripts/skip_test.sh ]]; then
+            ./jenkins-scripts/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod \
+                -s ./test/mpi/summary.junit.xml
+            if [[ -f ./test/mpi/summary.junit.xml ]]; then
                 CollectResults
                 exit 0
             fi
@@ -595,11 +577,11 @@ SRC=$WORKSPACE
 case "$BUILD_MODE" in
     "nightly")
         tar zxvf mpich-master.tar.gz
-        SRC="$WORKSPACE/mpich-master"
+        SRC="${WORKSPACE}/mpich-master"
         ;;
     "stable")
         tar zxvf mpich-stable.tar.gz
-        SRC="$WORKSPACE/mpich-stable"
+        SRC="${WORKSPACE}/mpich-stable"
         ;;
     "per-commit")
         ;;
@@ -608,22 +590,21 @@ case "$BUILD_MODE" in
         exit 1
 esac
 
+cd $SRC
+
 # determine if this is a nightly job or a per-commit job
 PrepareEnv
-
 SetCompiler "$compiler"
 
-pushd "$SRC"
-
 if test "$BUILD_MODE" = "per-commit" ; then
-    if test -f "$WORKSPACE/.gitmodules" ; then
+    if test -f "./.gitmodules" ; then
         git submodule update --init --recursive
     fi
     ./autogen.sh 2>&1 | tee autogen.log
 fi
 
 if test "$INSTALL_PREFIX" = "" ; then
-    INSTALL_PREFIX=$SRC/_inst
+    INSTALL_PREFIX=${SRC}/_inst
 fi
 
 if test "$jenkins_configure" = "pmix" ; then
@@ -661,7 +642,6 @@ cat m.txt mi.txt | ./maint/clmake > filtered-make.txt 2>&1
 # We do not execute the test suite for the benchmark build.
 if test "$BUILD_TYPE" = "benchmark"; then
     CollectResults
-    popd
     exit 0
 fi
 
@@ -832,6 +812,5 @@ if test "$jenkins_configure" != "hcoll" ; then
    CollectResults
 fi
 
-popd
 exit 0
 
