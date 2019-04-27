@@ -5,7 +5,6 @@ our $srcdir = "$ENV{HOME}/work/mpich";
 our $moddir = "$ENV{HOME}/work/modules";
 our $prefix = "$ENV{HOME}/MPI";
 our (%cvars, @cvars, %cats, @cats);
-
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -25,6 +24,9 @@ foreach my $a (@ARGV){
     if($a=~/^--(prefix)=(.*)/){
         $opts{$1}=$2;
     }
+    elsif($a=~/^--enable-strict/){
+        $opts{strict}=1;
+    }
     elsif($a=~/^(\w+)=(.*)/){
         $opts{$1}=$2;
     }
@@ -38,11 +40,20 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
-if(-f "maint/version.m4"){
-    $srcdir = ".";
-}
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
+}
+if(-f "./maint/version.m4"){
+    $srcdir = ".";
+}
+elsif(-f "../maint/version.m4"){
+    $srcdir = "..";
+}
+elsif(-f "../../maint/version.m4"){
+    $srcdir = "../..";
+}
+elsif(-f "../../../maint/version.m4"){
+    $srcdir = "../../..";
 }
 if($opts{srcdir}){
     $srcdir = $opts{srcdir};
@@ -53,17 +64,12 @@ if($opts{moddir}){
 if($opts{prefix}){
     $prefix = $opts{prefix};
 }
-if($srcdir ne "."){
-    chdir $srcdir or die "can't chdir $srcdir\n";
-}
-if(!-d "mymake"){
-    mkdir "mymake" or die "can't mkdir mymake\n";
-}
 my %type_hash=(
     int=>"int",
     double=>"double",
-    string=>"char *",
+    string=>"const char *",
     boolean=>"int",
+    enum=>"int",
     range=>"MPIR_T_cvar_range_value_t",
 );
 my %mpi_hash=(
@@ -72,6 +78,7 @@ my %mpi_hash=(
     string=>"MPI_CHAR:MPIR_CVAR_MAX_STRLEN:str",
     boolean=>"MPI_INT:1:d",
     range=>"MPI_INT:2:range",
+    enum=>"MPI_INT:1:d",
 );
 my %env_hash=(
     int=>"int",
@@ -79,6 +86,7 @@ my %env_hash=(
     string=>"str",
     boolean=>"bool",
     range=>"range",
+    enum=>"str",
 );
 my %value_hash=(
     true=>"1",
@@ -219,6 +227,13 @@ foreach my $f (@files){
             }
             elsif($cvar){
                 $cvar->{$a}=$t;
+                if($cvar->{type} eq "enum"){
+                    my @enum;
+                    while($t=~/^\s*(\w+)\s+-\s/mg){
+                        push @enum, $1;
+                    }
+                    $cvar->{enum}=\@enum;
+                }
             }
         }
     }
@@ -240,7 +255,7 @@ foreach my $v (@cvars){
     if(defined $value_hash{$value}){
         $value=$value_hash{$value};
     }
-    elsif($type eq "char *"){
+    elsif($type =~/char\s*\*/){
         if($value eq "NULL"){
         }
         elsif($value!~/^"/){
@@ -252,8 +267,20 @@ foreach my $v (@cvars){
             $value="{$1,$2}";
         }
     }
+    elsif($h->{type} eq "enum"){
+        $value = "$v\_$value";
+    }
     print Out "/* $h->{file} */\n";
     print Out "extern $type $v;\n";
+    if($h->{enum}){
+        print Out "enum $v\_choice {\n";
+        my $last = pop @{$h->{enum}};
+        foreach my $a (@{$h->{enum}}){
+            print Out "    $v\_$a,\n";
+        }
+        print Out "    $v\_$last\n";
+        print Out "};\n";
+    }
 }
 print Out "\n";
 print Out "/* TODO: this should be defined elsewhere */\n";
@@ -277,7 +304,7 @@ foreach my $v (@cvars){
     if(defined $value_hash{$value}){
         $value=$value_hash{$value};
     }
-    elsif($type eq "char *"){
+    elsif($type =~/char\s*\*/){
         if($value eq "NULL"){
         }
         elsif($value!~/^"/){
@@ -288,6 +315,9 @@ foreach my $v (@cvars){
         if($value=~/(\d+):(\d+)/){
             $value="{$1,$2}";
         }
+    }
+    elsif($h->{type} eq "enum"){
+        $value = "$v\_$value";
     }
     if($h->{class} eq "device"){
         if($v=~/MPIR_CVAR_(\w+)/){
@@ -333,7 +363,7 @@ foreach my $v (@cvars){
     if(defined $value_hash{$value}){
         $value=$value_hash{$value};
     }
-    elsif($type eq "char *"){
+    elsif($type =~/char\s*\*/){
         if($value eq "NULL"){
         }
         elsif($value!~/^"/){
@@ -344,6 +374,9 @@ foreach my $v (@cvars){
         if($value=~/(\d+):(\d+)/){
             $value="(MPIR_T_cvar_range_value_t){$1,$2}";
         }
+    }
+    elsif($h->{type} eq "enum"){
+        $value = "$v\_$value";
     }
     my ($mpi_type,$mpi_count,$mpi_field)=split /:/, $mpi_hash{$h->{type}};
     my $mplenv = "MPL_env2$env_hash{$h->{type}}";
@@ -364,6 +397,9 @@ foreach my $v (@cvars){
     if($h->{type} eq "string"){
         print Out "    MPIR_CVAR_GET_DEFAULT_STRING($v, &tmp_str);\n";
     }
+    elsif($h->{type} eq "enum"){
+        print Out "    tmp_str = NULL;\n";
+    }
     my @t;
     if($h->{"alt-env"}){
         foreach my $t (split /[:,;\s]+/, $h->{"alt-env"}){
@@ -374,7 +410,7 @@ foreach my $v (@cvars){
     push @t, $v;
     foreach my $env (@t){
         $env=~s/^MPIR_CVAR_//;
-        if($h->{type} eq "string"){
+        if($h->{type} eq "string" or $h->{type} eq "enum"){
             print Out "    rc = $mplenv(\"MPICH_$env\", &tmp_str);\n";
         }
         elsif($h->{type} eq "range"){
@@ -384,7 +420,7 @@ foreach my $v (@cvars){
             print Out "    rc = $mplenv(\"MPICH_$env\", &$v);\n";
         }
         print Out "    MPIR_ERR_CHKANDJUMP1((-1 == rc),mpi_errno,MPI_ERR_OTHER,\"**envvarparse\",\"**envvarparse %s\",\"MPICH_$env\");\n";
-        if($h->{type} eq "string"){
+        if($h->{type} eq "string" or $h->{type} eq "enum"){
             print Out "    rc = $mplenv(\"MPIR_PARAM_$env\", &tmp_str);\n";
         }
         elsif($h->{type} eq "range"){
@@ -394,7 +430,7 @@ foreach my $v (@cvars){
             print Out "    rc = $mplenv(\"MPIR_PARAM_$env\", &$v);\n";
         }
         print Out "    MPIR_ERR_CHKANDJUMP1((-1 == rc),mpi_errno,MPI_ERR_OTHER,\"**envvarparse\",\"**envvarparse %s\",\"MPIR_PARAM_$env\");\n";
-        if($h->{type} eq "string"){
+        if($h->{type} eq "string" or $h->{type} eq "enum"){
             print Out "    rc = $mplenv(\"MPIR_CVAR_$env\", &tmp_str);\n";
         }
         elsif($h->{type} eq "range"){
@@ -418,6 +454,18 @@ foreach my $v (@cvars){
         print Out "        $v = NULL;\n";
         print Out "    }\n";
     }
+    elsif($h->{type} eq "enum"){
+        print Out "    if (tmp_str != NULL) {\n";
+        my $c = "if";
+        foreach my $t (@{$h->{enum}}){
+            print Out "        $c (0 == strcmp(tmp_str, \"$t\"))\n";
+            print Out "            $v = $v\_$t;\n";
+            $c = "else if";
+        }
+        print Out "        else\n";
+        print Out "            MPIR_ERR_CHKANDJUMP1(1,mpi_errno,MPI_ERR_OTHER,\"**envvarparse\",\"**envvarparse %s\",\"$v: bad enum value\");\n";
+        print Out "    }\n";
+    }
     print Out "\n";
 }
 print Out "fn_exit:\n";
@@ -437,7 +485,7 @@ foreach my $v (@cvars){
     if(defined $value_hash{$value}){
         $value=$value_hash{$value};
     }
-    elsif($type eq "char *"){
+    elsif($type =~/char\s*\*/){
         if($value eq "NULL"){
         }
         elsif($value!~/^"/){
@@ -449,9 +497,12 @@ foreach my $v (@cvars){
             $value="{$1,$2}";
         }
     }
+    elsif($h->{type} eq "enum"){
+        $value = "$v\_$value";
+    }
     if($h->{type} eq "string"){
         print Out "    if ($v != NULL) {\n";
-        print Out "        MPL_free($v);\n";
+        print Out "        MPL_free((void *)$v);\n";
         print Out "        $v = NULL;\n";
         print Out "    }\n";
         print Out "\n";

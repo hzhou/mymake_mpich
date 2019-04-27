@@ -13,7 +13,6 @@ our @programs;
 our @ltlibs;
 our %special_targets;
 our @extra_make_rules;
-
 sub get_list {
     my ($key) = @_;
     my @t;
@@ -54,6 +53,18 @@ sub get_object {
 
 my $pwd=`pwd`;
 chomp $pwd;
+my $mymake;
+if($0=~/^(\/.*)\//){
+    $mymake = $1;
+}
+elsif($0=~/^(.*)\//){
+    $mymake .= "$pwd/$1";
+}
+$mymake .="/mymake";
+if(-d "pm"){
+    system "perl $mymake\_hydra.pl @ARGV";
+    exit(0);
+}
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -73,6 +84,9 @@ foreach my $a (@ARGV){
     if($a=~/^--(prefix)=(.*)/){
         $opts{$1}=$2;
     }
+    elsif($a=~/^--enable-strict/){
+        $opts{strict}=1;
+    }
     elsif($a=~/^(\w+)=(.*)/){
         $opts{$1}=$2;
     }
@@ -86,11 +100,20 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
-if(-f "maint/version.m4"){
-    $srcdir = ".";
-}
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
+}
+if(-f "./maint/version.m4"){
+    $srcdir = ".";
+}
+elsif(-f "../maint/version.m4"){
+    $srcdir = "..";
+}
+elsif(-f "../../maint/version.m4"){
+    $srcdir = "../..";
+}
+elsif(-f "../../../maint/version.m4"){
+    $srcdir = "../../..";
 }
 if($opts{srcdir}){
     $srcdir = $opts{srcdir};
@@ -101,40 +124,45 @@ if($opts{moddir}){
 if($opts{prefix}){
     $prefix = $opts{prefix};
 }
+if($opts{do}){
+    system "perl $mymake\_$opts{do}.pl";
+    exit(0);
+}
 if($srcdir ne "."){
     chdir $srcdir or die "can't chdir $srcdir\n";
 }
 if(!-d "mymake"){
     mkdir "mymake" or die "can't mkdir mymake\n";
 }
-my $mymake;
-if($0=~/^(\/.*)\//){
-    $mymake = $1;
+if(!-f 'src/util/cvar/mpir_cvars.c'){
+    system "touch src/util/cvar/mpir_cvars.c";
 }
-elsif($0=~/^(.*)\//){
-    $mymake .= "$pwd/$1";
-}
-$mymake .="/mymake";
 push @extra_make_rules, "DO_stage = perl $mymake\_stage.pl";
 push @extra_make_rules, "DO_clean = perl $mymake\_clean.pl";
 push @extra_make_rules, "DO_errmsg = perl $mymake\_errmsg.pl";
 push @extra_make_rules, "DO_cvars = perl $mymake\_cvars.pl";
 push @extra_make_rules, "DO_logs = perl $mymake\_logs.pl";
 push @extra_make_rules, "DO_hydra = perl $mymake\_hydra.pl";
-push @extra_make_rules, "DO_testing = perl $mymake\_testing.pl";
+push @extra_make_rules, "DO_test = perl $mymake\_test.pl";
 push @extra_make_rules, "DO_mpi_h = perl $mymake\_mpi_h.pl";
 push @extra_make_rules, "";
-if($opts{do}){
-    system "perl $mymake\_$opts{do}.pl";
-    exit(0);
-}
+push @extra_make_rules, ".PHONY: test cvars errmsg";
+push @extra_make_rules, "test:";
+push @extra_make_rules, "\t\x24(DO_test)";
+push @extra_make_rules, "";
+push @extra_make_rules, "cvars:";
+push @extra_make_rules, "\t\x24(DO_cvars)";
+push @extra_make_rules, "";
+push @extra_make_rules, "errmsg:";
+push @extra_make_rules, "\t\x24(DO_errmsg)";
+push @extra_make_rules, "";
 if($need_save_args){
     my $t = join(' ', @ARGV);
     open Out, ">mymake/args" or die "Can't write mymake/args.\n";
     print Out $t;
     close Out;
     system "rm -f mymake/Makefile.orig";
-    system "rm -f src/mpl/include/mplconfig.h src/openpa/src/opa_config.h";
+    system "rm -f $moddir/mpl/include/mplconfig.h $moddir/openpa/src/opa_config.h";
 }
 print "srcdir: $srcdir\n";
 print "moddir: $moddir\n";
@@ -143,7 +171,7 @@ if($opts{device}){
     print "device: $opts{device}\n";
 }
 my $mkfile="src/pm/hydra/Makefile";
-my $add="src/mpl/libmpl.la $moddir/hwloc/hwloc/libhwloc_embedded.la";
+my $add="$moddir/mpl/libmpl.la $moddir/hwloc/hwloc/libhwloc_embedded.la";
 push @extra_make_rules, ".PHONY: hydra hydra-install";
 push @extra_make_rules, "hydra: $mkfile $add";
 push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
@@ -178,6 +206,7 @@ if(!-f "configure"){
         @lines=<In>;
         close In;
     }
+    my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2].\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
@@ -193,10 +222,13 @@ if(!-f "configure"){
         elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/){
             $l = "$1: \x23 $2\n";
         }
+        if($flag_skip){
+            next;
+        }
         print Out $l;
     }
     close Out;
-    system "cp $m[2] $m[0]";
+    system "cp -v $m[2] $m[0]";
     my $f = "src/Makefile.mk";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
@@ -209,16 +241,20 @@ if(!-f "configure"){
         @lines=<In>;
         close In;
     }
+    my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2].\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/^include .*\/binding\//){
             next;
         }
+        if($flag_skip){
+            next;
+        }
         print Out $l;
     }
     close Out;
-    system "cp $m[2] $m[0]";
+    system "cp -v $m[2] $m[0]";
     my $f = "Makefile.am";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
@@ -231,16 +267,20 @@ if(!-f "configure"){
         @lines=<In>;
         close In;
     }
+    my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2].\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/ACLOCAL_AMFLAGS/){
             $l ="ACLOCAL_AMFLAGS = -I confdb\n";
         }
+        if($flag_skip){
+            next;
+        }
         print Out $l;
     }
     close Out;
-    system "cp $m[2] $m[0]";
+    system "cp -v $m[2] $m[0]";
     my $flag;
     my $f = "src/mpid/ch3/subconfigure.m4";
     my $f_ = $f;
@@ -254,6 +294,7 @@ if(!-f "configure"){
         @lines=<In>;
         close In;
     }
+    my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2].\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
@@ -266,10 +307,13 @@ if(!-f "configure"){
         elsif($flag){
             next;
         }
+        if($flag_skip){
+            next;
+        }
         print Out $l;
     }
     close Out;
-    system "cp $m[2] $m[0]";
+    system "cp -v $m[2] $m[0]";
     if($opts{device}=~/ucx/){
         my $flag;
         my $f = "src/mpid/ch4/netmod/ucx/subconfigure.m4";
@@ -284,6 +328,7 @@ if(!-f "configure"){
             @lines=<In>;
             close In;
         }
+        my $flag_skip=0;
         open Out, ">$m[2]" or die "Can't write $m[2].\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines){
@@ -302,10 +347,13 @@ if(!-f "configure"){
                     next;
                 }
             }
+            if($flag_skip){
+                next;
+            }
             print Out $l;
         }
         close Out;
-        system "cp $m[2] $m[0]";
+        system "cp -v $m[2] $m[0]";
     }
     system "autoreconf -ivf";
     foreach my $m (@mod_list){
@@ -320,6 +368,36 @@ if(!-f "mymake/Makefile.orig"){
     my $t = join ' ', @config_args;
     system "./configure --disable-fortran --disable-romio --with-pm=none $t";
     system "mv Makefile mymake/Makefile.orig";
+    my @mod_list;
+    my $f = "libtool";
+    my $f_ = $f;
+    $f_=~s/[\.\/]/_/g;
+    my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+    system "mv $m[0] $m[1]";
+    my @lines;
+    {
+        open In, "$m[1]" or die "Can't open $m[1].\n";
+        @lines=<In>;
+        close In;
+    }
+    my $flag_skip=0;
+    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    print "  --> [$m[2]]\n";
+    foreach my $l (@lines){
+        if($l=~/^AR_FLAGS=/){
+            $l = "AR_FLAGS=\"cr\"\n";
+        }
+        if($flag_skip){
+            next;
+        }
+        print Out $l;
+    }
+    close Out;
+    system "cp -v $m[2] $m[0]";
+    system "chmod a+x libtool";
+    foreach my $m (@mod_list){
+        system "cp $m->[1] $m->[0]";
+    }
 }
 open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h.\n";
 while(<In>){
@@ -428,44 +506,63 @@ push @t, "perl all_romio_symbols ../../mpi/romio/include/mpio.h.in";
 push @extra_make_rules, "src/glue/romio/all_romio_symbols.c: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-$I_list .= " -Isrc/mpl/include";
-$L_list .= " src/mpl/libmpl.la";
-push @CONFIGS, "src/mpl/include/mplconfig.h";
+if(!-d "$moddir/mpl"){
+    my $cmd = "cp -r src/mpl $moddir/mpl";
+    print "$cmd\n";
+    system $cmd;
+    my $cmd = "cp -r confdb $moddir/mpl/";
+    print "$cmd\n";
+    system $cmd;
+}
+$I_list .= " -I$moddir/mpl/include";
+$L_list .= " $moddir/mpl/libmpl.la";
+push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
 my $config_args = "--disable-versioning --enable-embedded";
 foreach my $t (@config_args){
     if($t=~/--enable-g/){
         $config_args.=" $t";
     }
 }
-my @t = ("cd src/mpl");
+my @t = ("cd $moddir/mpl");
 push @t, "\x24(DO_stage) Configure MPL";
-push @t, "rsync -r ../../confdb/ confdb/";
 push @t, "autoreconf -ivf";
 push @t, "./configure $config_args";
-push @extra_make_rules, "src/mpl/include/mplconfig.h: ";
+push @extra_make_rules, "$moddir/mpl/include/mplconfig.h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-my @t = ("cd src/mpl");
+my @t = ("cd $moddir/mpl");
 push @t, "\x24(MAKE)";
-push @extra_make_rules, "src/mpl/libmpl.la: src/mpl/include/mplconfig.h";
+push @extra_make_rules, "$moddir/mpl/libmpl.la: $moddir/mpl/include/mplconfig.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-$I_list .= " -Isrc/openpa/src";
-$L_list .= " src/openpa/src/libopa.la";
-push @CONFIGS, "src/openpa/src/opa_config.h";
-my @t = ("cd src/openpa");
+if(!-d "$moddir/openpa"){
+    my $cmd = "cp -r src/openpa $moddir/openpa";
+    print "$cmd\n";
+    system $cmd;
+    my $cmd = "cp -r confdb $moddir/openpa/";
+    print "$cmd\n";
+    system $cmd;
+}
+$I_list .= " -I$moddir/openpa/src";
+$L_list .= " $moddir/openpa/src/libopa.la";
+push @CONFIGS, "$moddir/openpa/src/opa_config.h";
+my @t = ("cd $moddir/openpa");
 push @t, "\x24(DO_stage) Configure OpenPA";
-push @t, "rsync -r ../../confdb/ confdb/";
 push @t, "autoreconf -ivf";
 push @t, "./configure --disable-versioning --enable-embedded";
-push @extra_make_rules, "src/openpa/src/opa_config.h: ";
+push @extra_make_rules, "$moddir/openpa/src/opa_config.h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-my @t = ("cd src/openpa");
+my @t = ("cd $moddir/openpa");
 push @t, "\x24(MAKE)";
-push @extra_make_rules, "src/openpa/src/libopa.la: src/mpl/include/mplconfig.h";
+push @extra_make_rules, "$moddir/openpa/src/libopa.la: $moddir/mpl/include/mplconfig.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
+if(!-d "$moddir/hwloc"){
+    my $cmd = "cp -r src/hwloc $moddir/hwloc";
+    print "$cmd\n";
+    system $cmd;
+}
 $I_list .= " -I$moddir/hwloc/include";
 $L_list .= " $moddir/hwloc/hwloc/libhwloc_embedded.la";
 push @CONFIGS, "$moddir/hwloc/include/hwloc/autogen/config.h";
@@ -482,6 +579,11 @@ push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if($opts{device}=~/ucx/){
+    if(!-d "$moddir/ucx"){
+        my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
+        print "$cmd\n";
+        system $cmd;
+    }
     $I_list .= " -I$moddir/ucx/src";
     $L_list .= " $moddir/ucx/src/ucp/libucp.la";
     push @CONFIGS, "$moddir/ucx/config.h";
@@ -499,6 +601,11 @@ if($opts{device}=~/ucx/){
     push @extra_make_rules, "";
 }
 if($opts{device}=~/ofi/){
+    if(!-d "$moddir/libfabric"){
+        my $cmd = "cp -r src/mpid/ch4/netmod/ofi/libfabric $moddir/libfabric";
+        print "$cmd\n";
+        system $cmd;
+    }
     $I_list .= " -I$moddir/libfabric/include";
     $L_list .= " $moddir/libfabric/src/libfabric.la";
     push @CONFIGS, "$moddir/libfabric/config.h";
@@ -557,6 +664,12 @@ while(<In>){
     }
 }
 close In;
+if($opts{strict}){
+    my $t = "-Werror -Wall -Wextra -DGCC_WALL";
+    $t .= " -Wstrict-prototypes -Wmissing-prototypes -Wshadow -Wmissing-declarations -Wundef -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wold-style-definition -Wnested-externs -Winvalid-pch -Wvariadic-macros -Wtype-limits -Werror-implicit-function-declaration -Wstack-usage=262144";
+    $t .= " -Wno-missing-field-initializers -Wno-unused-parameter -Wno-unused-label -Wno-long-long -Wno-endif-labels -Wno-sign-compare -Wno-multichar -Wno-deprecated-declarations -Wno-pointer-sign -Wno-format-zero-length";
+    $objects{CFLAGS} = "-O2 $t";
+}
 open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom.\n";
 print "  --> [mymake/Makefile.custom]\n";
 print Out "export MODDIR=$moddir\n";
@@ -827,7 +940,7 @@ while (my ($k, $v) = each %dst_hash){
             push @install_deps, $k;
         }
         elsif($v=~/\/bin$/){
-            push @install_list, "install $k $v";
+            push @install_list, "/bin/sh ./libtool --mode=install $lt_opt install $k $v";
             push @install_deps, $k;
         }
     }

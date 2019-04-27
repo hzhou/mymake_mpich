@@ -4,7 +4,6 @@ our (%opts, @config_args);
 our $srcdir = "$ENV{HOME}/work/mpich";
 our $moddir = "$ENV{HOME}/work/modules";
 our $prefix = "$ENV{HOME}/MPI";
-
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -24,6 +23,9 @@ foreach my $a (@ARGV){
     if($a=~/^--(prefix)=(.*)/){
         $opts{$1}=$2;
     }
+    elsif($a=~/^--enable-strict/){
+        $opts{strict}=1;
+    }
     elsif($a=~/^(\w+)=(.*)/){
         $opts{$1}=$2;
     }
@@ -37,11 +39,20 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
-if(-f "maint/version.m4"){
-    $srcdir = ".";
-}
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
+}
+if(-f "./maint/version.m4"){
+    $srcdir = ".";
+}
+elsif(-f "../maint/version.m4"){
+    $srcdir = "..";
+}
+elsif(-f "../../maint/version.m4"){
+    $srcdir = "../..";
+}
+elsif(-f "../../../maint/version.m4"){
+    $srcdir = "../../..";
 }
 if($opts{srcdir}){
     $srcdir = $opts{srcdir};
@@ -51,10 +62,4 @@ if($opts{moddir}){
 }
 if($opts{prefix}){
     $prefix = $opts{prefix};
-}
-if($srcdir ne "."){
-    chdir $srcdir or die "can't chdir $srcdir\n";
-}
-if(!-d "mymake"){
-    mkdir "mymake" or die "can't mkdir mymake\n";
 }

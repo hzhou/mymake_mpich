@@ -13,7 +13,6 @@ our @programs;
 our @ltlibs;
 our %special_targets;
 our @extra_make_rules;
-
 sub get_list {
     my ($key) = @_;
     my @t;
@@ -71,6 +70,9 @@ foreach my $a (@ARGV){
     if($a=~/^--(prefix)=(.*)/){
         $opts{$1}=$2;
     }
+    elsif($a=~/^--enable-strict/){
+        $opts{strict}=1;
+    }
     elsif($a=~/^(\w+)=(.*)/){
         $opts{$1}=$2;
     }
@@ -84,11 +86,20 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
-if(-f "maint/version.m4"){
-    $srcdir = ".";
-}
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
+}
+if(-f "./maint/version.m4"){
+    $srcdir = ".";
+}
+elsif(-f "../maint/version.m4"){
+    $srcdir = "..";
+}
+elsif(-f "../../maint/version.m4"){
+    $srcdir = "../..";
+}
+elsif(-f "../../../maint/version.m4"){
+    $srcdir = "../../..";
 }
 if($opts{srcdir}){
     $srcdir = $opts{srcdir};
@@ -99,21 +110,27 @@ if($opts{moddir}){
 if($opts{prefix}){
     $prefix = $opts{prefix};
 }
-if($srcdir ne "."){
-    chdir $srcdir or die "can't chdir $srcdir\n";
+if($srcdir){
+    my $dir="$srcdir/src/pm/hydra";
+    chdir $dir or die "Can't chdir $dir\n";
 }
-if(!-d "mymake"){
-    mkdir "mymake" or die "can't mkdir mymake\n";
-}
-my $dir="src/pm/hydra";
-my $srcdir="../../..";
-chdir $dir or die "Can't chdir $dir\n";
 if(!-d "mymake"){
     mkdir "mymake" or die "can't mkdir mymake\n";
 }
 if(!-f "mymake/Makefile.orig"){
-    system "rsync -r $srcdir/confdb/ confdb/";
-    system "cp $srcdir/maint/version.m4 .";
+    if($srcdir){
+        my $o="../../..";
+        system "rsync -r $o/confdb/ confdb/";
+        system "cp $o/maint/version.m4 .";
+    }
+    else{
+        if(!-d "confdb"){
+            die "hydra: missing confdb/\n";
+        }
+        if(!-f "version.m4"){
+            die "hydra: missing version.m4\n";
+        }
+    }
     my @mod_list;
     my $f = "configure.ac";
     my $f_ = $f;
@@ -127,19 +144,35 @@ if(!-f "mymake/Makefile.orig"){
         @lines=<In>;
         close In;
     }
+    my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2].\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
-        if($l=~/^\s*HWLOC_/){
+        if($l=~/^\s*hwloc\)/){
+            print Out $l;
+            $flag_skip=1;
             next;
+        }
+        elsif($flag_skip && $l=~/AC_MSG_RESULT/){
+            $flag_skip=2;
+        }
+        elsif($flag_skip==2 && $l=~/^(\s*)if test.*\$have_hwloc.*then/){
+            $l = $1."if true ; then\n";
+            $flag_skip=0;
+        }
+        elsif($l=~/^(HWLOC_DO_AM_CONDITIONALS)/){
+            $l = "\x23 $1";
         }
         elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/){
             $l = "$1: \x23 $2\n";
         }
+        if($flag_skip){
+            next;
+        }
         print Out $l;
     }
     close Out;
-    system "cp $m[2] $m[0]";
+    system "cp -v $m[2] $m[0]";
     my $f = "Makefile.am";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
@@ -152,17 +185,49 @@ if(!-f "mymake/Makefile.orig"){
         @lines=<In>;
         close In;
     }
+    my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2].\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/ACLOCAL_AMFLAGS/){
             $l ="ACLOCAL_AMFLAGS = -I confdb\n";
         }
+        if($flag_skip){
+            next;
+        }
         print Out $l;
     }
     close Out;
-    system "cp $m[2] $m[0]";
-    my $flag;
+    system "cp -v $m[2] $m[0]";
+    my $f = "tools/topo/Makefile.mk";
+    my $f_ = $f;
+    $f_=~s/[\.\/]/_/g;
+    my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+    push @mod_list, \@m;
+    system "mv $m[0] $m[1]";
+    my @lines;
+    {
+        open In, "$m[1]" or die "Can't open $m[1].\n";
+        @lines=<In>;
+        close In;
+    }
+    my $flag_skip=0;
+    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    print "  --> [$m[2]]\n";
+    foreach my $l (@lines){
+        if($l=~/if\s+hydra_have_hwloc/){
+            next;
+        }
+        elsif($l=~/endif/){
+            next;
+        }
+        if($flag_skip){
+            next;
+        }
+        print Out $l;
+    }
+    close Out;
+    system "cp -v $m[2] $m[0]";
     my $f = "tools/topo/hwloc/Makefile.mk";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
@@ -175,37 +240,100 @@ if(!-f "mymake/Makefile.orig"){
         @lines=<In>;
         close In;
     }
+    my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2].\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/if\s+hydra_use_embedded_hwloc/){
-            $flag=1;
+            $flag_skip=1;
             next;
         }
         elsif($l=~/endif/){
-            $flag=0;
+            $flag_skip=0;
             next;
         }
-        if($flag){
+        if($flag_skip){
             next;
         }
         print Out $l;
     }
     close Out;
-    system "cp $m[2] $m[0]";
+    system "cp -v $m[2] $m[0]";
     system "autoreconf -ivf";
     foreach my $m (@mod_list){
         system "cp $m->[1] $m->[0]";
     }
     system "rm -f Makefile";
     system "./configure";
+    my @mod_list;
+    my $f = "libtool";
+    my $f_ = $f;
+    $f_=~s/[\.\/]/_/g;
+    my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+    system "mv $m[0] $m[1]";
+    my @lines;
+    {
+        open In, "$m[1]" or die "Can't open $m[1].\n";
+        @lines=<In>;
+        close In;
+    }
+    my $flag_skip=0;
+    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    print "  --> [$m[2]]\n";
+    foreach my $l (@lines){
+        if($l=~/^AR_FLAGS=/){
+            $l = "AR_FLAGS=\"cr\"\n";
+        }
+        if($flag_skip){
+            next;
+        }
+        print Out $l;
+    }
+    close Out;
+    system "cp -v $m[2] $m[0]";
+    system "chmod a+x libtool";
+    foreach my $m (@mod_list){
+        system "cp $m->[1] $m->[0]";
+    }
     system "mv Makefile mymake/Makefile.orig";
 }
 my $bin="\x24(PREFIX)/bin";
 $dst_hash{"LN_S-$bin/mpiexec"}="$bin/mpiexec.hydra";
 $dst_hash{"LN_S-$bin/mpirun"}="$bin/mpiexec.hydra";
-$I_list .= " -I../../../src/mpl/include";
-$L_list .= " ../../../src/mpl/libmpl.la";
+if(!-d "$moddir/mpl"){
+    my $cmd = "cp -r src/mpl $moddir/mpl";
+    print "$cmd\n";
+    system $cmd;
+    my $cmd = "cp -r confdb $moddir/mpl/";
+    print "$cmd\n";
+    system $cmd;
+}
+$I_list .= " -I$moddir/mpl/include";
+$L_list .= " $moddir/mpl/libmpl.la";
+push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
+my $config_args = "--disable-versioning --enable-embedded";
+foreach my $t (@config_args){
+    if($t=~/--enable-g/){
+        $config_args.=" $t";
+    }
+}
+my @t = ("cd $moddir/mpl");
+push @t, "\x24(DO_stage) Configure MPL";
+push @t, "autoreconf -ivf";
+push @t, "./configure $config_args";
+push @extra_make_rules, "$moddir/mpl/include/mplconfig.h: ";
+push @extra_make_rules, "\t(".join(' && ', @t).")";
+push @extra_make_rules, "";
+my @t = ("cd $moddir/mpl");
+push @t, "\x24(MAKE)";
+push @extra_make_rules, "$moddir/mpl/libmpl.la: $moddir/mpl/include/mplconfig.h";
+push @extra_make_rules, "\t(".join(' && ', @t).")";
+push @extra_make_rules, "";
+if(!-d "$moddir/hwloc"){
+    my $cmd = "cp -r src/hwloc $moddir/hwloc";
+    print "$cmd\n";
+    system $cmd;
+}
 $I_list .= " -I$moddir/hwloc/include";
 $L_list .= " $moddir/hwloc/hwloc/libhwloc_embedded.la";
 push @CONFIGS, "$moddir/hwloc/include/hwloc/autogen/config.h";
@@ -263,6 +391,12 @@ while(<In>){
     }
 }
 close In;
+if($opts{strict}){
+    my $t = "-Werror -Wall -Wextra -DGCC_WALL";
+    $t .= " -Wstrict-prototypes -Wmissing-prototypes -Wshadow -Wmissing-declarations -Wundef -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wold-style-definition -Wnested-externs -Winvalid-pch -Wvariadic-macros -Wtype-limits -Werror-implicit-function-declaration -Wstack-usage=262144";
+    $t .= " -Wno-missing-field-initializers -Wno-unused-parameter -Wno-unused-label -Wno-long-long -Wno-endif-labels -Wno-sign-compare -Wno-multichar -Wno-deprecated-declarations -Wno-pointer-sign -Wno-format-zero-length";
+    $objects{CFLAGS} = "-O2 $t";
+}
 open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom.\n";
 print "  --> [mymake/Makefile.custom]\n";
 print Out "export MODDIR=$moddir\n";
@@ -538,7 +672,7 @@ while (my ($k, $v) = each %dst_hash){
             push @install_deps, $k;
         }
         elsif($v=~/\/bin$/){
-            push @install_list, "install $k $v";
+            push @install_list, "/bin/sh ./libtool --mode=install $lt_opt install $k $v";
             push @install_deps, $k;
         }
     }
