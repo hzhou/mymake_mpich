@@ -2,16 +2,20 @@
 
 A="./jenkins-scripts/slurm_job.sh"
 B="./jenkins-scripts/test-worker.sh"
-chmod +x $A
+chmod +x $A $B
 
 compiler=gnu
 jenkins_configure=strict
+queue=ib64
+export compiler jenkins_configure queue
+# export GIT_BRANCH="master"
+# export GIT_BRANCH WORKSPACE
 
-RUN="zsh $B -b ${GIT_BRANCH} -h $WORKSPACE -c $compiler -o $jenkins_configure -q $label -m ch3:tcp"
+RUN="$B"
 export RUN
 
-if test "$label" = "ib64" -o "$label" = "ubuntu32" -o "$label" = "freebsd64" -o "$label" = "freebsd32" ; then
-    salloc -J "${JOB_NAME}:${BUILD_NUMBER}:${GIT_BRANCH}" -p ${label} -N 1 --nice=1000 -t 90 $A
+if test "$queue" = "ib64" -o "$queue" = "ubuntu32" -o "$queue" = "freebsd64" -o "$queue" = "freebsd32" ; then
+    salloc -J "${JOB_NAME}:${BUILD_NUMBER}:${GIT_BRANCH}" -p $queue -N 1 --nice=1000 -t 90 $A
 else
     $RUN
 fi

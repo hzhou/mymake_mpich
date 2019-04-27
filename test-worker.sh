@@ -11,15 +11,15 @@ date
 uptime
 pgrep mpiexec | wc -l
 
-WORKSPACE=""
-compiler="gnu"
-jenkins_configure="default"
-queue="ib64"
+# WORKSPACE=""
+# compiler="gnu"
+# jenkins_configure="default"
+# queue="ib64"
+thread_cs="global"
 netmod="default"
 ofi_prov="sockets"
 N_MAKE_JOBS=8
-GIT_BRANCH=""
-BUILD_MODE="per-commit"
+# GIT_BRANCH=""
 BUILD_TYPE=""
 INSTALL_PREFIX=""
 EXTRA_CONFIG=""
@@ -31,44 +31,6 @@ MPIEXEC=""
 
 echo "For manual testing, run the script with the following options"
 echo "./test-worker.sh $@"
-
-while getopts ":h:c:o:t:q:m:n:b:p:x:E:" opt; do
-    case "$opt" in
-        h)
-            WORKSPACE=$OPTARG ;;
-        c)
-            compiler=$OPTARG ;;
-        o)
-            jenkins_configure=$OPTARG ;;
-        t)
-            thread_cs=$OPTARG ;;
-        q)
-            queue=$OPTARG ;;
-        m)
-            _netmod=${OPTARG%%,*}
-            _netdev=${_netmod##*:}
-            if test "$_netmod" != "$OPTARG" -a "$_netdev" = "ofi"; then
-                netmod=$_netmod
-                ofi_prov=${OPTARG/$_netmod,}
-            else
-                netmod=$_netmod
-            fi
-            ;;
-        n)
-            N_MAKE_JOBS=$OPTARG ;;
-        b)
-            GIT_BRANCH=$OPTARG ;;
-        p)
-            INSTALL_PREFIX=$OPTARG ;;
-        x)
-            BUILD_TYPE=$OPTARG ;;
-        E)
-            EXTRA_CONFIG=$OPTARG ;;
-        \?)
-            echo "Invalid option: -$OPTARG" >&2
-            exit 1
-    esac
-done
 
 #####################################################################
 ## Functions
@@ -580,12 +542,18 @@ SetConfigOpt() {
 #####################################################################
 ## Main() { Setup Environment and Build
 #####################################################################
-cd $WORKSPACE
+if test -n $WORKSPACE; then
+	cd $WORKSPACE
+else
+	WORKSPACE='.'
+fi
 
 if test "$GIT_BRANCH" = "" ; then
     BUILD_MODE="nightly"
 elif test "$GIT_BRANCH" = "stable" ; then
     BUILD_MODE="stable"
+else
+    BUILD_MODE="per-commit"
 fi
 
 case "$BUILD_MODE" in
