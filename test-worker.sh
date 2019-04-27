@@ -33,6 +33,7 @@ echo "For manual testing, run the script with the following options"
 echo "./test-worker.sh $@"
 
 WORKSPACE=$PWD
+MODDIR=$WORKSPACE/mymake
 #####################################################################
 ## Functions
 #####################################################################
@@ -535,63 +536,24 @@ SetConfigOpt() {
 
 if test "$GIT_BRANCH" = "" ; then
     BUILD_MODE="nightly"
+    tar zxvf mpich-master.tar.gz
+    SRC="${WORKSPACE}/mpich-master"
 elif test "$GIT_BRANCH" = "stable" ; then
     BUILD_MODE="stable"
+    tar zxvf mpich-stable.tar.gz
+    SRC="${WORKSPACE}/mpich-stable"
 else
     BUILD_MODE="per-commit"
+    SRC=$WORKSPACE
 fi
 
-case "$BUILD_MODE" in
-    "nightly")
-        if [[ -x ./jenkins-scripts/skip_test.sh ]]; then
-            ./jenkins-scripts/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod \
-                -s ./mpich-master/test/mpi/summary.junit.xml
-            if [[ -f ./mpich-master/test/mpi/summary.junit.xml ]]; then
-                CollectResults
-                exit 0
-            fi
-        fi
-        ;;
-    "stable")
-        if [[ -x ./jenkins-scripts/skip_test.sh ]]; then
-            ./jenkins-scripts/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod \
-                -s ./mpich-stable/test/mpi/summary.junit.xml
-            if [[ -f ./mpich-stable/test/mpi/summary.junit.xml ]]; then
-                CollectResults
-                exit 0
-            fi
-        fi
-        ;;
-    "per-commit")
-        if [[ -x ./jenkins-scripts/skip_test.sh ]]; then
-            ./jenkins-scripts/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod \
-                -s ./test/mpi/summary.junit.xml
-            if [[ -f ./test/mpi/summary.junit.xml ]]; then
-                CollectResults
-                exit 0
-            fi
-        fi
-        ;;
-esac
-
-SRC=$WORKSPACE
-
-# Preparing the source
-case "$BUILD_MODE" in
-    "nightly")
-        tar zxvf mpich-master.tar.gz
-        SRC="${WORKSPACE}/mpich-master"
-        ;;
-    "stable")
-        tar zxvf mpich-stable.tar.gz
-        SRC="${WORKSPACE}/mpich-stable"
-        ;;
-    "per-commit")
-        ;;
-    *)
-        echo "Invalid BUILD_MODE $BUILD_MODE. Set by mistake?"
-        exit 1
-esac
+if [[ -x ./mymake/skip_test.sh ]]; then
+    ./mymake/skip_test.sh -j $JOB_NAME -c $compiler -o $jenkins_configure -q $queue -m $netmod -s $SRC/test/mpi/summary.junit.xml
+    if [[ -f $SRC/test/mpi/summary.junit.xml ]]; then
+        CollectResults
+        exit 0
+    fi
+fi
 
 cd $SRC
 
@@ -668,7 +630,7 @@ case "$jenkins_configure" in
         ;;
     "valgrind")
         # run valgrind check, only show error messages
-        MPITEST_PROGRAM_WRAPPER="valgrind -q --track-origins=yes --leak-check=full --suppressions=$WORKSPACE/jenkins-scripts/valgrind_suppressions"
+        MPITEST_PROGRAM_WRAPPER="valgrind -q --track-origins=yes --leak-check=full --suppressions=$WORKSPACE/mymake/valgrind_suppressions"
         export MPITEST_PROGRAM_WRAPPER
         # increase timeout for all tests
         MPITEST_TIMEOUT_MULTIPLIER=6

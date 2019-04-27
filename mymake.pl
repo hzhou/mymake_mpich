@@ -610,7 +610,7 @@ if($opts{device}=~/ofi/){
     $L_list .= " $moddir/libfabric/src/libfabric.la";
     push @CONFIGS, "$moddir/libfabric/config.h";
     my @t = ("cd $moddir/libfabric");
-    push @t, "\x24(DO_stage) Configure UCX";
+    push @t, "\x24(DO_stage) Configure libfabric";
     push @t, "sh autogen.sh";
     push @t, "./configure --enable-embedded --with-prefix=$prefix";
     push @extra_make_rules, "$moddir/libfabric/config.h: ";
