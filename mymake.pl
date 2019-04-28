@@ -181,14 +181,14 @@ push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
 push @extra_make_rules, "";
 if(!-f "subsys_include.m4"){
     print "---------------------------\n";
-    print "-     maint/gen_subcfg_m4 [$ENV{PWD}]\n";
+    print "-     maint/gen_subcfg_m4\n";
     print "---------------------------\n";
     system "perl maint/gen_subcfg_m4";
 }
 if(!-f "configure"){
     system "rm -f mymake/Makefile.orig";
     print "---------------------------\n";
-    print "-     Autoconf MPICH [$ENV{PWD}]\n";
+    print "-     Autoconf MPICH\n";
     print "---------------------------\n";
     my @mod_list;
     my $f = "configure.ac";
@@ -359,7 +359,7 @@ if(!-f "configure"){
 }
 if(!-f "mymake/Makefile.orig"){
     print "---------------------------\n";
-    print "-     Configure MPICH [$ENV{PWD}]\n";
+    print "-     Configure MPICH\n";
     print "---------------------------\n";
     system "rm -f Makefile";
     my $t = join ' ', @config_args;
@@ -565,7 +565,6 @@ $L_list .= " $moddir/hwloc/hwloc/libhwloc_embedded.la";
 push @CONFIGS, "$moddir/hwloc/include/hwloc/autogen/config.h";
 my @t = ("cd $moddir/hwloc");
 push @t, "\x24(DO_stage) Configure HWLOC";
-push @t, "ls -R";
 push @t, "sh autogen.sh";
 push @t, "./configure --enable-embedded-mode --enable-visibility";
 push @extra_make_rules, "$moddir/hwloc/include/hwloc/autogen/config.h: ";

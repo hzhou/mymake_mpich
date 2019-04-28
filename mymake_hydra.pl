@@ -352,7 +352,6 @@ $L_list .= " $moddir/hwloc/hwloc/libhwloc_embedded.la";
 push @CONFIGS, "$moddir/hwloc/include/hwloc/autogen/config.h";
 my @t = ("cd $moddir/hwloc");
 push @t, "\x24(DO_stage) Configure HWLOC";
-push @t, "ls -R";
 push @t, "sh autogen.sh";
 push @t, "./configure --enable-embedded-mode --enable-visibility";
 push @extra_make_rules, "$moddir/hwloc/include/hwloc/autogen/config.h: ";
