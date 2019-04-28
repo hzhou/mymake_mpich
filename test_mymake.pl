@@ -61,8 +61,23 @@ if($cpu_count=~/^(\d+)/){
     $n= $1;
 }
 $ENV{N_MAKE_JOBS}=$n;
-system "sh mymake/test_build.sh";
-my $ret = $?>>8;
+my $time_start=time();
+my $ret = system "sh mymake/test_build.sh";
+my $time_finish=time();
+if($ret){
+    $ret = $?>>8;
+}
+else{
+    open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
+    print "  --> [summary.junit.xml]\n";
+    print Out "<testsuites>\n";
+    print Out "<testsuite failures=\"0\" errors=\"0\" skipped=\"0\" tests=\"1\" name=\"build\">\n";
+    my $dur = $time_finish-$time_start;
+    print Out "<testcase name=\"1 - build\" time=$dur></testcase>\n";
+    print Out "</testsuite>\n";
+    print Out "</testsuites>\n";
+    close Out;
+}
 if($ENV{SLURM_SUBMIT_HOST}){
     my @files=qw(apply-xfail.sh config.log summary.junit.xml);
     my $t = "find . \\( ";
