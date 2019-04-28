@@ -62,7 +62,13 @@ if($cpu_count=~/^(\d+)/){
 }
 $ENV{N_MAKE_JOBS}=$n;
 my $time_start=time();
-my $ret = system "sh mymake/test_build.sh";
+my $ret;
+if($ENV{test_script} eq "test_quick"){
+    $ret = system "sh mymake/test_quick.sh";
+}
+else{
+    $ret = system "sh mymake/test_build.sh";
+}
 my $time_finish=time();
 if($ret){
     $ret = $?>>8;
