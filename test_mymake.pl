@@ -82,9 +82,9 @@ while(<In>){
 }
 close In;
 my $n_fails = @make_log;
-my $n_tests = $n_fail+1;
+my $n_tests = $n_fails+1;
 if($ret){
-    $n_fail++;
+    $n_fails++;
 }
 open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
 print "  --> [summary.junit.xml]\n";
