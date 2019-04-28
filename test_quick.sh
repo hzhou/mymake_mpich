@@ -166,6 +166,7 @@ if test x$skip_test = x1 ; then
     exit 0
 else
     export PATH=$PREFIX/bin:$PATH
+    export CPATH=$PREFIX/include:$CPATH
     export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
     make test 2>&1 || exit 1
 fi
