@@ -144,35 +144,17 @@ SRC=$PWD
 PREFIX=$WORKSPACE/_inst
 MPIEXEC=$PREFIX/bin/mpiexec
 git submodule update --init --recursive
-sh autogen.sh 2>&1 | tee autogen.log
-if test "${pipestatus[-2]}" != "0"; then
-    exit 1
+sh autogen.sh 2>&1 || exit 1
+./configure --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+make -j$N_MAKE_JOBS 2>&1 || exit 1
+make install 2>&1 || exit 1
+$MPIEXEC -n 2 examples/cpi 2>&1 || exit 1
+if test x$skip_test = x1 ; then
+    exit 0
+else
+    export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
+    cd test/mpi
+    sh autogen.sh 2>&1 || exit 1
+    ./configure $testmpi_config 2>&1 || exit 1
+    make testing
 fi
-./configure --prefix=$PREFIX $mpich_config 2>&1 | tee c.txt
-if test "${pipestatus[-2]}" != "0"; then
-    exit 1
-fi
-make -j$N_MAKE_JOBS 2>&1 | tee m.txt
-if test "${pipestatus[-2]}" != "0"; then
-    exit 1
-fi
-make install 2>&1 | tee mi.txt
-if test "${pipestatus[-2]}" != "0"; then
-    exit 1
-fi
-cat m.txt mi.txt | ./maint/clmake > filtered-make.txt 2>&1
-$MPIEXEC -n 2 examples/cpi 2>&1 | tee cpi.log
-if test "${pipestatus[-2]}" != "0"; then
-    exit 1
-fi
-export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
-cd test/mpi
-sh autogen.sh 2>&1 | tee autogen.log
-if test "${pipestatus[-2]}" != "0"; then
-    exit 1
-fi
-./configure $testmpi_config 2>&1 | tee c.txt
-if test "${pipestatus[-2]}" != "0"; then
-    exit 1
-fi
-make testing
