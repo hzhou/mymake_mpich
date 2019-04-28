@@ -86,9 +86,6 @@ foreach my $a (@ARGV){
     if($a=~/^--(prefix)=(.*)/){
         $opts{$1}=$2;
     }
-    elsif($a=~/^--enable-strict/){
-        $opts{strict}=1;
-    }
     elsif($a=~/^(\w+)=(.*)/){
         $opts{$1}=$2;
     }
@@ -407,12 +404,6 @@ while(<In>){
     }
 }
 close In;
-if($opts{strict}){
-    my $t = "-Werror -Wall -Wextra -DGCC_WALL";
-    $t .= " -Wstrict-prototypes -Wmissing-prototypes -Wshadow -Wmissing-declarations -Wundef -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wold-style-definition -Wnested-externs -Winvalid-pch -Wvariadic-macros -Wtype-limits -Werror-implicit-function-declaration -Wstack-usage=262144";
-    $t .= " -Wno-missing-field-initializers -Wno-unused-parameter -Wno-unused-label -Wno-long-long -Wno-endif-labels -Wno-sign-compare -Wno-multichar -Wno-deprecated-declarations -Wno-pointer-sign -Wno-format-zero-length";
-    $objects{CFLAGS} = "-O2 $t";
-}
 open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom.\n";
 print "  --> [mymake/Makefile.custom]\n";
 print Out "export MODDIR=$moddir\n";

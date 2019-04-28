@@ -45,9 +45,6 @@ foreach my $a (@ARGV){
     if($a=~/^--(prefix)=(.*)/){
         $opts{$1}=$2;
     }
-    elsif($a=~/^--enable-strict/){
-        $opts{strict}=1;
-    }
     elsif($a=~/^(\w+)=(.*)/){
         $opts{$1}=$2;
     }
