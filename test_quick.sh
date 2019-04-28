@@ -150,14 +150,22 @@ WORKSPACE=$PWD
 SRC=$PWD
 PREFIX=$WORKSPACE/_inst
 MPIEXEC=$PREFIX/bin/mpiexec
+set -o pipefail
 perl $PWD/mymake/mymake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
-make -j$N_MAKE_JOBS 2>&1 || exit 1
+make -j$N_MAKE_JOBS  2>&1 | tee make.log
+if test "$?" != "0"; then
+    exit $?
+fi
 make install 2>&1 || exit 1
-make -j$N_MAKE_JOBS hydra 2>&1 || exit 1
+make -j$N_MAKE_JOBS hydra 2>&1 | tee make.log
+if test "$?" != "0"; then
+    exit $?
+fi
 make hydra-install 2>&1 || exit 1
 if test x$skip_test = x1 ; then
     exit 0
 else
+    export PATH=$PREFIX/bin:$PATH
     export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
     make test 2>&1 || exit 1
 fi

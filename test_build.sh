@@ -143,15 +143,20 @@ WORKSPACE=$PWD
 SRC=$PWD
 PREFIX=$WORKSPACE/_inst
 MPIEXEC=$PREFIX/bin/mpiexec
+set -o pipefail
 git submodule update --init --recursive
 sh autogen.sh 2>&1 || exit 1
 ./configure --prefix=$PREFIX $mpich_config 2>&1 || exit 1
-make -j$N_MAKE_JOBS 2>&1 || exit 1
+make -j$N_MAKE_JOBS  2>&1 | tee make.log
+if test "$?" != "0"; then
+    exit $?
+fi
 make install 2>&1 || exit 1
 $MPIEXEC -n 2 examples/cpi 2>&1 || exit 1
 if test x$skip_test = x1 ; then
     exit 0
 else
+    export PATH=$PREFIX/bin:$PATH
     export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
     cd test/mpi
     sh autogen.sh 2>&1 || exit 1
