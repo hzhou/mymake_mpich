@@ -144,7 +144,7 @@ SRC=$PWD
 PREFIX=$WORKSPACE/_inst
 MPIEXEC=$PREFIX/bin/mpiexec
 export MODDIR=$PWD/mymake
-perl $PWD/mymake/mamake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+perl $PWD/mymake/mymake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
 make -j$N_MAKE_JOBS 2>&1 || exit 1
 make install 2>&1 || exit 1
 make -j$N_MAKE_JOBS hydra 2>&1 || exit 1
