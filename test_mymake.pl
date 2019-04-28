@@ -79,7 +79,7 @@ else{
     print Out "<testsuites>\n";
     print Out "<testsuite failures=\"0\" errors=\"0\" skipped=\"0\" tests=\"1\" name=\"build\">\n";
     my $dur = $time_finish-$time_start;
-    print Out "<testcase name=\"1 - build\" time=$dur></testcase>\n";
+    print Out "<testcase name=\"1 - build\" time=\"$dur\"></testcase>\n";
     print Out "</testsuite>\n";
     print Out "</testsuites>\n";
     close Out;
