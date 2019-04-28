@@ -147,7 +147,7 @@ set -o pipefail
 git submodule update --init --recursive
 sh autogen.sh 2>&1 || exit 1
 ./configure --prefix=$PREFIX $mpich_config 2>&1 || exit 1
-make -j$N_MAKE_JOBS  2>&1 | tee make.log
+make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
 if test "$?" != "0"; then
     exit $?
 fi
