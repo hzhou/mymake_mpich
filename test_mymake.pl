@@ -70,7 +70,7 @@ if($ENV{SLURM_SUBMIT_HOST}){
         $t .= "-name \"$f\" -o ";
     }
     $t=~s/ -o $/ \\)/;
-    system "$t -exec ssh $ENV{SLURM_SUBMIT_HOST} \"mkdir -p $ENV{SLURM_SUBMIT_DIR}/`dirname {}`\"";
-    system "$t -exec scp {} $ENV{SLURM_SUBMIT_HOST}:$ENV{SLURM_SUBMIT_DIR}/{}";
+    system "$t -exec ssh $ENV{SLURM_SUBMIT_HOST} \"mkdir -p $ENV{SLURM_SUBMIT_DIR}/\\\x24(dirname {})\" \\;";
+    system "$t -exec scp {} $ENV{SLURM_SUBMIT_HOST}:$ENV{SLURM_SUBMIT_DIR}/{} \\;";
 }
 exit $ret;

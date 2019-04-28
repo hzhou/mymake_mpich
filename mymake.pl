@@ -366,7 +366,7 @@ if(!-f "mymake/Makefile.orig"){
     print "---------------------------\n";
     system "rm -f Makefile";
     my $t = join ' ', @config_args;
-    system "./configure --disable-fortran --disable-romio --with-pm=none $t";
+    system "./configure $t";
     system "mv Makefile mymake/Makefile.orig";
     my @mod_list;
     my $f = "libtool";
