@@ -8,6 +8,9 @@ if($config=~/^(default|ch3:tcp)/){
 elsif($config=~/^ch[34]/){
     push @mpich_config, "--with-device=$config";
 }
+elsif($config eq "stricterror"){
+    push @mpich_config, "--enable-strict=error";
+}
 my $trigger_phrase = $ENV{ghprbCommentBody};
 while($trigger_phrase =~/(--(enable|disable|with|without)-\S+)/g){
     push @mpich_config, $1;
@@ -58,7 +61,7 @@ if($cpu_count=~/^(\d+)/){
     $n= $1;
 }
 $ENV{N_MAKE_JOBS}=$n;
-system "sh mymake/test_worker.sh";
+system "sh mymake/test_build.sh";
 my $ret = $?>>8;
 if($ENV{SLURM_SUBMIT_HOST}){
     my @files=qw(filtered-make.txt apply-xfail.sh autogen.log config.log c.txt m.txt.mi.txt summary.junit.xml);
