@@ -85,7 +85,7 @@ else{
     close Out;
 }
 if($ENV{SLURM_SUBMIT_HOST}){
-    my @files=qw(apply-xfail.sh config.log summary.junit.xml);
+    my @files=qw(apply-xfail.sh config.log Makefile.custom summary.junit.xml);
     my $t = "find . \\( ";
     foreach my $f (@files){
         $t .= "-name \"$f\" -o ";

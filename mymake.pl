@@ -181,14 +181,14 @@ push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
 push @extra_make_rules, "";
 if(!-f "subsys_include.m4"){
     print "---------------------------\n";
-    print "-     maint/gen_subcfg_m4\n";
+    print "-     maint/gen_subcfg_m4 [$ENV{PWD}]\n";
     print "---------------------------\n";
     system "perl maint/gen_subcfg_m4";
 }
 if(!-f "configure"){
     system "rm -f mymake/Makefile.orig";
     print "---------------------------\n";
-    print "-     Autoconf MPICH\n";
+    print "-     Autoconf MPICH [$ENV{PWD}]\n";
     print "---------------------------\n";
     my @mod_list;
     my $f = "configure.ac";
@@ -359,7 +359,7 @@ if(!-f "configure"){
 }
 if(!-f "mymake/Makefile.orig"){
     print "---------------------------\n";
-    print "-     Configure MPICH\n";
+    print "-     Configure MPICH [$ENV{PWD}]\n";
     print "---------------------------\n";
     system "rm -f Makefile";
     my $t = join ' ', @config_args;
