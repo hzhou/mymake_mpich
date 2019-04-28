@@ -1,6 +1,9 @@
 export MODDIR=$PWD/mymake
 pushd mymake
-git submodule update --init --recursive
+git clone https://github.com/pmodels/hwloc
+git clone https://github.com/pmodels/izem
+git clone https://github.com/pmodels/ucx
+git clone https://github.com/ofiwg/libfabric
 popd
 set -x
 set -e
