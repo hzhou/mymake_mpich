@@ -51,6 +51,22 @@ sub get_object {
     }
 }
 
+my $pwd=`pwd`;
+chomp $pwd;
+my $mymake;
+if($0=~/^(\/.*)\//){
+    $mymake = $1;
+}
+elsif($0=~/^(.*)\//){
+    $mymake .= "$pwd/$1";
+}
+$mymake .="/mymake";
+if(!-d "mymake"){
+    mkdir "mymake" or die "can't mkdir mymake\n";
+}
+push @extra_make_rules, "DO_stage = perl $mymake\_stage.pl";
+push @extra_make_rules, "DO_clean = perl $mymake\_clean.pl";
+push @extra_make_rules, "";
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -500,7 +516,7 @@ foreach my $p (@ltlibs){
     my $add = $a."_LIBADD";
     if($objects{$add}){
         my $t = get_object($add);
-        $t=~s/\s*\S*\/libmpl.la\s*//g;
+        $t=~s/\s*\S*\/libmpl.la//g;
         $t=~s/-lhydra/libhydra.la/g;
         $t=~s/-lpm/libpm.la/g;
         $t .= $L_list;
@@ -581,7 +597,7 @@ foreach my $p (@programs){
     my $add = $a."_LDADD";
     if($objects{$add}){
         my $t = get_object($add);
-        $t=~s/\s*\S*\/libmpl.la\s*//g;
+        $t=~s/\s*\S*\/libmpl.la//g;
         $t=~s/-lhydra/libhydra.la/g;
         $t=~s/-lpm/libpm.la/g;
         $t .= $L_list;
