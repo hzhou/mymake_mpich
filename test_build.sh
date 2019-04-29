@@ -38,8 +38,9 @@ if test -e /etc/redhat-release ; then
     export MODULEPATH="/nfs/gce/software/spack/share/spack/lmod/linux-centos7-x86_64/Core:/nfs/gce/software/custom/linux-centos7-x86_64/modulefiles"
     source /nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-4.8.5/lmod-7.8-wch6ykd/lmod/lmod/init/bash
 fi
-if test -d $HOME/software/autotools/bin
+if test -d $HOME/software/autotools/bin; then
     export PATH=$HOME/software/autotools/bin:$PATH
+fi
 case "$compiler" in
     "gnu")
         case "$queue" in
