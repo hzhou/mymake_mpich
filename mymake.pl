@@ -377,7 +377,7 @@ if(!-f "configure"){
             elsif($flag){
                 if($l=~/^\]\).*AM_COND_IF\(BUILD_CH4_NETMOD_OFI/){
                     $flag = 0;
-                    print Out "    AC_DEFINE([MPIDI_CH4_OFI_USE_SET_SOCKETS], [1], [Define to use sockets capability set])\n";
+                    print Out "    AC_DEFINE([MPIDI_CH4_OFI_USE_SET_RUNTIME], [1], [Define to use runtime capability set])\n";
                     next;
                 }
                 else{
