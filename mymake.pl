@@ -598,7 +598,8 @@ if($opts{device}=~/ucx/){
     push @CONFIGS, "$moddir/ucx/config.h";
     my @t = ("cd $moddir/ucx");
     push @t, "\x24(DO_stage) Configure UCX";
-    push @t, "sh autogen.sh";
+    push @t, "mkdir -p config/m4 config/aux";
+    push @t, "autoreconf -iv";
     push @t, "./configure --disable-static --enable-embedded --with-prefix=$prefix";
     push @extra_make_rules, "$moddir/ucx/config.h: ";
     push @extra_make_rules, "\t(".join(' && ', @t).")";

@@ -139,13 +139,17 @@ case "$compiler" in
         exit 1
 esac
 export CC
-export CXX
-export F77
-export FC
 which $CC
+$CC --version
+export CXX
 which $CXX
+$CXX --version
+export F77
 which $F77
+$F77 --version
+export FC
 which $FC
+$FC --version
 WORKSPACE=$PWD
 SRC=$PWD
 PREFIX=$WORKSPACE/_inst
