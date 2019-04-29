@@ -600,7 +600,7 @@ if($opts{device}=~/ucx/){
     push @t, "\x24(DO_stage) Configure UCX";
     push @t, "mkdir -p config/m4 config/aux";
     push @t, "autoreconf -iv";
-    push @t, "./configure --disable-static --enable-embedded";
+    push @t, "./configure --disable-shared --with-pic";
     push @extra_make_rules, "$moddir/ucx/config.h: ";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";

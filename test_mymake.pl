@@ -14,6 +14,12 @@ if(! $mymake_dir){
     }
     $ENV{mymake_dir}=$mymake_dir;
 }
+my $t="$ENV{HOME}/software/autotools/bin";
+if(-d $t){
+    if($ENV{PATH}!~/autotools/){
+        $ENV{PATH}="$t:$ENV{PATH}";
+    }
+}
 my $config = $ENV{config};
 if($config=~/^(default|ch3:tcp)/){
 }
