@@ -81,6 +81,7 @@ if($cpu_count=~/^(\d+)/){
 $ENV{N_MAKE_JOBS}=$n;
 print "test_mymake.pl:\n";
 print "    mymake_dir: $ENV{mymake_dir}\n";
+print "    PATH: $ENV{PATH}\n";
 print "    compiler: $ENV{compiler}\n";
 print "    config: $ENV{config}\n";
 print "    queue: $ENV{queue}\n";
