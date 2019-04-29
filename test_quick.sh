@@ -1,10 +1,10 @@
 export MODDIR=modules
 mkdir -p $MODDIR
 pushd $MODDIR
-git clone https://github.com/pmodels/hwloc
-git clone https://github.com/pmodels/izem
-ln  -s /home/autotest/hzhou/ucx .
-ln  -s /home/autotest/hzhou/libfabric .
+ln -s /home/autotest/hzhou/hwloc .
+ln -s /home/autotest/hzhou/izem .
+ln -s /home/autotest/hzhou/ucx .
+ln -s /home/autotest/hzhou/libfabric .
 popd
 set -x
 set -e
