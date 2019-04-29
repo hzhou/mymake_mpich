@@ -352,6 +352,47 @@ if(!-f "configure"){
         close Out;
         system "cp -v $m[2] $m[0]";
     }
+    if($opts{device}=~/ofi/){
+        my $flag;
+        my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
+        my $f_ = $f;
+        $f_=~s/[\.\/]/_/g;
+        my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+        push @mod_list, \@m;
+        system "mv $m[0] $m[1]";
+        my @lines;
+        {
+            open In, "$m[1]" or die "Can't open $m[1].\n";
+            @lines=<In>;
+            close In;
+        }
+        my $flag_skip=0;
+        open Out, ">$m[2]" or die "Can't write $m[2].\n";
+        print "  --> [$m[2]]\n";
+        foreach my $l (@lines){
+            if($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_OFI\]/){
+                $flag = 1;
+                next;
+            }
+            elsif($flag){
+                if($l=~/^\]\).*AM_COND_IF(BUILD_CH4_NETMOD_OFI/){
+                    $flag = 0;
+                    next;
+                }
+                elsif($l=~/AC_DEFINE\(HAVE_UCP_\w+_NB,1/){
+                }
+                else{
+                    next;
+                }
+            }
+            if($flag_skip){
+                next;
+            }
+            print Out $l;
+        }
+        close Out;
+        system "cp -v $m[2] $m[0]";
+    }
     system "autoreconf -ivf";
     foreach my $m (@mod_list){
         system "cp $m->[1] $m->[0]";
@@ -780,6 +821,7 @@ foreach my $p (@ltlibs){
         $t=~s/\bsrc\/(mpl|openpa)\/\S+\s*//g;
         $t=~s/\bsrc\/mpi\/romio\/\S+\s*//g;
         $t=~s/\@ucxlib\@\s*//g;
+        $t=~s/\@ofilib\@\s*//g;
         $t.= $L_list;
         $t=~s/^\s+//;
         my @tlist = split /\s+/, $t;
