@@ -73,42 +73,34 @@ my $time_finish=time();
 if($ret){
     $ret = $?>>8;
 }
-my @make_log;
-open In, "make.log" or die "Can't open make.log.\n";
-while(<In>){
-    if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
-        push @make_log, $1;
-    }
-}
-close In;
-my $n_fails = @make_log;
-my $n_tests = $n_fails+1;
-if($ret){
-    $n_fails++;
-}
-open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
-print "  --> [summary.junit.xml]\n";
-print Out "<testsuites>\n";
-print Out "<testsuite failures=\"$n_fails\" errors=\"0\" skipped=\"0\" tests=\"$n_tests\" name=\"build\">\n";
-my $dur = $time_finish-$time_start;
-if($ret){
-    print Out "<testcase name=\"1 - build\" time=\"$dur\">\n";
-    print Out "<failure message=\"Build Failed\"></failure>\n";
-    print Out "</testcase>\n";
-}
 else{
+    my @make_log;
+    open In, "make.log" or die "Can't open make.log.\n";
+    while(<In>){
+        if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
+            push @make_log, $1;
+        }
+    }
+    close In;
+    my $n_fails = @make_log;
+    my $n_tests = $n_fails+1;
+    open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
+    print "  --> [summary.junit.xml]\n";
+    print Out "<testsuites>\n";
+    print Out "<testsuite failures=\"$n_fails\" errors=\"0\" skipped=\"0\" tests=\"$n_tests\" name=\"build\">\n";
+    my $dur = $time_finish-$time_start;
     print Out "<testcase name=\"1 - build\" time=\"$dur\"></testcase>\n";
+    my $i = 1;
+    foreach my $t (@make_log){
+        $i++;
+        print Out "<testcase name=\"$i\">\n";
+        print Out "<failure message=\"$t\"></failure>\n";
+        print Out "</testcase>\n";
+    }
+    print Out "</testsuite>\n";
+    print Out "</testsuites>\n";
+    close Out;
 }
-my $i = 1;
-foreach my $t (@make_log){
-    $i++;
-    print Out "<testcase name=\"$i\">\n";
-    print Out "<failure message=\"$t\"></failure>\n";
-    print Out "</testcase>\n";
-}
-print Out "</testsuite>\n";
-print Out "</testsuites>\n";
-close Out;
 if($ENV{SLURM_SUBMIT_HOST}){
     my @files=qw(apply-xfail.sh config.log make.log Makefile.custom summary.junit.xml);
     my $t = "find . \\( ";
