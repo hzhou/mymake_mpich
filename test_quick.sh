@@ -1,10 +1,10 @@
 export MODDIR=$PWD/modules
 mkdir -p $MODDIR
 pushd $MODDIR
-ln -s /home/autotest/hzhou/hwloc .
-ln -s /home/autotest/hzhou/izem .
-ln -s /home/autotest/hzhou/ucx .
-ln -s /home/autotest/hzhou/libfabric .
+cp -r /home/autotest/hzhou/hwloc .
+cp -r /home/autotest/hzhou/izem .
+cp -r /home/autotest/hzhou/ucx .
+cp -r /home/autotest/hzhou/libfabric .
 popd
 set -x
 set -e
