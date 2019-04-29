@@ -575,6 +575,18 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc/include/hwloc/autogen/config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
+my @t = ("cd src/mpi/romio");
+push @t, "\x24(DO_stage) Configure ROMIO";
+push @t, "sh autogen.sh";
+push @t, "FROM_MPICH=yes ./configure";
+push @extra_make_rules, "src/mpi/romio/adio/include/romioconf.h: ";
+push @extra_make_rules, "\t(".join(' && ', @t).")";
+push @extra_make_rules, "";
+my @t = ("cd src/mpi/romio");
+push @t, "\x24(MAKE)";
+push @extra_make_rules, "src/mpi/romio/libromio.la: src/mpi/romio/adio/include/romioconf.h";
+push @extra_make_rules, "\t(".join(' && ', @t).")";
+push @extra_make_rules, "";
 if($opts{device}=~/ucx/){
     if(!-d "$moddir/ucx"){
         my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
@@ -680,7 +692,7 @@ my $t = get_object("AM_CPPFLAGS");
 $t=~s/\@HWLOC_\S+\@\s*//;
 print Out "AM_CPPFLAGS = $t\n";
 my $t = get_object("CPPFLAGS");
-$t=~s/-I.*\/(mpl|openpa)\/\S+\s*//g;
+$t=~s/-I.*\/(mpl|openpa|romio)\/\S+\s*//g;
 $t .= $I_list;
 print Out "CPPFLAGS = $t\n";
 my $t = get_object("AM_CFLAGS");
@@ -765,6 +777,7 @@ foreach my $p (@ltlibs){
     if($objects{$add}){
         my $t = get_object($add);
         $t=~s/\bsrc\/(mpl|openpa)\/\S+\s*//g;
+        $t=~s/\bsrc\/mpi\/romio\/\S+\s*//g;
         $t=~s/\@ucxlib\@\s*//g;
         $t.= $L_list;
         $t=~s/^\s+//;
