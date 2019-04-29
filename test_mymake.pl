@@ -73,15 +73,15 @@ if($cpu_count=~/^(\d+)/){
 }
 $ENV{N_MAKE_JOBS}=$n;
 print "test_mymake.pl:\n";
-print "    $k: $ENV{$k}\n";
-print "    $k: $ENV{$k}\n";
-print "    $k: $ENV{$k}\n";
-print "    $k: $ENV{$k}\n";
-print "    $k: $ENV{$k}\n";
-print "    $k: $ENV{$k}\n";
-print "    $k: $ENV{$k}\n";
-print "    $k: $ENV{$k}\n";
-print "    $k: $ENV{$k}\n";
+print "    compiler: $ENV{compiler}\n";
+print "    config: $ENV{config}\n";
+print "    queue: $ENV{queue}\n";
+print "    mpich_config: $ENV{mpich_config}\n";
+print "    testmpi_config: $ENV{testmpi_config}\n";
+print "    N_MAKE_JOBS: $ENV{N_MAKE_JOBS}\n";
+print "    test_script: $ENV{test_script}\n";
+print "    SLURM_SUBMIT_HOST: $ENV{SLURM_SUBMIT_HOST}\n";
+print "    SLURM_SUBMIT_DIR: $ENV{SLURM_SUBMIT_DIR}\n";
 my $time_start=time();
 my $ret;
 if($ENV{test_script} eq "test_quick"){
