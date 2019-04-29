@@ -11,7 +11,6 @@ if($0=~/^(\/.*)\//){
 elsif($0=~/^(.*)\//){
     $mymake .= "$pwd/$1";
 }
-$mymake .="/mymake";
 $ENV{mymake}=$mymake;
 my $config = $ENV{config};
 if($config=~/^(default|ch3:tcp)/){
@@ -73,6 +72,7 @@ if($cpu_count=~/^(\d+)/){
 }
 $ENV{N_MAKE_JOBS}=$n;
 print "test_mymake.pl:\n";
+print "    mymake: $ENV{mymake}\n";
 print "    compiler: $ENV{compiler}\n";
 print "    config: $ENV{config}\n";
 print "    queue: $ENV{queue}\n";
