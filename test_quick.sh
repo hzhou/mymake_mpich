@@ -1,5 +1,5 @@
-export MODDIR=$PWD/mymake
-pushd mymake
+export MODDIR=$mymake
+pushd $mymake
 git clone https://github.com/pmodels/hwloc
 git clone https://github.com/pmodels/izem
 git clone https://github.com/pmodels/ucx
@@ -151,7 +151,7 @@ SRC=$PWD
 PREFIX=$WORKSPACE/_inst
 MPIEXEC=$PREFIX/bin/mpiexec
 set -o pipefail
-perl $PWD/mymake/mymake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+perl $mymake/mymake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
 if test "$?" != "0"; then
     exit $?
