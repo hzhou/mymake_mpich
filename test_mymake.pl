@@ -74,7 +74,7 @@ if($cpu_count=~/^(\d+)/){
 }
 $ENV{N_MAKE_JOBS}=$n;
 print "test_mymake.pl:\n";
-print "    mymake: $ENV{mymake}\n";
+print "    mymake_dir: $ENV{mymake_dir}\n";
 print "    compiler: $ENV{compiler}\n";
 print "    config: $ENV{config}\n";
 print "    queue: $ENV{queue}\n";
@@ -87,10 +87,10 @@ print "    SLURM_SUBMIT_DIR: $ENV{SLURM_SUBMIT_DIR}\n";
 my $time_start=time();
 my $ret;
 if($ENV{test_script} eq "test_quick"){
-    $ret = system "bash mymake/test_quick.sh";
+    $ret = system "bash $mymake_dir/test_quick.sh";
 }
 else{
-    $ret = system "bash mymake/test_build.sh";
+    $ret = system "bash $mymake_dir/test_build.sh";
 }
 my $time_finish=time();
 if($ret){
