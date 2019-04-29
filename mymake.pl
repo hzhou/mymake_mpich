@@ -375,11 +375,9 @@ if(!-f "configure"){
                 next;
             }
             elsif($flag){
-                if($l=~/^\]\).*AM_COND_IF(BUILD_CH4_NETMOD_OFI/){
+                if($l=~/^\]\).*AM_COND_IF\(BUILD_CH4_NETMOD_OFI/){
                     $flag = 0;
                     next;
-                }
-                elsif($l=~/AC_DEFINE\(HAVE_UCP_\w+_NB,1/){
                 }
                 else{
                     next;
