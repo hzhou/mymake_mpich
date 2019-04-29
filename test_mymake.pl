@@ -2,6 +2,17 @@
 use strict;
 our @mpich_config;
 our @testmpi_config;
+my $pwd=`pwd`;
+chomp $pwd;
+my $mymake;
+if($0=~/^(\/.*)\//){
+    $mymake = $1;
+}
+elsif($0=~/^(.*)\//){
+    $mymake .= "$pwd/$1";
+}
+$mymake .="/mymake";
+$ENV{mymake}=$mymake;
 my $config = $ENV{config};
 if($config=~/^(default|ch3:tcp)/){
 }
@@ -61,6 +72,16 @@ if($cpu_count=~/^(\d+)/){
     $n= $1;
 }
 $ENV{N_MAKE_JOBS}=$n;
+print "test_mymake.pl:\n";
+print "    $k: $ENV{$k}\n";
+print "    $k: $ENV{$k}\n";
+print "    $k: $ENV{$k}\n";
+print "    $k: $ENV{$k}\n";
+print "    $k: $ENV{$k}\n";
+print "    $k: $ENV{$k}\n";
+print "    $k: $ENV{$k}\n";
+print "    $k: $ENV{$k}\n";
+print "    $k: $ENV{$k}\n";
 my $time_start=time();
 my $ret;
 if($ENV{test_script} eq "test_quick"){
