@@ -39,4 +39,6 @@ $ENV{compiler}="gnu";
 $ENV{test_script}="test_quick";
 $ENV{config}="ch3:tcp";
 $ENV{configOption}="--enable-strict";
+$ENV{SLURM_SUBMIT_HOST}="";
+$ENV{SLURM_SUBMIT_DIR}="";
 system "perl $mymake_dir/test_mymake.pl";
