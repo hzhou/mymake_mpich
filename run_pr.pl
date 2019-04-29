@@ -31,7 +31,7 @@ close In;
 if(!$author){
     die "Failed to fetch PR information\n";
 }
-if(!-d mpich-$pr){
+if(!-d "mpich-$pr"){
     system("git clone https://github.com/pmodels/mpich mpich-$pr") == 0 or die "Error: git clone https://github.com/pmodels/mpich mpich-$pr\n";
     chdir "mpich-$pr" or die "Can't chdir mpich-$pr\n";
     system("git checkout -b $branch master") == 0 or die "Error: git checkout -b $branch master\n";
