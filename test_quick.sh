@@ -1,4 +1,4 @@
-export MODDIR=modules
+export MODDIR=$PWD/modules
 mkdir -p $MODDIR
 pushd $MODDIR
 ln -s /home/autotest/hzhou/hwloc .
