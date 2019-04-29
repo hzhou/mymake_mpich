@@ -31,10 +31,15 @@ close In;
 if(!$author){
     die "Failed to fetch PR information\n";
 }
-system("git clone https://github.com/pmodels/mpich mpich-$pr") == 0 or die "Error: git clone https://github.com/pmodels/mpich mpich-$pr\n";
-chdir "mpich-$pr" or die "Can't chdir mpich-$pr\n";
-system("git checkout -b $branch master") == 0 or die "Error: git checkout -b $branch master\n";
-system("git pull https://github.com/$author/mpich.git $branch") == 0 or die "Error: git pull https://github.com/$author/mpich.git $branch\n";
+if(!-d mpich-$pr){
+    system("git clone https://github.com/pmodels/mpich mpich-$pr") == 0 or die "Error: git clone https://github.com/pmodels/mpich mpich-$pr\n";
+    chdir "mpich-$pr" or die "Can't chdir mpich-$pr\n";
+    system("git checkout -b $branch master") == 0 or die "Error: git checkout -b $branch master\n";
+    system("git pull https://github.com/$author/mpich.git $branch") == 0 or die "Error: git pull https://github.com/$author/mpich.git $branch\n";
+}
+else{
+    chdir "mpich-$pr" or die "Can't chdir mpich-$pr\n";
+}
 $ENV{compiler}="gnu";
 $ENV{test_script}="test_quick";
 $ENV{config}="ch3:tcp";
