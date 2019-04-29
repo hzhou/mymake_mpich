@@ -14,12 +14,6 @@ if(! $mymake_dir){
     }
     $ENV{mymake_dir}=$mymake_dir;
 }
-my $t="$ENV{HOME}/software/autotools/bin";
-if(-d $t){
-    if($ENV{PATH}!~/autotools/){
-        $ENV{PATH}="$t:$ENV{PATH}";
-    }
-}
 my $config = $ENV{config};
 if($config=~/^(default|ch3:tcp)/){
 }
@@ -81,7 +75,6 @@ if($cpu_count=~/^(\d+)/){
 $ENV{N_MAKE_JOBS}=$n;
 print "test_mymake.pl:\n";
 print "    mymake_dir: $ENV{mymake_dir}\n";
-print "    PATH: $ENV{PATH}\n";
 print "    compiler: $ENV{compiler}\n";
 print "    config: $ENV{config}\n";
 print "    queue: $ENV{queue}\n";
