@@ -1,9 +1,10 @@
-export MODDIR=$mymake
-pushd $mymake
+export MODDIR=modules
+mkdir -p $MODDIR
+pushd $MODDIR
 git clone https://github.com/pmodels/hwloc
 git clone https://github.com/pmodels/izem
-git clone https://github.com/pmodels/ucx
-git clone https://github.com/ofiwg/libfabric
+ln  -s /home/autotest/hzhou/ucx .
+ln  -s /home/autotest/hzhou/libfabric .
 popd
 set -x
 set -e
@@ -161,7 +162,7 @@ SRC=$PWD
 PREFIX=$WORKSPACE/_inst
 MPIEXEC=$PREFIX/bin/mpiexec
 set -o pipefail
-perl $mymake/mymake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
 if test "$?" != "0"; then
     exit $?

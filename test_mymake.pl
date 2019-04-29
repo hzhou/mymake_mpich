@@ -2,16 +2,18 @@
 use strict;
 our @mpich_config;
 our @testmpi_config;
-my $pwd=`pwd`;
-chomp $pwd;
-my $mymake;
-if($0=~/^(\/.*)\//){
-    $mymake = $1;
+my $mymake_dir = $ENV{mymake_dir};
+if(! $mymake_dir){
+    if($0=~/^(\/.*)\//){
+        $mymake_dir = $1;
+    }
+    elsif($0=~/^(.*)\//){
+        my $pwd=`pwd`;
+        chomp $pwd;
+        $mymake_dir .= "$pwd/$1";
+    }
+    $ENV{mymake_dir}=$mymake_dir;
 }
-elsif($0=~/^(.*)\//){
-    $mymake .= "$pwd/$1";
-}
-$ENV{mymake}=$mymake;
 my $config = $ENV{config};
 if($config=~/^(default|ch3:tcp)/){
 }

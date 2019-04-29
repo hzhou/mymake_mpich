@@ -1,5 +1,17 @@
 #!/usr/bin/perl
 use strict;
+my $mymake_dir = $ENV{mymake_dir};
+if(! $mymake_dir){
+    if($0=~/^(\/.*)\//){
+        $mymake_dir = $1;
+    }
+    elsif($0=~/^(.*)\//){
+        my $pwd=`pwd`;
+        chomp $pwd;
+        $mymake_dir .= "$pwd/$1";
+    }
+    $ENV{mymake_dir}=$mymake_dir;
+}
 my $pr=$ARGV[0];
 if(! $pr > 0){
     die "Usage: $0 pr-number\n";
@@ -27,4 +39,4 @@ $ENV{compiler}="gnu";
 $ENV{test_script}="test_quick";
 $ENV{config}="ch3:tcp";
 $ENV{configOption}="--enable-strict";
-system "perl ../mymake/test_mymake.pl";
+system "perl $mymake_dir/test_mymake.pl";

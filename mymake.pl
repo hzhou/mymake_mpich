@@ -600,7 +600,7 @@ if($opts{device}=~/ucx/){
     push @t, "\x24(DO_stage) Configure UCX";
     push @t, "mkdir -p config/m4 config/aux";
     push @t, "autoreconf -iv";
-    push @t, "./configure --disable-static --enable-embedded --with-prefix=$prefix";
+    push @t, "./configure --disable-static --enable-embedded";
     push @extra_make_rules, "$moddir/ucx/config.h: ";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
@@ -622,7 +622,7 @@ if($opts{device}=~/ofi/){
     my @t = ("cd $moddir/libfabric");
     push @t, "\x24(DO_stage) Configure libfabric";
     push @t, "sh autogen.sh";
-    push @t, "./configure --enable-embedded --with-prefix=$prefix";
+    push @t, "./configure --enable-embedded --enable-sockets=yes --enable-psm=no --enable-psm2=no --enable-verbs=no --enable-usnic=no --enable-mlx=no --enable-gni=no --enable-ugni=no --enable-rxm=no --enable-mrail=no --enable-rxd=no --enable-bgq=no --enable-rstream=no --enable-udp=no --enable-perf=no";
     push @extra_make_rules, "$moddir/libfabric/config.h: ";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
