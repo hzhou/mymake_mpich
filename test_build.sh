@@ -131,6 +131,12 @@ case "$compiler" in
         echo "Unknown compiler suite"
         exit 1
 esac
+which $autoconf
+$autoconf --version
+which $automake
+$automake --version
+which $libtool
+$libtool --version
 export CC
 which $CC
 $CC --version
