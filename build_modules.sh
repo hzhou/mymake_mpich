@@ -13,8 +13,9 @@ sh autogen.sh
 make -j 16
 cd ..
 cd ucx
-sh autogen.sh
-./configure --disable-shared
+mkdir -p config/m4 config/aux
+autoreconf -iv
+./configure --disable-shared --with-pic
 make -j 16
 cd ..
 cd libfabric
