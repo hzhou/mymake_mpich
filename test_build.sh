@@ -1,5 +1,3 @@
-set -x
-set -e
 hostname
 date
 uptime
@@ -13,7 +11,7 @@ if test -d $HOME/software/autotools/bin; then
 fi
 if test -n $compiler ; then
     case "$compiler" in
-        "gnu")
+        "gcc|gnu")
             CC=gcc
             CXX=g++
             F77=gfortran

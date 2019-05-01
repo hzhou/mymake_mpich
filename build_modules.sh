@@ -1,5 +1,3 @@
-set -x
-set -e
 uname -a
 git clone https://github.com/pmodels/hwloc
 git clone https://github.com/pmodels/izem

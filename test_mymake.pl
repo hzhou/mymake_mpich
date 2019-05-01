@@ -14,11 +14,8 @@ if(! $mymake_dir){
     }
     $ENV{mymake_dir}=$mymake_dir;
 }
-my $test_script = $ENV{test_script};
-if(!$test_script){
-    $test_script = "test_quick";
-}
 my $config = $ENV{config};
+$config=~s/\//:/g;
 if($config=~/^(default|ch3:tcp)/){
 }
 elsif($config=~/^ch[34]/){
@@ -30,6 +27,10 @@ elsif($config eq "stricterror"){
 my $trigger_phrase = $ENV{ghprbCommentBody} . ' ' . $ENV{configOption};
 while($trigger_phrase =~/(--(enable|disable|with|without)-\S+)/g){
     push @mpich_config, $1;
+}
+my $test_script = $ENV{test_script};
+if(!$test_script){
+    $test_script = "test_quick";
 }
 if(!$ENV{compiler}){
     $ENV{compiler}='gnu';
@@ -93,7 +94,7 @@ print "    test_script: $ENV{test_script}\n";
 print "    SLURM_SUBMIT_HOST: $ENV{SLURM_SUBMIT_HOST}\n";
 print "    SLURM_SUBMIT_DIR: $ENV{SLURM_SUBMIT_DIR}\n";
 my $time_start=time();
-my $ret = system "bash $mymake_dir/$test_script.sh";
+my $ret = system "bash -xe $mymake_dir/$test_script.sh";
 my $time_finish=time();
 if($ret){
     $ret = $?>>8;
