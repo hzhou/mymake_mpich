@@ -77,6 +77,9 @@ if($cpu_count=~/^(\d+)/){
     $n= $1;
 }
 $ENV{N_MAKE_JOBS}=$n;
+if(!$ENV{compiler}){
+    $ENV{compiler}='gnu';
+}
 print "test_mymake.pl:\n";
 print "    mymake_dir: $ENV{mymake_dir}\n";
 print "    compiler: $ENV{compiler}\n";

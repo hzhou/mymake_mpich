@@ -12,6 +12,27 @@ if test -d $HOME/software/autotools/bin; then
     export PATH=$HOME/software/autotools/bin:$PATH
 fi
 if test -n $compiler ; then
+    case "$compiler" in
+        "gnu")
+            CC=gcc
+            CXX=g++
+            F77=gfortran
+            FC=gfortran
+            ;;
+        "clang")
+            CC=clang
+            CXX=clang++
+            F77=gfortran
+            FC=gfortran
+            ;;
+        "intel")
+            module load intel-parallel-studio
+            CC=icc
+            CXX=icpc
+            F77=ifort
+            FC=ifort
+            ;;
+    esac
 fi
 which autoconf
 autoconf --version
