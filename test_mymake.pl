@@ -15,7 +15,7 @@ if(! $mymake_dir){
     $ENV{mymake_dir}=$mymake_dir;
 }
 my $config = $ENV{config};
-$config=~s/\//:/g;
+$config=~s/[\/-]/:/g;
 if($config=~/^(default|ch3:tcp)/){
 }
 elsif($config=~/^ch[34]/){
