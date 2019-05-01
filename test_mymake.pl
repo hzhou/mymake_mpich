@@ -52,6 +52,9 @@ if(@mpich_config){
             push @testmpi_config, "--disable-comm-overlap-tests";
             next;
         }
+        if($t=~/--disable-(romio|fortran)/){
+            push @testmpi_config, $t;
+        }
     }
     my $t = join(' ', @mpich_config);
     if($t=~/gforker/){
@@ -64,18 +67,13 @@ if(@mpich_config){
     }
     $ENV{mpich_config}=$t;
 }
+push @testmpi_config, "--disable-ft-tests";
+push @testmpi_config, "--disable-perftest";
 if(@testmpi_config){
     my $t=join ' ', @testmpi_config;
     $ENV{testmpi_config} = $t;
 }
-if($ENV{queue} eq "ubuntu32" and $ENV{compiler} eq "solstudio"){
-    $ENV{CFLAGS}="-O1";
-}
 my $n = 16;
-my $cpu_count = `grep -c -P '^processor\\s+:' /proc/cpuinfo`;
-if($cpu_count=~/^(\d+)/){
-    $n= $1;
-}
 $ENV{N_MAKE_JOBS}=$n;
 if(!$ENV{compiler}){
     $ENV{compiler}='gnu';

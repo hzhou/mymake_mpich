@@ -70,7 +70,7 @@ system "rsync -r $srcdir/confdb/ confdb/";
 system "cp $srcdir/maint/version.m4 .";
 system "sh autogen.sh";
 system "autoreconf -ivf";
-system "./configure --disable-romio --disable-ft-tests --disable-perftest";
+system "./configure $ENV{testmpi_config}";
 system "cp Makefile mymake/Makefile.orig";
 system "cp Makefile mymake/Makefile.orig";
 system "make testing";
