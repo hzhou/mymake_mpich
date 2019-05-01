@@ -80,6 +80,9 @@ $ENV{N_MAKE_JOBS}=$n;
 if(!$ENV{compiler}){
     $ENV{compiler}='gnu';
 }
+if(!$ENV{configOption}){
+    $ENV{configOption}="--disable-fortran --disable-romio";
+}
 print "test_mymake.pl:\n";
 print "    mymake_dir: $ENV{mymake_dir}\n";
 print "    compiler: $ENV{compiler}\n";

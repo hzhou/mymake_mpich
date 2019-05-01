@@ -1,8 +1,3 @@
-export MODDIR=$PWD/modules
-mkdir -p $MODDIR
-pushd $MODDIR
-tar xf $mymake_dir/modules.tar.gz
-popd
 set -x
 set -e
 hostname
@@ -62,6 +57,11 @@ SRC=$PWD
 PREFIX=$WORKSPACE/_inst
 MPIEXEC=$PREFIX/bin/mpiexec
 set -o pipefail
+export MODDIR=$PWD/modules
+mkdir -p $MODDIR
+pushd $MODDIR
+tar xf $mymake_dir/modules.tar.gz
+popd
 perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
 if test "$?" != "0"; then
