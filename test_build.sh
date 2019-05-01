@@ -4,36 +4,6 @@ hostname
 date
 uptime
 pgrep mpiexec | wc -l
-case "$queue" in
-    "ubuntu32")
-        source /software/common/adm/etc/softenv-aliases.sh
-        source /software/common/adm/etc/softenv-load.sh
-        ;;
-    "ib64")
-        source /software/common/adm/etc/softenv-aliases.sh
-        source /software/common/adm/etc/softenv-load.sh
-        . /home/autotest/software/mellanox.new/hpcx-init.sh
-        hpcx_load
-        MXM_LOG_LEVEL=error
-        export MXM_LOG_LEVEL
-        UCX_LOG_LEVEL=error
-        export UCX_LOG_LEVEL
-        ;;
-    "freebsd64")
-        export LDFLAGS="-L/usr/local/lib/gcc48 -Wl,-rpath=/usr/local/lib/gcc48"
-        alias sed='gsed'
-        ;;
-    "freebsd32")
-        export LDFLAGS="-L/usr/local/lib/gcc48 -Wl,-rpath=/usr/local/lib/gcc48"
-        alias sed='gsed'
-        ;;
-    "solaris")
-        PATH=/usr/gnu/bin:$PATH
-        ;;
-    "osx")
-        PATH=/usr/local/bin:$PATH
-        ;;
-esac
 if test -e /etc/redhat-release ; then
     export MODULEPATH="/nfs/gce/software/spack/share/spack/lmod/linux-centos7-x86_64/Core:/nfs/gce/software/custom/linux-centos7-x86_64/modulefiles"
     source /nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-4.8.5/lmod-7.8-wch6ykd/lmod/lmod/init/bash
