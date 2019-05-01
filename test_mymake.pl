@@ -31,6 +31,12 @@ my $trigger_phrase = $ENV{ghprbCommentBody} . ' ' . $ENV{configOption};
 while($trigger_phrase =~/(--(enable|disable|with|without)-\S+)/g){
     push @mpich_config, $1;
 }
+if(!$ENV{compiler}){
+    $ENV{compiler}='gnu';
+}
+if(!@mpich_config){
+    push @mpich_config, "--disable-fortran", "--disable-romio";
+}
 if(@mpich_config){
     my (%config_hash);
     foreach my $t (@mpich_config){
@@ -75,12 +81,6 @@ if(@testmpi_config){
 }
 my $n = 16;
 $ENV{N_MAKE_JOBS}=$n;
-if(!$ENV{compiler}){
-    $ENV{compiler}='gnu';
-}
-if(!$ENV{mpich_config}){
-    $ENV{mpich_config}="--disable-fortran --disable-romio";
-}
 print "test_mymake.pl:\n";
 print "    mymake_dir: $ENV{mymake_dir}\n";
 print "    compiler: $ENV{compiler}\n";

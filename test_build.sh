@@ -73,7 +73,5 @@ else
     export CPATH=$PREFIX/include:$CPATH
     export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
     cd test/mpi
-    sh autogen.sh 2>&1 || exit 1
-    ./configure $testmpi_config 2>&1 || exit 1
     make testing
 fi
