@@ -205,7 +205,7 @@ if test "$?" != "0"; then
     exit $?
 fi
 make hydra-install 2>&1 || exit 1
-if test x$skip_test = x1 ; then
+if test x$skip_test = xtrue ; then
     exit 0
 else
     export PATH=$PREFIX/bin:$PATH

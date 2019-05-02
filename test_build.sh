@@ -194,7 +194,7 @@ if test "$?" != "0"; then
 fi
 make install 2>&1 || exit 1
 $MPIEXEC -n 2 examples/cpi 2>&1 || exit 1
-if test x$skip_test = x1 ; then
+if test x$skip_test = xtrue ; then
     exit 0
 else
     export PATH=$PREFIX/bin:$PATH
