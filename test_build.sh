@@ -2,7 +2,7 @@ hostname
 date
 uptime
 pgrep mpiexec | wc -l
-if test -n $jenkins_old ; then
+if test x$jenkins = xold ; then
     case "$queue" in
         "ubuntu32")
             source /software/common/adm/etc/softenv-aliases.sh
@@ -41,7 +41,7 @@ if test -d $HOME/software/autotools/bin; then
     export PATH=$HOME/software/autotools/bin:$PATH
 fi
 if test -n $compiler ; then
-    if test -n $jenkins_old ; then
+    if test x$jenkins = xold ; then
         case "$compiler" in
             "gnu")
                 case "$queue" in
