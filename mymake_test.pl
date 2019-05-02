@@ -82,7 +82,7 @@ system "rsync -r $srcdir/confdb/ confdb/";
 system "cp $srcdir/maint/version.m4 .";
 system "sh autogen.sh";
 system "autoreconf -ivf";
-my $t = join(' ', @test_config_options);
+my $t = join(' ', @test_config_args);
 system "./configure $t";
 system "cp Makefile mymake/Makefile.orig";
 system "cp Makefile mymake/Makefile.orig";
