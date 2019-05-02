@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 use strict;
-our (%opts, @config_args);
+our %opts;
+our @config_args;
+our @test_config_args;
 our $srcdir = "$ENV{HOME}/work/mpich";
 our $moddir = "$ENV{HOME}/work/modules";
 our $prefix = "$ENV{HOME}/MPI";
@@ -26,10 +28,20 @@ foreach my $a (@ARGV){
     elsif($a=~/^(\w+)=(.*)/){
         $opts{$1}=$2;
     }
-    elsif($a=~/^(--.*)/){
-        push @config_args, $1;
+    elsif($a=~/^--/){
         if($a=~/^--with-device=(.*)/){
             $opts{device}=$1;
+            push @config_args, $a;
+        }
+        elsif($a=~/--(dis|en)able-.*tests/){
+            push @test_config_args, $a;
+        }
+        elsif($a=~/--diable-(romio|fortran)/){
+            push @config_args, $a;
+            push @test_config_args, $a;
+        }
+        else{
+            push @config_args, $a;
         }
     }
     elsif($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/){
@@ -70,7 +82,8 @@ system "rsync -r $srcdir/confdb/ confdb/";
 system "cp $srcdir/maint/version.m4 .";
 system "sh autogen.sh";
 system "autoreconf -ivf";
-system "./configure $ENV{testmpi_config}";
+my $t = join(' ', @test_config_options);
+system "./configure $t";
 system "cp Makefile mymake/Makefile.orig";
 system "cp Makefile mymake/Makefile.orig";
 system "make testing";
