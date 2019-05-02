@@ -127,4 +127,14 @@ else{
     print Out "</testsuites>\n";
     close Out;
 }
+if($ENV{SLURM_SUBMIT_HOST}){
+    my @files=qw(apply-xfail.sh config.log make.log Makefile.custom summary.junit.xml);
+    my $t = "find . \\( ";
+    foreach my $f (@files){
+        $t .= "-name \"$f\" -o ";
+    }
+    $t=~s/ -o $/ \\)/;
+    system "$t -exec ssh $ENV{SLURM_SUBMIT_HOST} \"mkdir -p $ENV{SLURM_SUBMIT_DIR}/\\\x24(dirname {})\" \\;";
+    system "$t -exec scp {} $ENV{SLURM_SUBMIT_HOST}:$ENV{SLURM_SUBMIT_DIR}/{} \\;";
+}
 exit $ret;
