@@ -189,6 +189,9 @@ export MODDIR=$PWD/modules
 mkdir -p $MODDIR
 pushd $MODDIR
 tar xf $mymake_dir/modules.tar.gz
+pushd ucx
+find . -name '*.la' |xargs -t sed -i "s,/var/lib/jenkins-slave/workspace/hzhou-modules,$MODDIR,"
+popd
 popd
 perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
 ls -lt
