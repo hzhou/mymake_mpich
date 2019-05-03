@@ -1,4 +1,8 @@
 set -e
+export PATH=$HOME/software/gcc8/bin:$PATH
+export CPATH=$HOME/software/gcc8/include
+export LIBRARY_PATH=$HOME/software/gcc8/lib
+export LD_LIBRARY_PATH=$HOME/software/gcc8/lib
 PREFIX=$HOME/software/gcc8
 wget https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz
 tar xf gmp-*
