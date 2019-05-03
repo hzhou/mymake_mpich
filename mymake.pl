@@ -604,7 +604,7 @@ push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 my @t = ("cd $moddir/openpa");
 push @t, "\x24(MAKE)";
-push @extra_make_rules, "$moddir/openpa/src/libopa.la: $moddir/mpl/include/mplconfig.h";
+push @extra_make_rules, "$moddir/openpa/src/libopa.la: $moddir/openpa/src/opa_config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if(!-d "$moddir/hwloc"){
@@ -732,33 +732,55 @@ print Out "export MODDIR=$moddir\n";
 print Out "PREFIX=$prefix\n";
 print Out "\n";
 if(@CONFIGS){
-    print Out "CONFIGS = @CONFIGS\n";
+    my $l = "CONFIGS = @CONFIGS";
+    $l=~s/$moddir/\x24(MODDIR)/g;
+    print Out "$l\n";
     print Out "\n";
 }
 my $t = get_object("DEFS");
-print Out "DEFS = $t\n";
+my $l = "DEFS = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 my $t = get_object("DEFAULT_INCLUDES");
-print Out "DEFAULT_INCLUDES = $t\n";
+my $l = "DEFAULT_INCLUDES = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 my $t = get_object("INCLUDES");
-print Out "INCLUDES = $t\n";
+my $l = "INCLUDES = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 my $t = get_object("AM_CPPFLAGS");
 $t=~s/\@HWLOC_\S+\@\s*//;
-print Out "AM_CPPFLAGS = $t\n";
+my $l = "AM_CPPFLAGS = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 my $t = get_object("CPPFLAGS");
 $t=~s/-I.*\/(mpl|openpa|romio)\/\S+\s*//g;
 $t .= $I_list;
-print Out "CPPFLAGS = $t\n";
+my $l = "CPPFLAGS = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 my $t = get_object("AM_CFLAGS");
 $t=~s/\@HWLOC_\S+\@\s*//;
-print Out "AM_CFLAGS = $t\n";
+my $l = "AM_CFLAGS = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 my $t = get_object("CFLAGS");
-print Out "CFLAGS = $t\n";
+my $l = "CFLAGS = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 my $t = get_object("AM_LDFLAGS");
-print Out "AM_LDFLAGS = $t\n";
+my $l = "AM_LDFLAGS = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 my $t = get_object("LDFLAGS");
-print Out "LDFLAGS = $t\n";
+my $l = "LDFLAGS = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 my $t = get_object("LIBS");
-print Out "LIBS = $t\n";
+my $l = "LIBS = $t";
+$l=~s/$moddir/\x24(MODDIR)/g;
+print Out "$l\n";
 print Out "\n";
 my $cc = get_object("CC");
 my $ccld = get_object("CCLD");
@@ -819,9 +841,13 @@ foreach my $p (@ltlibs){
     print Out "$o = \\\n";
     my $last_item = pop @t;
     foreach my $t (@t){
-        print Out "    $t \\\n";
+        my $l = "    $t \\";
+        $l=~s/$moddir/\x24(MODDIR)/g;
+        print Out "$l\n";
     }
-    print Out "    $last_item\n";
+    my $l = "    $last_item";
+    $l=~s/$moddir/\x24(MODDIR)/g;
+    print Out "$l\n";
     if(@CONFIGS and "$o"=~/_OBJECTS$/){
         print Out "\x24($o): \x24(CONFIGS)\n";
     }
@@ -848,9 +874,13 @@ foreach my $p (@ltlibs){
         print Out "$add = \\\n";
         my $last_item = pop @t;
         foreach my $t (@t){
-            print Out "    $t \\\n";
+            my $l = "    $t \\";
+            $l=~s/$moddir/\x24(MODDIR)/g;
+            print Out "$l\n";
         }
-        print Out "    $last_item\n";
+        my $l = "    $last_item";
+        $l=~s/$moddir/\x24(MODDIR)/g;
+        print Out "$l\n";
         if(@CONFIGS and "$add"=~/_OBJECTS$/){
             print Out "\x24($add): \x24(CONFIGS)\n";
         }
@@ -901,9 +931,13 @@ foreach my $p (@programs){
     print Out "$o = \\\n";
     my $last_item = pop @t;
     foreach my $t (@t){
-        print Out "    $t \\\n";
+        my $l = "    $t \\";
+        $l=~s/$moddir/\x24(MODDIR)/g;
+        print Out "$l\n";
     }
-    print Out "    $last_item\n";
+    my $l = "    $last_item";
+    $l=~s/$moddir/\x24(MODDIR)/g;
+    print Out "$l\n";
     if(@CONFIGS and "$o"=~/_OBJECTS$/){
         print Out "\x24($o): \x24(CONFIGS)\n";
     }
@@ -925,9 +959,13 @@ foreach my $p (@programs){
         print Out "$add = \\\n";
         my $last_item = pop @t;
         foreach my $t (@t){
-            print Out "    $t \\\n";
+            my $l = "    $t \\";
+            $l=~s/$moddir/\x24(MODDIR)/g;
+            print Out "$l\n";
         }
-        print Out "    $last_item\n";
+        my $l = "    $last_item";
+        $l=~s/$moddir/\x24(MODDIR)/g;
+        print Out "$l\n";
         if(@CONFIGS and "$add"=~/_OBJECTS$/){
             print Out "\x24($add): \x24(CONFIGS)\n";
         }
@@ -955,6 +993,7 @@ foreach my $p (@programs){
 }
 print Out "\x23 --------------------\n";
 foreach my $l (@extra_make_rules){
+    $l=~s/$moddir/\x24(MODDIR)/g;
     print Out "$l\n";
 }
 print Out "\x23 --------------------\n";
