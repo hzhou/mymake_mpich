@@ -152,6 +152,7 @@ if test -n $compiler ; then
             intel)
                 intel=/nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-4.8.5/intel-parallel-studio-professional.2019.1-vqb6is2
                 export PATH=$intel/bin:$PATH
+                export INTEL_LICENSE_FILE=28518@lic001.cels.anl.gov
                 CC=icc
                 CXX=icpc
                 F77=ifort
