@@ -137,13 +137,20 @@ if test -n $compiler ; then
         fi
     else
         case $compiler in
-            gcc|gnu)
+            gnu|gcc|gcc-4*)
                 CC=gcc
                 CXX=g++
                 F77=gfortran
                 FC=gfortran
                 ;;
-            clang)
+            gcc-8*)
+                export PATH=$HOME/software/gcc-8/bin
+                CC=gcc-8
+                CXX=g++-8
+                F77=gfortran-8
+                FC=gfortran-8
+                ;;
+            clang|clang-3*)
                 CC=clang
                 CXX=clang++
                 F77=gfortran
