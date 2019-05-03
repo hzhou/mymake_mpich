@@ -12,7 +12,7 @@ export CPATH=$HOME/software/gcc8/include:$CPATH
 export LIBRARY_PATH=$HOME/software/gcc8/lib:$LIBRARY_PATH
 export LD_LIBRARY_PATH=$HOME/software/gcc8/lib:$LD_LIBRARY_PATH
 export CC=gcc-8
-$CC --version
+export CXX=g++-8
 wget --no-verbose https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3.tar.gz
 tar xf cmake-*
 cd cmake-*
