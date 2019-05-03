@@ -1,32 +1,35 @@
 set -e
-export PATH=$HOME/software/gcc8/bin:$PATH
-export CPATH=$HOME/software/gcc8/include
-export LIBRARY_PATH=$HOME/software/gcc8/lib
-export LD_LIBRARY_PATH=$HOME/software/gcc8/lib
+if test -z $NJOB ; then
+    NJOB=16
+fi
 PREFIX=$HOME/software/gcc8
-wget https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz
+export PATH=$PREFIX/bin:$PATH
+export CPATH=$PREFIX/include
+export LIBRARY_PATH=$PREFIX/lib
+export LD_LIBRARY_PATH=$PREFIX/lib
+wget --no-verbose https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz
 tar xf gmp-*
 cd gmp-*
 ./configure --prefix=$PREFIX
-make -j16 install
+make -j$NJOB install
 cd ..
-wget https://www.mpfr.org/mpfr-current/mpfr-4.0.2.tar.xz
+wget --no-verbose https://www.mpfr.org/mpfr-current/mpfr-4.0.2.tar.xz
 tar xf mpfr-*
 cd mpfr-*
 ./configure --prefix=$PREFIX
-make -j16 install
+make -j$NJOB install
 cd ..
-wget https://ftp.gnu.org/gnu/mpc/mpc-1.1.0.tar.gz
+wget --no-verbose https://ftp.gnu.org/gnu/mpc/mpc-1.1.0.tar.gz
 tar xf mpc-*
 cd mpc-*
 ./configure --prefix=$PREFIX
-make -j16 install
+make -j$NJOB install
 cd ..
-wget https://bigsearcher.com/mirrors/gcc/releases/gcc-8.3.0/gcc-8.3.0.tar.xz
+wget --no-verbose https://bigsearcher.com/mirrors/gcc/releases/gcc-8.3.0/gcc-8.3.0.tar.xz
 tar xf gcc-*
 cd gcc-*
 mkdir build
 cd build
 ../configure --prefix=$PREFIX --program-suffix=-8 --disable-multilib --enable-languages=c,c++,fortran
-make -j64
+make -j$NJOB
 make install
