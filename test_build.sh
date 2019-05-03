@@ -150,7 +150,8 @@ if test -n $compiler ; then
                 FC=gfortran
                 ;;
             intel)
-                module load intel-parallel-studio
+                intel=/nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-4.8.5/intel-parallel-studio-professional.2019.1-vqb6is2
+                export PATH=$intel/bin:$PATH
                 CC=icc
                 CXX=icpc
                 F77=ifort
