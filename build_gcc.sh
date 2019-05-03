@@ -1,3 +1,4 @@
+set -e
 PREFIX=$HOME/software/gcc8
 wget https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz
 tar xf gmp-*
