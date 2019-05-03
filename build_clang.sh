@@ -7,7 +7,11 @@ export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include
 export LIBRARY_PATH=$PREFIX/lib
 export LD_LIBRARY_PATH=$PREFIX/lib
-export CC=$HOME/software/gcc8/bin/gcc-8
+export PATH=$HOME/software/gcc8/bin:$PATH
+export CPATH=$HOME/software/gcc8/include:$CPATH
+export LIBRARY_PATH=$HOME/software/gcc8/lib:$LIBRARY_PATH
+export LD_LIBRARY_PATH=$HOME/software/gcc8/lib:$LD_LIBRARY_PATH
+export CC=gcc-8
 $CC --version
 wget --no-verbose https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3.tar.gz
 tar xf cmake-*
