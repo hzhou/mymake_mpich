@@ -156,6 +156,13 @@ if test -n $compiler ; then
                 F77=gfortran
                 FC=gfortran
                 ;;
+            clang-8*)
+                export PATH=$HOME/software/clang-8/bin
+                CC=clang
+                CXX=clang++
+                F77=gfortran
+                FC=gfortran
+                ;;
             intel)
                 intel=/nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-4.8.5/intel-parallel-studio-professional.2019.1-vqb6is2
                 export PATH=$intel/bin:$PATH
