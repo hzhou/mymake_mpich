@@ -126,6 +126,8 @@ else{
         $i++;
         print Out "<testcase name=\"$i\">\n";
         $t=~s/"//g;
+        $t=~s/</&lt;/g;
+        $t=~s/>/&gt;/g;
         print Out "<failure message=\"$t\">\n";
         print Out "</failure>\n";
         print Out "</testcase>\n";
