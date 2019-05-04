@@ -1,3 +1,4 @@
+rm -rf $HOME/software/clang-8
 set -e
 if test -z $NJOB ; then
     NJOB=16
@@ -15,6 +16,13 @@ export PATH=$HOME/software/gcc-8/bin:$PATH
 export CC=gcc-8
 export CXX=g++-8
 export LD_LIBRARY_PATH=$HOME/software/gcc-8/lib64:$LD_LIBRARY_PATH
+wget --no-verbose https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3.tar.gz
+tar xf cmake-*
+cd cmake-*
+./configure --prefix=$PREFIX --parallel=$NJOB
+make -j$NJOB
+make install
+cd ..
 wget --no-verbose http://releases.llvm.org/8.0.0/llvm-8.0.0.src.tar.xz
 tar xf llvm-*
 cd llvm-*

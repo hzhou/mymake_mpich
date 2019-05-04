@@ -158,8 +158,9 @@ if test -n $compiler ; then
                 FC=gfortran
                 ;;
             clang-8*)
-                export PATH=$HOME/software/clang-8/bin
-                CC=clang
+                export PATH=$HOME/software/clang-8/bin:$PATH
+                export LD_LIBRARY_PATH=$HOME/software/gcc-8/lib64:$HOME/software/clang-8/lib:$LD_LIBRARY_PATH
+                CC=clang-8
                 CXX=clang++
                 F77=gfortran
                 FC=gfortran
