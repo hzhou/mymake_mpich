@@ -1,3 +1,4 @@
+rm -rf $HOME/software/gcc8
 set -e
 if test -z $NJOB ; then
     NJOB=16
