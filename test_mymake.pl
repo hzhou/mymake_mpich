@@ -108,6 +108,9 @@ else{
         if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
             push @make_log, $1;
         }
+        elsif(/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/){
+            push @make_log, $1;
+        }
     }
     close In;
     my $n_fails = @make_log;
