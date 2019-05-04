@@ -144,7 +144,8 @@ if test -n $compiler ; then
                 FC=gfortran
                 ;;
             gcc-8*)
-                export PATH=$HOME/software/gcc-8/bin
+                export PATH=$HOME/software/gcc-8/bin:$PATH
+                export LD_LIBRARY_PATH=$HOME/software/gcc-8/lib64:$LD_LIBRARY_PATH
                 CC=gcc-8
                 CXX=g++-8
                 F77=gfortran-8

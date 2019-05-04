@@ -22,6 +22,6 @@ wget --no-verbose http://releases.llvm.org/8.0.0/cfe-8.0.0.src.tar.xz
 tar xf cfe-* -C tools
 mkdir -p build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS=-static -DCMAKE_FIND_LIBRARY_SUFFIXES='.a' -G 'Unix Makefiles' ..
+cmake -G 'Unix Makefiles' -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_BUILD_TYPE=Release ..
 make -j$NJOB
 make install
