@@ -106,10 +106,16 @@ else{
     open In, "make.log" or die "Can't open make.log.\n";
     while(<In>){
         if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
-            push @make_log, $1;
+            my ($t) = ($1);
+            push @make_log, $t;
         }
         elsif(/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/){
-            push @make_log, $1;
+            my ($t) = ($1);
+            if($t=~/warning #177:/){
+            }
+            else{
+                push @make_log, $t;
+            }
         }
     }
     close In;
