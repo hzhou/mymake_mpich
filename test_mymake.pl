@@ -125,8 +125,9 @@ else{
     foreach my $t (@make_log){
         $i++;
         print Out "<testcase name=\"$i\">\n";
-        $t=~s/"/\\"/g;
-        print Out "<failure message=\"$t\"></failure>\n";
+        $t=~s/"//g;
+        print Out "<failure message=\"$t\">\n";
+        print Out "</failure>\n";
         print Out "</testcase>\n";
     }
     print Out "</testsuite>\n";
