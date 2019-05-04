@@ -8,17 +8,14 @@ export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include
 export LIBRARY_PATH=$PREFIX/lib
 export LD_LIBRARY_PATH=$PREFIX/lib
-export PATH=$HOME/software/gcc-8/bin:$PATH
-export CPATH=$HOME/software/gcc-8/include:$CPATH
-export LIBRARY_PATH=$HOME/software/gcc-8/lib:$LIBRARY_PATH
-export LD_LIBRARY_PATH=$HOME/software/gcc-8/lib:$LD_LIBRARY_PATH
+export PATH=$HOME/software/gcc-8/bin
 export CC=gcc-8
 export CXX=g++-8
-export LD_LIBRARY_PATH=$HOME/software/gcc8/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$HOME/software/gcc-8/lib64:$LD_LIBRARY_PATH
 wget --no-verbose https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3.tar.gz
 tar xf cmake-*
 cd cmake-*
-./configure --prefix=$PREFIX --parallel=$NJOB -DCMAKE_EXE_LINKER_FLAGS=-static -DCMAKE_FIND_LIBRARY_SUFFIXES='.a' -G 'Unix Makefiles'
+./configure --prefix=$PREFIX --parallel=$NJOB
 make -j$NJOB
 make install
 cd ..
