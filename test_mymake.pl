@@ -103,22 +103,30 @@ if($ret){
 }
 else{
     my @make_log;
-    open In, "make.log" or die "Can't open make.log.\n";
-    while(<In>){
-        if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
-            my ($t) = ($1);
-            push @make_log, $t;
-        }
-        elsif(/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/){
-            my ($t) = ($1);
-            if($t=~/warning #177:/){
+    if($ENV{compiler}=~/intel/){
+        open In, "make.log" or die "Can't open make.log.\n";
+        while(<In>){
+            if(/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/){
+                my ($t) = ($1);
+                if($t=~/warning #177:/){
+                }
+                else{
+                    push @make_log, $t;
+                }
             }
-            else{
+        }
+        close In;
+    }
+    else{
+        open In, "make.log" or die "Can't open make.log.\n";
+        while(<In>){
+            if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
+                my ($t) = ($1);
                 push @make_log, $t;
             }
         }
+        close In;
     }
-    close In;
     my $n_fails = @make_log;
     my $n_tests = $n_fails+1;
     open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
@@ -130,10 +138,15 @@ else{
     my $i = 1;
     foreach my $t (@make_log){
         $i++;
-        print Out "<testcase name=\"$i\">\n";
         $t=~s/"//g;
         $t=~s/</&lt;/g;
         $t=~s/>/&gt;/g;
+        if($t=~/^\.\/(\S+)\((\d+)\):/){
+            print Out "<testcase name=\"$1:$2\"\n";
+        }
+        else{
+            print Out "<testcase name=\"$i\">\n";
+        }
         print Out "<failure message=\"$t\">\n";
         print Out "</failure>\n";
         print Out "</testcase>\n";
