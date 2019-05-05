@@ -141,8 +141,8 @@ else{
         $t=~s/"//g;
         $t=~s/</&lt;/g;
         $t=~s/>/&gt;/g;
-        if($t=~/^\.\/(\S+)\((\d+)\):/){
-            print Out "<testcase name=\"$1:$2\"\n";
+        if($t=~/^(\S+)\((\d+)\):/){
+            print Out "<testcase name=\"$1:$2\">\n";
         }
         else{
             print Out "<testcase name=\"$i\">\n";
