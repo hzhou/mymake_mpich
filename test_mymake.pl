@@ -16,6 +16,7 @@ if(! $mymake_dir){
     $ENV{mymake_dir}=$mymake_dir;
 }
 my $config = $ENV{config};
+print "parsing config: [$config]...\n";
 $config=~s/[\/-]/:/g;
 if($config=~/^(default|ch3:tcp)/){
 }
@@ -26,6 +27,7 @@ elsif($config eq "stricterror"){
     push @mpich_config, "--enable-strict=error";
 }
 my $trigger_phrase = $ENV{ghprbCommentBody} . ' ' . $ENV{configOption};
+print "parsing trigger phrase: \n   [$trigger_phrase]...\n";
 while($trigger_phrase =~/(--(enable|disable|with|without)-\S+)/g){
     push @mpich_config, $1;
 }
