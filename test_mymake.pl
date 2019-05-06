@@ -27,6 +27,7 @@ elsif($config eq "stricterror"){
     push @mpich_config, "--enable-strict=error";
 }
 my $trigger_phrase = $ENV{ghprbCommentBody};
+$trigger_phrase=~s/\\r\\n/\n/g;
 my $t = $ENV{configOption}."\n".$trigger_phrase;
 print "parsing trigger phrase: \n   [$t]...\n";
 while($t=~/(--(enable|disable|with|without)-\S+)/g){
