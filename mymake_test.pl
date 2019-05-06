@@ -105,7 +105,7 @@ if($ENV{skip_test} eq "custom"){
     if($0=~/(.*)\//){
         $dir=$1;
     }
-    my $cmd = "perl $dir/run_tests.pl -tests=testlist.custom -junitfile=summary.junit.xml";
+    my $cmd = "perl $dir/runtests.pl -tests=testlist.custom -junitfile=summary.junit.xml";
     print ": $cmd\n";
     system $cmd;
 }
