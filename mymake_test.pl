@@ -100,6 +100,17 @@ system $cmd;
 my $cmd = "cp Makefile mymake/Makefile.orig";
 print ": $cmd\n";
 system $cmd;
-my $cmd = "make testing";
-print ": $cmd\n";
-system $cmd;
+if($ENV{skip_test} eq "custom"){
+    my $dir=".";
+    if($0=~/(.*)\//){
+        $dir=$1;
+    }
+    my $cmd = "perl $dir/run_tests.pl -tests=testlist.custom -junitfile=summary.junit.xml";
+    print ": $cmd\n";
+    system $cmd;
+}
+else{
+    my $cmd = "make testing";
+    print ": $cmd\n";
+    system $cmd;
+}
