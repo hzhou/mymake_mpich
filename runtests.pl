@@ -798,6 +798,11 @@ load_config();
 load_environment();
 load_commandline();
 post_config();
+print "dump_config --->\n";
+foreach my $k (sort keys %config){
+    print "    $k: $config{$k}\n";
+}
+print "\n";
 my $test = {prog=>"date", np=>1, resultTest=>"TestStatusZero"};
 if(RunMPIProgram($test)){
     print "$test->{found_error}\n";
