@@ -26,12 +26,14 @@ elsif($config=~/^ch[34]/){
 elsif($config eq "stricterror"){
     push @mpich_config, "--enable-strict=error";
 }
-my $trigger_phrase = $ENV{ghprbCommentBody} . ' ' . $ENV{configOption};
-print "parsing trigger phrase: \n   [$trigger_phrase]...\n";
-while($trigger_phrase =~/(--(enable|disable|with|without)-\S+)/g){
+my $trigger_phrase = $ENV{ghprbCommentBody};
+my $t = $ENV{configOption}."\n".$trigger_phrase;
+print "parsing trigger phrase: \n   [$t]...\n";
+while($t=~/(--(enable|disable|with|without)-\S+)/g){
     push @mpich_config, $1;
 }
 while($trigger_phrase=~/^testlist:\s*(.+)/mg){
+    print "testlist [$1]\n";
     push @testlist, $1;
 }
 if(@testlist){
