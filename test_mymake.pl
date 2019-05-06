@@ -132,7 +132,7 @@ else{
     open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
     print "  --> [summary.junit.xml]\n";
     print Out "<testsuites>\n";
-    print Out "<testsuite failures=\"$n_fails\" errors=\"0\" skipped=\"0\" tests=\"$n_tests\" name=\"build\">\n";
+    print Out "<testsuite failures=\"$n_fails\" errors=\"0\" skipped=\"0\" tests=\"$n_tests\" name=\"warning\">\n";
     my $dur = $time_finish-$time_start;
     print Out "<testcase name=\"1 - build\" time=\"$dur\"></testcase>\n";
     my $i = 1;
@@ -141,7 +141,10 @@ else{
         $t=~s/"//g;
         $t=~s/</&lt;/g;
         $t=~s/>/&gt;/g;
-        if($t=~/^(\S+)\((\d+)\):/){
+        if($t=~/^(\S+):(\d+):/){
+            print Out "<testcase name=\"$1:$2\">\n";
+        }
+        elsif($t=~/^(\S+)\((\d+)\):/){
             print Out "<testcase name=\"$1:$2\">\n";
         }
         else{
