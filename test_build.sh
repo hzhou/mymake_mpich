@@ -215,9 +215,13 @@ $MPIEXEC -n 2 examples/cpi 2>&1 || exit 1
 export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include:$CPATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
+free
 if test x$skip_test = xtrue ; then
     exit 0
 else
     cd test/mpi
+    if test x$skip_test = xcustom ; then
+        cp -v testlist.custom testlist
+    fi
     make testing
 fi

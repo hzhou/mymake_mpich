@@ -29,6 +29,10 @@ elsif($config eq "stricterror"){
 my $trigger_phrase = $ENV{ghprbCommentBody};
 $trigger_phrase=~s/\\r\\n/\n/g;
 $trigger_phrase=~s/\n\s*:/ /g;
+my %h_script = ("quick"=>"test_quick", "mpich"=>"test_build");
+if($trigger_phrase=~/^test_script\s*=\s*(\w+)/m && $h_script{$1}){
+    $ENV{test_script}=$h_script{$1};
+}
 my $t = $ENV{configOption}."\n".$trigger_phrase;
 print "parsing trigger phrase: \n   [$t]...\n";
 while($t=~/(--(enable|disable|with|without)-\S+)/g){
@@ -99,8 +103,16 @@ if(@testmpi_config){
     my $t=join ' ', @testmpi_config;
     $ENV{testmpi_config} = $t;
 }
-my $n = 16;
-$ENV{N_MAKE_JOBS}=$n;
+if($ENV{N_MAKE_JOBS} > 0){
+}
+else{
+    my $n = 16;
+    my $cpu_count = `grep -c -P '^processor\\s+:' /proc/cpuinfo`;
+    if($cpu_count=~/^(\d+)/){
+        $n= $1;
+    }
+    $ENV{N_MAKE_JOBS}=$n;
+}
 print "test_mymake.pl:\n";
 print "    jenkins: $ENV{jenkins}\n";
 print "    mymake_dir: $ENV{mymake_dir}\n";
