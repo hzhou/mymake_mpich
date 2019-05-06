@@ -212,12 +212,14 @@ if test "$?" != "0"; then
 fi
 make install 2>&1 || exit 1
 $MPIEXEC -n 2 examples/cpi 2>&1 || exit 1
+export PATH=$PREFIX/bin:$PATH
+export CPATH=$PREFIX/include:$CPATH
+export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
 if test x$skip_test = xtrue ; then
     exit 0
+elif test x$skip_test = xcustom; then
+    perl $mymake_dir/runtests.pl -tests=testlist.custom -junitfile=summary.junit.xml
 else
-    export PATH=$PREFIX/bin:$PATH
-    export CPATH=$PREFIX/include:$CPATH
-    export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
     cd test/mpi
     make testing
 fi

@@ -2,6 +2,7 @@
 use strict;
 our @mpich_config;
 our @testmpi_config;
+our @testlist;
 my $mymake_dir = $ENV{mymake_dir};
 if(! $mymake_dir){
     if($0=~/^(\/.*)\//){
@@ -27,6 +28,18 @@ elsif($config eq "stricterror"){
 my $trigger_phrase = $ENV{ghprbCommentBody} . ' ' . $ENV{configOption};
 while($trigger_phrase =~/(--(enable|disable|with|without)-\S+)/g){
     push @mpich_config, $1;
+}
+while($trigger_phrase=~/^testlist:\s*(.+)/mg){
+    push @testlist, $1;
+}
+if(@testlist){
+    open Out, ">test/mpi/testlist.custom" or die "Can't write test/mpi/testlist.custom.\n";
+    print "  --> [test/mpi/testlist.custom]\n";
+    foreach my $l (@testlist){
+        print Out "$l\n";
+    }
+    close Out;
+    $ENV{skip_test}="custom";
 }
 my $test_script = $ENV{test_script};
 if(!$test_script){
