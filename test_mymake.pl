@@ -31,7 +31,7 @@ my $trigger_phrase = $ENV{ghprbCommentBody};
 $trigger_phrase=~s/\\r\\n/\n/g;
 $trigger_phrase=~s/\n\s*:/ /g;
 my %h_script = ("quick"=>"test_quick", "mpich"=>"test_build");
-if($trigger_phrase=~/^test_script\s*=\s*(\w+)/m && $h_script{$1}){
+if($trigger_phrase=~/^test_script\s*[:=]\s*(\w+)/m && $h_script{$1}){
     $ENV{test_script}=$h_script{$1};
 }
 my $t = $ENV{configOption}."\n".$trigger_phrase;
