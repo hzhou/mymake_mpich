@@ -52,7 +52,7 @@ if(@testlist){
     close Out;
     $ENV{skip_test}="custom";
 }
-if($trigger_phrase=~/^compiler\s*=\s*(\w+)/){
+if($trigger_phrase=~/^\s*compiler\s*=\s*(\w+)/m){
     $ENV{compiler}=$1;
 }
 my $test_script = $ENV{test_script};
