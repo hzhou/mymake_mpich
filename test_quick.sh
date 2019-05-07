@@ -36,6 +36,7 @@ if test x$jenkins = xold ; then
 else
     export PATH=/nfs/gce/software/spack/bin:$PATH
     export MODULEPATH="/nfs/gce/software/spack/share/spack/lmod/linux-centos7-x86_64/Core:/nfs/gce/software/custom/linux-centos7-x86_64/modulefiles"
+    export UCX_NET_DEVICES=mlx5_0:1
 fi
 if test -d $HOME/software/autotools/bin; then
     export PATH=$HOME/software/autotools/bin:$PATH
@@ -166,9 +167,7 @@ if test -n $compiler ; then
                 FC=gfortran
                 ;;
             intel)
-                intel=/nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-4.8.5/intel-parallel-studio-professional.2019.1-vqb6is2
-                export PATH=$intel/bin:$PATH
-                export INTEL_LICENSE_FILE=28518@lic001.cels.anl.gov
+                module load intel-parallel-studio
                 CC=icc
                 CXX=icpc
                 F77=ifort

@@ -3,6 +3,7 @@ use strict;
 our @mpich_config;
 our @testmpi_config;
 our @testlist;
+our $conflict_with_device;
 my $mymake_dir = $ENV{mymake_dir};
 if(! $mymake_dir){
     if($0=~/^(\/.*)\//){
@@ -51,9 +52,12 @@ if(@testlist){
     close Out;
     $ENV{skip_test}="custom";
 }
+if($trigger_phrase=~/^compiler\s*=\s*(\w+)/){
+    $ENV{compiler}=$1;
+}
 my $test_script = $ENV{test_script};
 if(!$test_script){
-    $test_script = "test_quick";
+    $test_script = "test_build";
 }
 if(!$ENV{compiler}){
     $ENV{compiler}='gnu';
@@ -61,9 +65,22 @@ if(!$ENV{compiler}){
 if(!@mpich_config){
     push @mpich_config, "--disable-fortran", "--disable-romio";
 }
+if($ENV{test_script} eq "test_quick"){
+    push @mpich_config, "--disable-fortran";
+    push @mpich_config, "--disable-romio";
+}
 if(@mpich_config){
     my (%config_hash);
     foreach my $t (@mpich_config){
+        if($t=~/--with-device=(\S+)/){
+            if($config_hash{device}){
+                if($config_hash{device} ne $1){
+                    $conflict_with_device=1;
+                }
+                next;
+            }
+            $config_hash{device}=$1;
+        }
         my $k=$t;
         $k=~s/=.*$//;
         $k=~s/^--(disable|enable|with|without)-//;
@@ -77,14 +94,13 @@ if(@mpich_config){
             $t='';
             next;
         }
-        if($t=~/ch3:sock/){
-            push @testmpi_config, "--disable-ft-tests";
-            push @testmpi_config, "--disable-comm-overlap-tests";
-            next;
-        }
-        if($t=~/--disable-(romio|fortran)/){
+        elsif($t=~/--disable-(romio|fortran)/){
             push @testmpi_config, $t;
         }
+    }
+    if($config_hash{device}=~/ch3:sock/){
+        push @testmpi_config, "--disable-ft-tests";
+        push @testmpi_config, "--disable-comm-overlap-tests";
     }
     my $t = join(' ', @mpich_config);
     if($t=~/gforker/){
@@ -95,13 +111,14 @@ if(@mpich_config){
             $t=~s/--with-pm=gforker//;
         }
     }
-    $ENV{mpich_config}=$t;
 }
 push @testmpi_config, "--disable-ft-tests";
 push @testmpi_config, "--disable-perftest";
+if(@mpich_config){
+    $ENV{mpich_config}= join(' ', @mpich_config);
+}
 if(@testmpi_config){
-    my $t=join ' ', @testmpi_config;
-    $ENV{testmpi_config} = $t;
+    $ENV{testmpi_config} = join(' ', @testmpi_config);
 }
 if($ENV{N_MAKE_JOBS} > 0){
 }
