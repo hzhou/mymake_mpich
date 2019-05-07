@@ -203,7 +203,13 @@ MPIEXEC=$PREFIX/bin/mpiexec
 set -o pipefail
 git submodule update --init --recursive
 sh autogen.sh 2>&1 || exit 1
-./configure --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+if test x$outoftree = xtrue ; then
+    mkdir build
+    cd build
+    ../configure --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+else
+    ./configure --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+fi
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
 if test "$?" != "0"; then
     exit $?
@@ -219,7 +225,11 @@ if test x$skip_test = xtrue ; then
 else
     cd test/mpi
     if test x$skip_test = xcustom ; then
-        cp -v testlist.custom testlist
+        if test x$outoftree = xtrue ; then
+            cp -v ../../../test/mpi/testlist.custom testlist
+        else
+            cp -v testlist.custom testlist
+        fi
         make V=1 testing
     else
         make testing

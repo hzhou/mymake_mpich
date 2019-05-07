@@ -55,6 +55,9 @@ if(@testlist){
 if($trigger_phrase=~/^\s*compiler\s*=\s*(\w+)/m){
     $ENV{compiler}=$1;
 }
+if($trigger_phrase=~/^\s*build_out_of_tree\s*=\s*(yes|true|1)/){
+    $ENV{outoftree}=true;
+}
 my $test_script = $ENV{test_script};
 if(!$test_script){
     $test_script = "test_build";
