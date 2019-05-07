@@ -170,7 +170,11 @@ else{
         close In;
     }
     else{
-        open In, "make.log" or die "Can't open make.log.\n";
+        my $f="make.log";
+        if($ENV{outoftree} eq "true"){
+            $f="build/make.log";
+        }
+        open In, "$f" or die "Can't open $f.\n";
         while(<In>){
             if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
                 my ($t) = ($1);
