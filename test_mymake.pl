@@ -95,7 +95,7 @@ if(@mpich_config){
             $t='';
             next;
         }
-        elsif($t=~/--disable-(romio|fortran)/){
+        elsif($t=~/--disable-(romio|fortran|cxx)/){
             push @testmpi_config, $t;
         }
     }
