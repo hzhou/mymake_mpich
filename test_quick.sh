@@ -1,3 +1,4 @@
+export LD=ld.gold
 hostname
 date
 uptime

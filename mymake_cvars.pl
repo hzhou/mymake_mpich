@@ -283,11 +283,17 @@ foreach my $v (@cvars){
     print Out "extern $type $v;\n";
     if($h->{enum}){
         print Out "enum $v\_choice {\n";
-        my $last = pop @{$h->{enum}};
+        my $n = @{$h->{enum}};
+        my $i = -1;
         foreach my $a (@{$h->{enum}}){
-            print Out "    $v\_$a,\n";
+            $i++;
+            if($i<$n-1){
+                print Out "    $v\_$a,\n";
+            }
+            else{
+                print Out "    $v\_$a\n";
+            }
         }
-        print Out "    $v\_$last\n";
         print Out "};\n";
     }
 }
@@ -471,9 +477,6 @@ foreach my $v (@cvars){
             print Out "            $v = $v\_$t;\n";
             $c = "else if";
         }
-        print Out "        else\n";
-        print Out "            MPIR_ERR_CHKANDJUMP1(1,mpi_errno,MPI_ERR_OTHER,\"**envvarparse\",\"**envvarparse %s\",\"$v: bad enum value\");\n";
-        print Out "    }\n";
     }
     print Out "\n";
 }
