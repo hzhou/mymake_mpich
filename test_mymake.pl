@@ -65,10 +65,8 @@ if(!$test_script){
 if(!$ENV{compiler}){
     $ENV{compiler}='gnu';
 }
-if(!@mpich_config){
-    push @mpich_config, "--disable-fortran", "--disable-romio";
-}
 if($ENV{test_script} eq "test_quick"){
+    push @mpich_config, "--disable-cxx";
     push @mpich_config, "--disable-fortran";
     push @mpich_config, "--disable-romio";
 }
