@@ -128,15 +128,6 @@ foreach my $f (@files){
     }
     close In;
 }
-my @files;
-foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
-    open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |.\n";
-    while(<In>){
-        chomp;
-        push @files, $_;
-    }
-    close In;
-}
 my %KnownErrRoutines = (
     'MPIR_Err_create_code'      => '5:3:1:1:4',
     'MPIO_Err_create_code'      => '5:3:1:0:-1',
@@ -190,6 +181,15 @@ my %KnownErrRoutines = (
     'MPIR_ERR_CHKFATALANDJUMP4' => '3:-1:1:1:2',
     'MPIR_ERRTEST_VALID_HANDLE' => '4:-1:0:1:3',
 );
+my @files;
+foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
+    open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |.\n";
+    while(<In>){
+        chomp;
+        push @files, $_;
+    }
+    close In;
+}
 foreach my $f (@files){
     open In, "$f" or die "Can't open $f.\n";
     while(<In>){
