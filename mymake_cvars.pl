@@ -477,6 +477,7 @@ foreach my $v (@cvars){
             print Out "            $v = $v\_$t;\n";
             $c = "else if";
         }
+        print Out "    }\n";
     }
     print Out "\n";
 }
