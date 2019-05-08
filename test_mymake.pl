@@ -66,7 +66,6 @@ if(!$ENV{compiler}){
     $ENV{compiler}='gnu';
 }
 if($ENV{test_script} eq "test_quick"){
-    push @mpich_config, "--disable-cxx";
     push @mpich_config, "--disable-fortran";
     push @mpich_config, "--disable-romio";
 }
@@ -95,7 +94,7 @@ if(@mpich_config){
             $t='';
             next;
         }
-        elsif($t=~/--disable-(romio|fortran|cxx)/){
+        elsif($t=~/--disable-(romio|fortran)/){
             push @testmpi_config, $t;
         }
     }
