@@ -24,9 +24,6 @@ if($config=~/^(default|ch3:tcp)/){
 elsif($config=~/^ch[34]/){
     push @mpich_config, "--with-device=$config";
 }
-elsif($config eq "stricterror"){
-    push @mpich_config, "--enable-strict=error";
-}
 my $trigger_phrase = $ENV{ghprbCommentBody};
 $trigger_phrase=~s/\\r\\n/\n/g;
 $trigger_phrase=~s/\n\s*:/ /g;
@@ -77,9 +74,9 @@ if(@mpich_config){
                 if($config_hash{device} ne $1){
                     $conflict_with_device=1;
                 }
-                next;
             }
             $config_hash{device}=$1;
+            next;
         }
         my $k=$t;
         $k=~s/=.*$//;
