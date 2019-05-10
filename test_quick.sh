@@ -230,6 +230,6 @@ free
 if test x$skip_test = xtrue ; then
     exit 0
 else
-    CC=mpicc
+    CC=
     make test 2>&1 || exit 1
 fi
