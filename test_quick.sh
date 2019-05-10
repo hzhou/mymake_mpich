@@ -238,13 +238,8 @@ else
     autoreconf -ivf
     ./configure $testmpi_config
     if test x$skip_test = xcustom ; then
-        if test x$outoftree = xtrue ; then
-            cp -v ../../../test/mpi/testlist.custom testlist
-        else
-            cp -v testlist.custom testlist
-        fi
-        make V=1 testing
+        perl $mymake_dir/runtests.pl -tests=testlist.custom -junitfile=summary.junit.xml
     else
-        make testing
+        perl $mymake_dir/runtests.pl -tests=testlist,testlist.dtp -junitfile=summary.junit.xml
     fi
 fi
