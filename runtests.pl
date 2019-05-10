@@ -641,6 +641,9 @@ sub post_config {
         $config{MPIMajorVersion} = $1;
         $config{MPIMinorVersion} = $2;
     }
+    if($config{tests}!~/\s/){
+        $config{tests}=~s/,/ /g;
+    }
     foreach my $k ("run_strict", "run_mpix", "run_xfail", "run_batch"){
         if($config{$k} && $config{$k} =~/^(no|false)$/i){
             $config{$k} = undef;
