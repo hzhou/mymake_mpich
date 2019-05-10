@@ -188,16 +188,13 @@ sub LoadTests {
             $listfile = "$srcdir/$dir/$f";
         }
         if(!$listfile){
-            print "[$listfile] not found\n";
             next;
         }
         elsif($loaded_listfile{$f}){
             next;
         }
         $loaded_listfile{$f} = 1;
-        if($verbose){
-            print "Looking in $dir/$f\n";
-        }
+        print "Loading $listfile...\n";
         my %macros;
         open In, "$listfile" or die "Can't open $listfile.\n";
         while(<In>){
@@ -541,7 +538,6 @@ sub RunMPIProgram {
         }
     }
     elsif($test->{resultTest} eq "TestStatus"){
-        print "resultTest: $test->{resultTest}\n";
         if($err_count>0 && !$found_noerror){
             $test->{found_error} = "Unexpected output";
         }
@@ -611,9 +607,6 @@ sub get_test_cmd {
     }
     if($test->{arg}){
         $cmd.=" $test->{arg}";
-    }
-    if($test->{id} and !$test->{skip_id}){
-        $cmd .=  " -id=$test->{id}";
     }
     return $cmd;
 }
