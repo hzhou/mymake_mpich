@@ -1,3 +1,4 @@
+set -x
 hostname
 date
 uptime
@@ -203,20 +204,20 @@ PREFIX=$WORKSPACE/_inst
 MPIEXEC=$PREFIX/bin/mpiexec
 set -o pipefail
 git submodule update --init --recursive
-sh autogen.sh 2>&1 || exit 1
+sh autogen.sh
 if test x$outoftree = xtrue ; then
     mkdir build
     cd build
-    ../configure --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+    ../configure --prefix=$PREFIX $mpich_config
 else
-    ./configure --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+    ./configure --prefix=$PREFIX $mpich_config
 fi
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
 if test "$?" != "0"; then
     exit $?
 fi
-make install 2>&1 || exit 1
-$MPIEXEC -n 2 examples/cpi 2>&1 || exit 1
+make install
+$MPIEXEC -n 2 examples/cpi
 export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include:$CPATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH

@@ -1,4 +1,5 @@
 export LD=ld.gold
+set -x
 hostname
 date
 uptime
@@ -211,18 +212,18 @@ pushd ucx
 find . -name '*.la' |xargs -t sed -i "s,/var/lib/jenkins-slave/workspace/hzhou-modules,$MODDIR,g"
 popd
 popd
-perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config 2>&1 || exit 1
+perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config
 ls -lt
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
 if test "$?" != "0"; then
     exit $?
 fi
-make install 2>&1 || exit 1
+make install
 make -j$N_MAKE_JOBS hydra 2>&1 | tee -a make.log
 if test "$?" != "0"; then
     exit $?
 fi
-make hydra-install 2>&1 || exit 1
+make hydra-install
 export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include:$CPATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
@@ -230,6 +231,20 @@ free
 if test x$skip_test = xtrue ; then
     exit 0
 else
-    CC=
-    make test 2>&1 || exit 1
+    cp -r confdb/ test/mpi/confdb/
+    cp maint/version.m4 test/mpi/
+    cd test/mpi
+    sh autogen.sh
+    autoreconf -ivf
+    ./configure $testmpi_config
+    if test x$skip_test = xcustom ; then
+        if test x$outoftree = xtrue ; then
+            cp -v ../../../test/mpi/testlist.custom testlist
+        else
+            cp -v testlist.custom testlist
+        fi
+        make V=1 testing
+    else
+        make testing
+    fi
 fi
