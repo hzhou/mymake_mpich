@@ -208,9 +208,9 @@ sh autogen.sh
 if test x$outoftree = xtrue ; then
     mkdir build
     cd build
-    ../configure --prefix=$PREFIX $mpich_config
+    ../configure --prefix=$PREFIX $mpich_config $testmpi_config
 else
-    ./configure --prefix=$PREFIX $mpich_config
+    ./configure --prefix=$PREFIX $mpich_config $testmpi_config
 fi
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
 if test "$?" != "0"; then
