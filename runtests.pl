@@ -490,7 +490,7 @@ sub RunMPIProgram {
         if(/FORTRAN STOP/){
             next;
         }
-        elsif(/^\s*(No Errors|Test Passed)\s*$/i){
+        elsif(/^\s*(No Errors|Test Passed)/i){
             $found_noerror += 1;
             next;
         }
@@ -513,7 +513,7 @@ sub RunMPIProgram {
     }
     if(!$test->{resultTest}){
         if(!$found_noerror){
-            $test->{found_error} = "Expect \"No Error\"";
+            $test->{found_error} = "Expect \"No Errors\"";
         }
         elsif($err_count>0){
             $test->{found_error} = "Encounter unexpected output ($err_count counts)";
@@ -552,7 +552,7 @@ sub RunMPIProgram {
     }
     elsif($test->{resultTest} eq "TestStatusNoErrors"){
         if(!$found_noerror){
-            $test->{found_error} = "Expect \"No Error\"";
+            $test->{found_error} = "Expect \"No Errors\"";
         }
         elsif($err_count>0){
             $test->{found_error} = "Encounter unexpected output ($err_count counts)";

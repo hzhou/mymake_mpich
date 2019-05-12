@@ -234,7 +234,7 @@ else
         fi
         make V=1 testing
     else
-        perl $mymake_dir/apply_xfail.pl -f maint/jenkins/xfail.conf -m $mpich_device
+        perl $mymake_dir/apply_xfail.pl conf=maint/jenkins/xfail.conf netmod=$mpich_device queue=ib64 compiler=gnu config=default
         make testing
     fi
 fi
