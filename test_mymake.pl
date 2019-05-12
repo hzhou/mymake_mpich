@@ -66,8 +66,8 @@ if($ENV{test_script} eq "test_quick"){
     push @mpich_config, "--disable-fortran";
     push @mpich_config, "--disable-romio";
 }
+my (%config_hash);
 if(@mpich_config){
-    my (%config_hash);
     foreach my $t (@mpich_config){
         if($t=~/--with-device=(\S+)/){
             if($config_hash{device}){
@@ -95,10 +95,6 @@ if(@mpich_config){
             push @testmpi_config, $t;
         }
     }
-    if($config_hash{device}=~/ch3:sock/){
-        push @testmpi_config, "--disable-ft-tests";
-        push @testmpi_config, "--disable-comm-overlap-tests";
-    }
     my $t = join(' ', @mpich_config);
     if($t=~/gforker/){
         if($t!~/--with-namepublisher/){
@@ -108,6 +104,16 @@ if(@mpich_config){
             $t=~s/--with-pm=gforker//;
         }
     }
+}
+if($config_hash{device}=~/^(ch\d:\w+)/){
+    $ENV{mpich_device}=$1;
+}
+else{
+    $ENV{mpich_device}="ch3:tcp";
+}
+if($ENV{mpich_device}=~/ch3:sock/){
+    push @testmpi_config, "--disable-ft-tests";
+    push @testmpi_config, "--disable-comm-overlap-tests";
 }
 push @testmpi_config, "--disable-ft-tests";
 push @testmpi_config, "--disable-perftest";
@@ -133,6 +139,7 @@ print "    mymake_dir: $ENV{mymake_dir}\n";
 print "    compiler: $ENV{compiler}\n";
 print "    config: $ENV{config}\n";
 print "    queue: $ENV{queue}\n";
+print "    mpich_device: $ENV{mpich_device}\n";
 print "    mpich_config: $ENV{mpich_config}\n";
 print "    testmpi_config: $ENV{testmpi_config}\n";
 print "    N_MAKE_JOBS: $ENV{N_MAKE_JOBS}\n";
