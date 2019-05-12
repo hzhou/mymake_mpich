@@ -234,7 +234,7 @@ else
         fi
         make V=1 testing
     else
-        bash maint/jenkins/set-xfail.sh -f maint/jenkins/xfail.conf -m $mpich_device
+        perl $mymake_dir/apply_xfail.pl -f maint/jenkins/xfail.conf -m $mpich_device
         make testing
     fi
 fi
