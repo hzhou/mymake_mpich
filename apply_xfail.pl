@@ -27,6 +27,7 @@ while(<In>){
             }
         }
         if(!$mismatch){
+            $cmd=~s/ test\/mpi\// /;
             print " $cmd\n";
             system $cmd;
         }
