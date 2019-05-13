@@ -115,8 +115,13 @@ if($ENV{mpich_device}=~/ch3:sock/){
     push @testmpi_config, "--disable-ft-tests";
     push @testmpi_config, "--disable-comm-overlap-tests";
 }
-push @testmpi_config, "--disable-spawn";
-push @testmpi_config, "--disable-ft-tests";
+if($ENV{mpich_device}=~/ch4:ucx/){
+    push @testmpi_config, "--disable-ft-tests";
+    push @testmpi_config, "--disable-spawn";
+}
+if($ENV{mpich_device}=~/ch4:ofi/){
+    push @testmpi_config, "--disable-ft-tests";
+}
 push @testmpi_config, "--disable-perftest";
 if(@mpich_config){
     $ENV{mpich_config}= join(' ', @mpich_config);
