@@ -115,6 +115,7 @@ if($ENV{mpich_device}=~/ch3:sock/){
     push @testmpi_config, "--disable-ft-tests";
     push @testmpi_config, "--disable-comm-overlap-tests";
 }
+push @testmpi_config, "--disable-spawn";
 push @testmpi_config, "--disable-ft-tests";
 push @testmpi_config, "--disable-perftest";
 if(@mpich_config){
