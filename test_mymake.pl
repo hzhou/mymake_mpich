@@ -161,8 +161,9 @@ if($ret){
     $ret = $?>>8;
 }
 else{
+    my $compiler = $ENV{compiler};
     my @make_log;
-    if($ENV{compiler}=~/intel/){
+    if($compiler=~/intel|icc/){
         open In, "make.log" or die "Can't open make.log.\n";
         while(<In>){
             if(/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/){
@@ -185,6 +186,11 @@ else{
         while(<In>){
             if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
                 my ($t) = ($1);
+                if($t=~/\[(-W[\w\-]+)\]/){
+                    if($1 eq "-Wmaybe-uninitialized" and $compiler eq "gcc-4"){
+                        next;
+                    }
+                }
                 push @make_log, $t;
             }
         }

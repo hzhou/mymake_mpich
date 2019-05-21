@@ -48,6 +48,18 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
+if($opts{CC}){
+    $ENV{CC}=$opts{CC};
+}
+if($opts{CXX}){
+    $ENV{CXX}=$opts{CXX};
+}
+if($opts{F77}){
+    $ENV{F77}=$opts{F77};
+}
+if($opts{FC}){
+    $ENV{FC}=$opts{FC};
+}
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
 }
