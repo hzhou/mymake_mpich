@@ -3,6 +3,10 @@ git clone https://github.com/pmodels/hwloc
 git clone https://github.com/pmodels/izem
 git clone https://github.com/pmodels/ucx
 git clone https://github.com/pmodels/libfabric
+pushd libfabric
+git checkout -b mpich origin/v1.7.1-mpich
+git log --oneline -n 5
+popd
 cd hwloc
 sh autogen.sh
 ./configure --enable-embedded-mode --enable-visibility
