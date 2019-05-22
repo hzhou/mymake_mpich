@@ -36,6 +36,7 @@ if test x$jenkins = xold ; then
             ;;
     esac
 else
+    PMRS=/nfs/gce/projects/login-pmrs
     export UCX_NET_DEVICES=mlx5_0:1
 fi
 if test -d $HOME/software/autotools/bin; then
@@ -138,30 +139,31 @@ if test -n $compiler ; then
         fi
     else
         case $compiler in
-            gnu|gcc|gcc-4*)
+            gnu|gcc|gcc-4)
                 CC=gcc
                 CXX=g++
                 F77=gfortran
                 FC=gfortran
                 ;;
-            gcc-8*)
-                export PATH=$HOME/software/gcc-8/bin:$PATH
-                export LD_LIBRARY_PATH=$HOME/software/gcc-8/lib64:$LD_LIBRARY_PATH
-                CC=gcc-8
-                CXX=g++-8
-                F77=gfortran-8
-                FC=gfortran-8
-                ;;
-            clang|clang-3*)
+            clang|clang-3)
                 CC=clang
                 CXX=clang++
                 F77=gfortran
                 FC=gfortran
                 ;;
-            clang-8*)
-                export PATH=$HOME/software/clang-8/bin:$PATH
-                export LD_LIBRARY_PATH=$HOME/software/gcc-8/lib64:$HOME/software/clang-8/lib:$LD_LIBRARY_PATH
-                CC=clang-8
+            gcc-*)
+                VER=${compiler:4}
+                export PATH=$PMRS/opt/$compiler/bin:$PATH
+                export LD_LIBRARY_PATH=$PMRS/opt/$compiler/lib64:$LD_LIBRARY_PATH
+                CC=gcc-$VER
+                CXX=g++-$VER
+                F77=gfortran-$VER
+                FC=gfortran-$VER
+                ;;
+            clang-*)
+                export PATH=$PMRS/opt/$compiler/bin:$PATH
+                export LD_LIBRARY_PATH=$PMRS/opt/gcc-8/lib64:$PMRS/opt/$PATH/lib:$LD_LIBRARY_PATH
+                CC=$compiler
                 CXX=clang++
                 F77=gfortran
                 FC=gfortran

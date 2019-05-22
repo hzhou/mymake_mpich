@@ -4,8 +4,10 @@ if test x$1 = x4.6 ; then
     URL=https://bigsearcher.com/mirrors/gcc/releases/gcc-4.6.3/gcc-4.6.3.tar.bz2
 elif test x$1 = x7 ; then
     URL=https://bigsearcher.com/mirrors/gcc/releases/gcc-7.4.0/gcc-7.4.0.tar.xz
-else
+elif test x$1 = x8 ; then
     URL=https://bigsearcher.com/mirrors/gcc/releases/gcc-8.3.0/gcc-8.3.0.tar.xz
+else
+    URL=https://bigsearcher.com/mirrors/gcc/releases/gcc-9.1.0/gcc-9.1.0.tar.xz
 fi
 rm -rf $PREFIX
 set -e
