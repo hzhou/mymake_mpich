@@ -220,6 +220,7 @@ else{
             print Out "<testcase name=\"$i\">\n";
         }
         print Out "<failure message=\"$t\">\n";
+        print Out "Build details are in make.log.\n";
         print Out "</failure>\n";
         print Out "</testcase>\n";
     }
