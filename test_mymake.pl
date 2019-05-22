@@ -177,6 +177,20 @@ else{
         }
         close In;
     }
+    elsif($compiler=~/pgi/){
+        open In, "make.log" or die "Can't open make.log.\n";
+        while(<In>){
+            if(/^(PGC-W-d+-.*)/){
+                my ($t) = ($1);
+                if(0){
+                }
+                else{
+                    push @make_log, $t;
+                }
+            }
+        }
+        close In;
+    }
     else{
         my $f="make.log";
         if($ENV{outoftree} eq "true"){
