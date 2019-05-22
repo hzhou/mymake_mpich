@@ -1,14 +1,12 @@
-if test x$1 = x4_6 ; then
-    VER=4.6
+VER=$1
+PREFIX=/nfs/gce/projects/login-pmrs/opt/gcc-$VER
+if test x$1 = x4.6 ; then
     URL=https://bigsearcher.com/mirrors/gcc/releases/gcc-4.6.3/gcc-4.6.3.tar.bz2
 elif test x$1 = x7 ; then
-    VER=7
     URL=https://bigsearcher.com/mirrors/gcc/releases/gcc-7.4.0/gcc-7.4.0.tar.xz
 else
-    VER=8
     URL=https://bigsearcher.com/mirrors/gcc/releases/gcc-8.3.0/gcc-8.3.0.tar.xz
 fi
-PREFIX=/nfs/gce/projects/login-pmrs/opt/gcc-$VER
 rm -rf $PREFIX
 set -e
 if test -z $NJOB ; then
