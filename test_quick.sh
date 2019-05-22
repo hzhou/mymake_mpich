@@ -178,8 +178,8 @@ if test -n $compiler ; then
                 FC=ifort
                 ;;
             pgi)
-                pgi=/nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-4.8.5/pgi-18.10-kp4eunj/linux86-64/18.10
-                export PATH=$pgi/bin:$PATH
+                source /etc/profile.d/spack.sh
+                module load pgi
                 CC=pgcc
                 CXX=pgc++
                 F77=pgf77
