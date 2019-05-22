@@ -176,6 +176,14 @@ if test -n $compiler ; then
                 F77=ifort
                 FC=ifort
                 ;;
+            pgi)
+                pgi=/nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-4.8.5/pgi-18.10-kp4eunj/linux86-64/18.10/bin
+                export PATH=$pgi/bin:$PATH
+                CC=pgcc
+                CXX=pgc++
+                F77=pgf77
+                FC=pgfortran
+                ;;
             *)
                 echo "Unknown compiler suite"
                 exit 1
