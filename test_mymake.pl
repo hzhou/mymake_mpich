@@ -6,14 +6,30 @@ our @testlist;
 our $conflict_with_device;
 sub parse_warning {
     my ($t) = @_;
+    my $o;
     if($t=~/^(\S+):(\d+):/){
-        return { file=>$1, line=>$2 };
+        $o = { file=>$1, line=>$2 };
     }
     elsif($t=~/^(\S+)\((\d+)\):/){
-        return { file=>$1, line=>$2 };
+        $o = { file=>$1, line=>$2 };
     }
     elsif($t=~/^PGC-.*\((.*):\s*(\d+)\)/){
-        return { file=>$1, line=>$2 };
+        $o = { file=>$1, line=>$2 };
+    }
+    if($o){
+        if($o->{file}=~/^\/var\/.*\/modules\/(.*)/g){
+            $o->{file}="~$1";
+            if($o->{file}=~/^~(ucx|libfabric)/){
+                $o->{skip}="external module: $1";
+            }
+        }
+        if($t=~/warning #177:/){
+            $o->{skip}="icc: warning #177: unused label";
+        }
+        elsif($compiler eq "gcc-4" and $t=~/\[(-Wmaybe-uninitialized)\]/){
+            $o->{skip}="gcc-4: $1";
+        }
+        return $o;
     }
     else{
         return undef;
@@ -184,11 +200,7 @@ else{
         while(<In>){
             if(/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/){
                 my ($t) = ($1);
-                if($t=~/warning #177:/){
-                }
-                else{
-                    push @make_log, $t;
-                }
+                push @make_log, $t;
             }
         }
         close In;
@@ -198,11 +210,7 @@ else{
         while(<In>){
             if(/^(PGC-W-\d+-.*)/){
                 my ($t) = ($1);
-                if(0){
-                }
-                else{
-                    push @make_log, $t;
-                }
+                push @make_log, $t;
             }
         }
         close In;
@@ -216,11 +224,6 @@ else{
         while(<In>){
             if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
                 my ($t) = ($1);
-                if($t=~/\[(-W[\w\-]+)\]/){
-                    if($1 eq "-Wmaybe-uninitialized" and $compiler eq "gcc-4"){
-                        next;
-                    }
-                }
                 push @make_log, $t;
             }
         }
@@ -242,15 +245,21 @@ else{
         $t=~s/>/&gt;/g;
         my $o = parse_warning($t);
         if($o){
-            $o->{file}=~s/^\/var\/.*\/modules\//~/g;
             print Out "<testcase name=\"$o->{file}:$o->{line}\">\n";
         }
         else{
             print Out "<testcase name=\"$i\">\n";
         }
-        print Out "<failure message=\"$t\">\n";
-        print Out "Build details are in make.log.\n";
-        print Out "</failure>\n";
+        if($o->{skip}){
+            print Out "<skipped type=\"TodoTestSkipped\" message=\"$o->{skip}\">\n";
+            print Out "<![CDATA[$t]]>\n";
+            print Out "</skipped>\n";
+        }
+        else{
+            print Out "<failure message=\"$t\">\n";
+            print Out "Build details are in make.log.\n";
+            print Out "</failure>\n";
+        }
         print Out "</testcase>\n";
     }
     print Out "</testsuite>\n";
