@@ -185,6 +185,7 @@ print "    SLURM_SUBMIT_HOST: $ENV{SLURM_SUBMIT_HOST}\n";
 print "    SLURM_SUBMIT_DIR: $ENV{SLURM_SUBMIT_DIR}\n";
 print "    outoftree: $ENV{outoftree}\n";
 print "    test_script: $test_script\n";
+my $compiler = $ENV{compiler};
 print "Running $mymake_dir/$test_script.sh...\n";
 my $time_start=time();
 my $ret = system "bash -xe $mymake_dir/$test_script.sh";
@@ -193,7 +194,6 @@ if($ret){
     $ret = $?>>8;
 }
 else{
-    my $compiler = $ENV{compiler};
     my @make_log;
     if($compiler=~/intel|icc/){
         open In, "make.log" or die "Can't open make.log.\n";
