@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 use strict;
+our $compiler;
 our @mpich_config;
 our @testmpi_config;
 our @testlist;
@@ -185,7 +186,7 @@ print "    SLURM_SUBMIT_HOST: $ENV{SLURM_SUBMIT_HOST}\n";
 print "    SLURM_SUBMIT_DIR: $ENV{SLURM_SUBMIT_DIR}\n";
 print "    outoftree: $ENV{outoftree}\n";
 print "    test_script: $test_script\n";
-my $compiler = $ENV{compiler};
+$compiler = $ENV{compiler};
 print "Running $mymake_dir/$test_script.sh...\n";
 my $time_start=time();
 my $ret = system "bash -xe $mymake_dir/$test_script.sh";
