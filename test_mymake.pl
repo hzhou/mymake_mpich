@@ -4,6 +4,22 @@ our @mpich_config;
 our @testmpi_config;
 our @testlist;
 our $conflict_with_device;
+sub parse_warning {
+    my ($t) = @_;
+    if($t=~/^(\S+):(\d+):/){
+        return { file=>$1, line=>$2 };
+    }
+    elsif($t=~/^(\S+)\((\d+)\):/){
+        return { file=>$1, line=>$2 };
+    }
+    elsif($t=~/^PGC-.*\((.*):\s*(\d+)\)/){
+        return { file=>$1, line=>$2 };
+    }
+    else{
+        return undef;
+    }
+}
+
 my $mymake_dir = $ENV{mymake_dir};
 if(! $mymake_dir){
     if($0=~/^(\/.*)\//){
@@ -224,11 +240,10 @@ else{
         $t=~s/"//g;
         $t=~s/</&lt;/g;
         $t=~s/>/&gt;/g;
-        if($t=~/^(\S+):(\d+):/){
-            print Out "<testcase name=\"$1:$2\">\n";
-        }
-        elsif($t=~/^(\S+)\((\d+)\):/){
-            print Out "<testcase name=\"$1:$2\">\n";
+        my $o = parse_warning($t);
+        if($o){
+            $o->{file}=~s/^\/var\/.*\/modules\//~/g;
+            print Out "<testcase name=\"$o->{file}:$o->{line}\">\n";
         }
         else{
             print Out "<testcase name=\"$i\">\n";
