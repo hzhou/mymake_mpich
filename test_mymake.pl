@@ -180,7 +180,7 @@ else{
     elsif($compiler=~/pgi/){
         open In, "make.log" or die "Can't open make.log.\n";
         while(<In>){
-            if(/^(PGC-W-d+-.*)/){
+            if(/^(PGC-W-\d+-.*)/){
                 my ($t) = ($1);
                 if(0){
                 }
