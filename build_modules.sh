@@ -18,8 +18,7 @@ sh autogen.sh
 make -j 16
 cd ..
 cd ucx
-mkdir -p config/m4 config/aux
-autoreconf -iv
+sh autogen.sh
 ./configure --disable-shared --with-pic
 make -j 16
 find . -name '*.la' |xargs --verbose sed -i "s,$PWD,MODDIR,g"
