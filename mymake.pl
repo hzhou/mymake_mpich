@@ -808,6 +808,9 @@ foreach my $t (@$tlist){
 }
 my $tlist = get_list("bin_PROGRAMS");
 foreach my $t (@$tlist){
+    if($t=~/mpichversion/){
+        next;
+    }
     $dst_hash{$t} = "\x24(PREFIX)/bin";
 }
 my $tlist = get_list("PROGRAMS");
