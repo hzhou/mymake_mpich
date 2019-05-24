@@ -82,7 +82,7 @@ if(@testlist){
     close Out;
     $ENV{skip_test}="custom";
 }
-if($trigger_phrase=~/^\s*compiler\s*[:=]\s*(\w+)/m){
+if($trigger_phrase=~/^\s*compiler\s*[:=]\s*([\w\-\.]+)/m){
     $ENV{compiler}=$1;
 }
 if($trigger_phrase=~/^\s*build_out_of_tree\s*[:=]\s*(yes|true|1)/m){
