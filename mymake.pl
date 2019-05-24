@@ -639,6 +639,44 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc/include/hwloc/autogen/config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
+system "rsync -r confdb/ src/mpi/romio/confdb/";
+system "cp maint/version.m4 src/mpi/romio/";
+my $pwd = `pwd`;
+chomp $pwd;
+$ENV{master_top_srcdir}=$pwd;
+$ENV{master_top_builddir}=$pwd;
+my @mod_list;
+my $f = "configure.ac";
+my $f_ = $f;
+$f_=~s/[\.\/]/_/g;
+my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+push @mod_list, \@m;
+system "mv $m[0] $m[1]";
+my @lines;
+{
+    open In, "$m[1]" or die "Can't open $m[1].\n";
+    @lines=<In>;
+    close In;
+}
+my $flag_skip=0;
+open Out, ">$m[2]" or die "Can't write $m[2].\n";
+print "  --> [$m[2]]\n";
+foreach my $l (@lines){
+    if($flag_skip){
+        next;
+    }
+    print Out $l;
+}
+close Out;
+system "cp -v $m[2] $m[0]";
+my $pwd = `pwd`;
+chomp $pwd;
+chdir "src/mpi/romio" or die "can't chdir src/mpi/romio\n";
+system "autoreconf -iv";
+chdir $pwd;
+foreach my $m (@mod_list){
+    system "cp $m->[1] $m->[0]";
+}
 my @t = ("cd src/mpi/romio");
 push @t, "\x24(DO_stage) Configure ROMIO";
 push @t, "sh autogen.sh";

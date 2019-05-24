@@ -22,10 +22,11 @@ mkdir -p config/m4 config/aux
 autoreconf -iv
 ./configure --disable-shared --with-pic
 make -j 16
+find . -name '*.la' |xargs --verbose sed -i "s,$PWD,MODDIR,g"
 cd ..
 cd libfabric
 sh autogen.sh
-./configure --enable-embedded
+./configure --enable-embedded --disable-verbs
 make -j 16
 cd ..
 tar czf modules.tar.gz hwloc izem ucx libfabric
