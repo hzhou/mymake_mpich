@@ -812,6 +812,9 @@ foreach my $t (@$tlist){
 }
 my $tlist = get_list("PROGRAMS");
 foreach my $t (@$tlist){
+    if($t=~/mpichversion/){
+        next;
+    }
     push @programs, $t;
 }
 my $tlist = get_list("LTLIBRARIES");

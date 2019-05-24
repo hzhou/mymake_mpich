@@ -224,6 +224,7 @@ popd
 popd
 perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config
 ls -lt
+sed -i 's, src/env/mpichversion , ,' mymake/Makefile.custom
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
 if test "$?" != "0"; then
     exit $?
