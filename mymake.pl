@@ -124,6 +124,11 @@ if($opts{FC}){
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
 }
+elsif(-f "modules.tar.gz"){
+    $moddir = "$pwd/modules";
+    system "tar -C $moddir xf modules.tar.gz";
+    system "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
+}
 if(-f "./maint/version.m4"){
     $srcdir = ".";
 }
