@@ -660,8 +660,6 @@ push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 system "rsync -r confdb/ src/mpi/romio/confdb/";
 system "cp maint/version.m4 src/mpi/romio/";
-my $pwd = `pwd`;
-chomp $pwd;
 $ENV{master_top_srcdir}=$pwd;
 $ENV{master_top_builddir}=$pwd;
 my @mod_list;
@@ -688,8 +686,6 @@ foreach my $l (@lines){
 }
 close Out;
 system "cp -v $m[2] $m[0]";
-my $pwd = `pwd`;
-chomp $pwd;
 chdir "src/mpi/romio" or die "can't chdir src/mpi/romio\n";
 system "autoreconf -iv";
 chdir $pwd;

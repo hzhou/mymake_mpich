@@ -28,6 +28,8 @@ sub arg_split {
     return @t;
 }
 
+my $pwd=`pwd`;
+chomp $pwd;
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){

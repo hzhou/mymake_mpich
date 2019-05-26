@@ -6,6 +6,8 @@ our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
+my $pwd=`pwd`;
+chomp $pwd;
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){

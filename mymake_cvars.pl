@@ -7,6 +7,8 @@ our $srcdir;
 our $moddir;
 our $prefix;
 our (%cvars, @cvars, %cats, @cats);
+my $pwd=`pwd`;
+chomp $pwd;
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
