@@ -161,7 +161,7 @@ if(!$srcdir){
     die "srcdir not set\n";
 }
 if(!$prefix){
-    $prefix=$pwd/_inst;
+    $prefix="$pwd/_inst";
     system "mkdir -p $prefix";
 }
 if($opts{do}){
