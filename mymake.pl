@@ -138,9 +138,15 @@ elsif(-d "modules"){
 }
 elsif(-e "modules.tar.gz"){
     $moddir = "$pwd/modules";
-    system "mkdir $moddir";
-    system "tar -C $moddir -xf modules.tar.gz";
-    system "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
+    my $cmd="mkdir $moddir";
+    print ": $cmd...\n";
+    system $cmd;
+    my $cmd="tar -C $moddir -xf modules.tar.gz";
+    print ": $cmd...\n";
+    system $cmd;
+    my $cmd="find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
+    print ": $cmd...\n";
+    system $cmd;
 }
 else{
     die "moddir not set\n";
@@ -587,11 +593,11 @@ push @extra_make_rules, "src/glue/romio/all_romio_symbols.c: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if(!-d "$moddir/mpl"){
-    my $cmd = "cp -r src/mpl $moddir/mpl";
-    print "$cmd\n";
+    my $cmd=cp -r src/mpl $moddir/mpl;
+    print ": $cmd...\n";
     system $cmd;
-    my $cmd = "cp -r confdb $moddir/mpl/";
-    print "$cmd\n";
+    my $cmd=cp -r confdb $moddir/mpl/;
+    print ": $cmd...\n";
     system $cmd;
 }
 $I_list .= " -I$moddir/mpl/include";
@@ -616,11 +622,11 @@ push @extra_make_rules, "$moddir/mpl/libmpl.la: $moddir/mpl/include/mplconfig.h"
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if(!-d "$moddir/openpa"){
-    my $cmd = "cp -r src/openpa $moddir/openpa";
-    print "$cmd\n";
+    my $cmd=cp -r src/openpa $moddir/openpa;
+    print ": $cmd...\n";
     system $cmd;
-    my $cmd = "cp -r confdb $moddir/openpa/";
-    print "$cmd\n";
+    my $cmd=cp -r confdb $moddir/openpa/;
+    print ": $cmd...\n";
     system $cmd;
 }
 $I_list .= " -I$moddir/openpa/src";
@@ -639,8 +645,8 @@ push @extra_make_rules, "$moddir/openpa/src/libopa.la: $moddir/openpa/src/opa_co
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if(!-d "$moddir/hwloc"){
-    my $cmd = "cp -r src/hwloc $moddir/hwloc";
-    print "$cmd\n";
+    my $cmd=cp -r src/hwloc $moddir/hwloc;
+    print ": $cmd...\n";
     system $cmd;
 }
 $I_list .= " -I$moddir/hwloc/include";
@@ -706,8 +712,8 @@ push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if($opts{device}=~/ucx/){
     if(!-d "$moddir/ucx"){
-        my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
-        print "$cmd\n";
+        my $cmd=cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx;
+        print ": $cmd...\n";
         system $cmd;
     }
     $I_list .= " -I$moddir/ucx/src";
@@ -729,8 +735,8 @@ if($opts{device}=~/ucx/){
 }
 if($opts{device}=~/ofi/){
     if(!-d "$moddir/libfabric"){
-        my $cmd = "cp -r src/mpid/ch4/netmod/ofi/libfabric $moddir/libfabric";
-        print "$cmd\n";
+        my $cmd=cp -r src/mpid/ch4/netmod/ofi/libfabric $moddir/libfabric;
+        print ": $cmd...\n";
         system $cmd;
     }
     $I_list .= " -I$moddir/libfabric/include";
