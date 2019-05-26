@@ -140,14 +140,14 @@ elsif(-d "modules"){
 }
 elsif(-e "modules.tar.gz"){
     $moddir = "$pwd/modules";
-    my $cmd="mkdir $moddir";
-    print ": $cmd...\n";
+    my $cmd = "mkdir $moddir";
+    print "$cmd\n";
     system $cmd;
-    my $cmd="tar -C $moddir -xf modules.tar.gz";
-    print ": $cmd...\n";
+    my $cmd = "tar -C $moddir -xf modules.tar.gz";
+    print "$cmd\n";
     system $cmd;
-    my $cmd="find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
-    print ": $cmd...\n";
+    my $cmd = "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
+    print "$cmd\n";
     system $cmd;
 }
 else{
@@ -363,11 +363,11 @@ my $bin="\x24(PREFIX)/bin";
 $dst_hash{"LN_S-$bin/mpiexec"}="$bin/mpiexec.hydra";
 $dst_hash{"LN_S-$bin/mpirun"}="$bin/mpiexec.hydra";
 if(!-d "$moddir/mpl"){
-    my $cmd=cp -r src/mpl $moddir/mpl;
-    print ": $cmd...\n";
+    my $cmd = "cp -r src/mpl $moddir/mpl";
+    print "$cmd\n";
     system $cmd;
-    my $cmd=cp -r confdb $moddir/mpl/;
-    print ": $cmd...\n";
+    my $cmd = "cp -r confdb $moddir/mpl/";
+    print "$cmd\n";
     system $cmd;
 }
 $I_list .= " -I$moddir/mpl/include";
@@ -392,8 +392,8 @@ push @extra_make_rules, "$moddir/mpl/libmpl.la: $moddir/mpl/include/mplconfig.h"
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if(!-d "$moddir/hwloc"){
-    my $cmd=cp -r src/hwloc $moddir/hwloc;
-    print ": $cmd...\n";
+    my $cmd = "cp -r src/hwloc $moddir/hwloc";
+    print "$cmd\n";
     system $cmd;
 }
 $I_list .= " -I$moddir/hwloc/include";

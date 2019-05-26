@@ -79,14 +79,14 @@ elsif(-d "modules"){
 }
 elsif(-e "modules.tar.gz"){
     $moddir = "$pwd/modules";
-    my $cmd="mkdir $moddir";
-    print ": $cmd...\n";
+    my $cmd = "mkdir $moddir";
+    print "$cmd\n";
     system $cmd;
-    my $cmd="tar -C $moddir -xf modules.tar.gz";
-    print ": $cmd...\n";
+    my $cmd = "tar -C $moddir -xf modules.tar.gz";
+    print "$cmd\n";
     system $cmd;
-    my $cmd="find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
-    print ": $cmd...\n";
+    my $cmd = "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
+    print "$cmd\n";
     system $cmd;
 }
 else{
