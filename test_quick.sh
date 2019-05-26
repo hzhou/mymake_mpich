@@ -222,7 +222,7 @@ mkdir -p $MODDIR
 pushd $MODDIR
 tar xf $mymake_dir/modules.tar.gz
 pushd ucx
-find . -name '*.la' |xargs --verbose sed -i "s,MODDIR,$MODDIR,g"
+find . -name '*.la' |xargs sed -i "s,MODDIR,$MODDIR,g"
 popd
 popd
 perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config

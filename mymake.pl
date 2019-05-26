@@ -890,6 +890,9 @@ foreach my $p (@ltlibs){
         if($t=~/^-l\w+/){
             $objs.=" $t";
         }
+        elsif($t=~/^-L\S+/){
+            $objs.=" $t";
+        }
         else{
             push @t, $t;
         }
@@ -921,6 +924,9 @@ foreach my $p (@ltlibs){
         my @t;
         foreach my $t (@tlist){
             if($t=~/^-l\w+/){
+                $objs.=" $t";
+            }
+            elsif($t=~/^-L\S+/){
                 $objs.=" $t";
             }
             else{
@@ -980,6 +986,9 @@ foreach my $p (@programs){
         if($t=~/^-l\w+/){
             $objs.=" $t";
         }
+        elsif($t=~/^-L\S+/){
+            $objs.=" $t";
+        }
         else{
             push @t, $t;
         }
@@ -1006,6 +1015,9 @@ foreach my $p (@programs){
         my @t;
         foreach my $t (@tlist){
             if($t=~/^-l\w+/){
+                $objs.=" $t";
+            }
+            elsif($t=~/^-L\S+/){
                 $objs.=" $t";
             }
             else{
