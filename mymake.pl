@@ -3,9 +3,9 @@ use strict;
 our %opts;
 our @config_args;
 our @test_config_args;
-our $srcdir = "$ENV{HOME}/work/mpich";
-our $moddir = "$ENV{HOME}/work/modules";
-our $prefix = "$ENV{HOME}/MPI";
+our $srcdir;
+our $moddir;
+our $prefix;
 our $I_list;
 our $L_list;
 our %objects;
@@ -121,13 +121,29 @@ if($opts{F77}){
 if($opts{FC}){
     $ENV{FC}=$opts{FC};
 }
+if($opts{srcdir}){
+    $srcdir = $opts{srcdir};
+}
+if($opts{moddir}){
+    $moddir = $opts{moddir};
+}
+if($opts{prefix}){
+    $prefix = $opts{prefix};
+}
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
 }
-elsif(-f "modules.tar.gz"){
+elsif(-d "modules"){
     $moddir = "$pwd/modules";
+}
+elsif(-e "modules.tar.gz"){
+    $moddir = "$pwd/modules";
+    system "mkdir $moddir";
     system "tar -C $moddir xf modules.tar.gz";
     system "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
+}
+else{
+    die "moddir not set\n";
 }
 if(-f "./maint/version.m4"){
     $srcdir = ".";
@@ -141,14 +157,12 @@ elsif(-f "../../maint/version.m4"){
 elsif(-f "../../../maint/version.m4"){
     $srcdir = "../../..";
 }
-if($opts{srcdir}){
-    $srcdir = $opts{srcdir};
+if(!$srcdir){
+    die "srcdir not set\n";
 }
-if($opts{moddir}){
-    $moddir = $opts{moddir};
-}
-if($opts{prefix}){
-    $prefix = $opts{prefix};
+if(!$prefix){
+    $prefix=$pwd/_inst;
+    system "mkdir -p $prefix";
 }
 if($opts{do}){
     system "perl $mymake\_$opts{do}.pl";
