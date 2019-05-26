@@ -4,6 +4,9 @@ date
 uptime
 pgrep mpiexec | wc -l
 if test x$jenkins = xold ; then
+    if test -d $HOME/software/autotools/bin; then
+        export PATH=$HOME/software/autotools/bin:$PATH
+    fi
     case "$queue" in
         "ubuntu32")
             source /software/common/adm/etc/softenv-aliases.sh
@@ -36,10 +39,10 @@ if test x$jenkins = xold ; then
     esac
 else
     PMRS=/nfs/gce/projects/login-pmrs
+    if test -d $HOME/software/autotools/bin; then
+        export PATH=$HOME/software/autotools/bin:$PATH
+    fi
     export UCX_NET_DEVICES=mlx5_0:1
-fi
-if test -d $HOME/software/autotools/bin; then
-    export PATH=$HOME/software/autotools/bin:$PATH
 fi
 if test -n $compiler ; then
     if test x$jenkins = xold ; then
@@ -231,7 +234,6 @@ $MPIEXEC -n 2 examples/cpi
 export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include:$CPATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
-free
 if test x$skip_test = xtrue ; then
     exit 0
 else
