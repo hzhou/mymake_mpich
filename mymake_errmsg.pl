@@ -102,7 +102,7 @@ elsif(-d "modules"){
 elsif(-e "modules.tar.gz"){
     $moddir = "$pwd/modules";
     system "mkdir $moddir";
-    system "tar -C $moddir xf modules.tar.gz";
+    system "tar -C $moddir -xf modules.tar.gz";
     system "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
 }
 else{
