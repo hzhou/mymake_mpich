@@ -217,14 +217,6 @@ SRC=$PWD
 PREFIX=$WORKSPACE/_inst
 MPIEXEC=$PREFIX/bin/mpiexec
 set -o pipefail
-export MODDIR=$PWD/modules
-mkdir -p $MODDIR
-pushd $MODDIR
-tar xf $mymake_dir/modules.tar.gz
-pushd ucx
-find . -name '*.la' |xargs sed -i "s,MODDIR,$MODDIR,g"
-popd
-popd
 perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config
 ls -lt
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log

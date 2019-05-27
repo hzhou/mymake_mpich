@@ -97,7 +97,6 @@ if(!$ENV{compiler}){
 }
 if($ENV{test_script} eq "test_quick"){
     push @mpich_config, "--disable-fortran";
-    push @mpich_config, "--disable-romio";
 }
 my (%config_hash);
 if(@mpich_config){
@@ -124,7 +123,7 @@ if(@mpich_config){
             $t='';
             next;
         }
-        elsif($t=~/--disable-(romio|fortran)/){
+        elsif($t=~/--disable-(romio|fortran|cxx)/){
             push @testmpi_config, $t;
         }
     }
