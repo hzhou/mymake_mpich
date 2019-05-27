@@ -230,6 +230,33 @@ push @extra_make_rules, "";
 push @extra_make_rules, "$mkfile:";
 push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
 push @extra_make_rules, "";
+if(!$opts{disable_cxx}){
+    print ": buildiface - cxx\n";
+    chdir "src/binding/cxx";
+    system "perl buildiface -nosep -initfile=./cxx.vlist";
+    chdir $pwd;
+    $dst_hash{"src/binding/cxx/mpicxx.h"}="$prefix/include";
+}
+if(!$opts{disable_fortran}){
+    print ": buildiface - mpif_h\n";
+    chdir "src/binding/fortran/mpif_h";
+    system "perl buildiface >/dev/null";
+    chdir $pwd;
+    print ": buildiface - use_mpi\n";
+    chdir "src/binding/fortran/use_mpi";
+    system "perl buildiface >/dev/null";
+    chdir $pwd;
+    print ": buildiface - use_mpi_f08\n";
+    chdir "src/binding/fortran/use_mpi_f08";
+    system "perl buildiface >/dev/null";
+    chdir $pwd;
+    $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$prefix/include";
+    print ": buildiface - use_mpi_f08/wrappers_c\n";
+    chdir "src/binding/fortran/use_mpi_f08/wrappers_c";
+    system "perl buildiface $pwd/src/include/mpi.h.in";
+    system "perl buildiface $pwd/src/mpi/romio/include/mpio.h.in";
+    chdir $pwd;
+}
 if(!-f "subsys_include.m4"){
     print "---------------------------\n";
     print "-     maint/gen_subcfg_m4\n";
@@ -691,33 +718,6 @@ if(!$opts{disable_romio}){
     push @extra_make_rules, "";
     $dst_hash{"src/mpi/romio/include/mpio.h"} = "$prefix/include";
     $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$prefix/include";
-}
-if(!$opts{disable_cxx}){
-    print ": buildiface - cxx\n";
-    chdir "src/binding/cxx";
-    system "perl buildiface -nosep -initfile=./cxx.vlist";
-    chdir $pwd;
-    $dst_hash{"src/binding/cxx/mpicxx.h"}="$prefix/include";
-}
-if(!$opts{disable_fortran}){
-    print ": buildiface - mpif_h\n";
-    chdir "src/binding/fortran/mpif_h";
-    system "perl buildiface >/dev/null";
-    chdir $pwd;
-    print ": buildiface - use_mpi\n";
-    chdir "src/binding/fortran/use_mpi";
-    system "perl buildiface >/dev/null";
-    chdir $pwd;
-    print ": buildiface - use_mpi_f08\n";
-    chdir "src/binding/fortran/use_mpi_f08";
-    system "perl buildiface >/dev/null";
-    chdir $pwd;
-    $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$prefix/include";
-    print ": buildiface - use_mpi_f08/wrappers_c\n";
-    chdir "src/binding/fortran/use_mpi_f08/wrappers_c";
-    system "perl buildiface $pwd/src/include/mpi.h.in";
-    system "perl buildiface $pwd/src/mpi/romio/include/mpio.h.in";
-    chdir $pwd;
 }
 if($opts{device}=~/ucx/){
     if(!-d "$moddir/ucx"){
