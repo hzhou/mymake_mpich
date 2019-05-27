@@ -100,6 +100,7 @@ foreach my $a (@ARGV){
             push @test_config_args, $a;
         }
         elsif($a=~/--diable-(romio|fortran)/){
+            $opts{"disable_$1"}=1;
             push @config_args, $a;
             push @test_config_args, $a;
         }

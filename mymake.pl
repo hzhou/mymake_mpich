@@ -98,6 +98,7 @@ foreach my $a (@ARGV){
             push @test_config_args, $a;
         }
         elsif($a=~/--diable-(romio|fortran)/){
+            $opts{"disable_$1"}=1;
             push @config_args, $a;
             push @test_config_args, $a;
         }
@@ -664,52 +665,38 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc/include/hwloc/autogen/config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-system "rsync -r confdb/ src/mpi/romio/confdb/";
-system "cp maint/version.m4 src/mpi/romio/";
-$ENV{master_top_srcdir}=$pwd;
-$ENV{master_top_builddir}=$pwd;
-my @mod_list;
-my $f = "configure.ac";
-my $f_ = $f;
-$f_=~s/[\.\/]/_/g;
-my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-push @mod_list, \@m;
-system "mv $m[0] $m[1]";
-my @lines;
-{
-    open In, "$m[1]" or die "Can't open $m[1].\n";
-    @lines=<In>;
-    close In;
-}
-my $flag_skip=0;
-open Out, ">$m[2]" or die "Can't write $m[2].\n";
-print "  --> [$m[2]]\n";
-foreach my $l (@lines){
-    if($flag_skip){
-        next;
+if(!$opts{disable_romio}){
+    my $cmd = "rsync -r confdb/ src/mpi/romio/confdb/";
+    print "$cmd\n";
+    system $cmd;
+    my $cmd = "cp maint/version.m4 src/mpi/romio/";
+    print "$cmd\n";
+    system $cmd;
+    $ENV{master_top_srcdir}=$pwd;
+    $ENV{master_top_builddir}=$pwd;
+    my @mod_list;
+    chdir "src/mpi/romio" or die "can't chdir src/mpi/romio\n";
+    system "autoreconf -iv";
+    chdir $pwd;
+    foreach my $m (@mod_list){
+        system "cp $m->[1] $m->[0]";
     }
-    print Out $l;
+    $I_list .= " -Isrc/mpi/romio/include";
+    $L_list .= " src/mpi/romio/libromio.la";
+    push @CONFIGS, "src/mpi/romio/adio/include/romioconf.h";
+    my @t = ("cd src/mpi/romio");
+    push @t, "\x24(DO_stage) Configure ROMIO";
+    push @t, "sh autogen.sh";
+    push @t, "FROM_MPICH=yes ./configure";
+    push @extra_make_rules, "src/mpi/romio/adio/include/romioconf.h: ";
+    push @extra_make_rules, "\t(".join(' && ', @t).")";
+    push @extra_make_rules, "";
+    my @t = ("cd src/mpi/romio");
+    push @t, "\x24(MAKE)";
+    push @extra_make_rules, "src/mpi/romio/libromio.la: src/mpi/romio/adio/include/romioconf.h";
+    push @extra_make_rules, "\t(".join(' && ', @t).")";
+    push @extra_make_rules, "";
 }
-close Out;
-system "cp -v $m[2] $m[0]";
-chdir "src/mpi/romio" or die "can't chdir src/mpi/romio\n";
-system "autoreconf -iv";
-chdir $pwd;
-foreach my $m (@mod_list){
-    system "cp $m->[1] $m->[0]";
-}
-my @t = ("cd src/mpi/romio");
-push @t, "\x24(DO_stage) Configure ROMIO";
-push @t, "sh autogen.sh";
-push @t, "FROM_MPICH=yes ./configure";
-push @extra_make_rules, "src/mpi/romio/adio/include/romioconf.h: ";
-push @extra_make_rules, "\t(".join(' && ', @t).")";
-push @extra_make_rules, "";
-my @t = ("cd src/mpi/romio");
-push @t, "\x24(MAKE)";
-push @extra_make_rules, "src/mpi/romio/libromio.la: src/mpi/romio/adio/include/romioconf.h";
-push @extra_make_rules, "\t(".join(' && ', @t).")";
-push @extra_make_rules, "";
 if($opts{device}=~/ucx/){
     if(!-d "$moddir/ucx"){
         my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
