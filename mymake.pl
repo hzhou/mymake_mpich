@@ -674,19 +674,12 @@ if(!$opts{disable_romio}){
     system $cmd;
     $ENV{master_top_srcdir}=$pwd;
     $ENV{master_top_builddir}=$pwd;
-    my @mod_list;
-    chdir "src/mpi/romio" or die "can't chdir src/mpi/romio\n";
-    system "autoreconf -iv";
-    chdir $pwd;
-    foreach my $m (@mod_list){
-        system "cp $m->[1] $m->[0]";
-    }
     $I_list .= " -Isrc/mpi/romio/include";
     $L_list .= " src/mpi/romio/libromio.la";
     push @CONFIGS, "src/mpi/romio/adio/include/romioconf.h";
     my @t = ("cd src/mpi/romio");
     push @t, "\x24(DO_stage) Configure ROMIO";
-    push @t, "sh autogen.sh";
+    push @t, "autoreconf -ivf -I confdb";
     push @t, "FROM_MPICH=yes ./configure";
     push @extra_make_rules, "src/mpi/romio/adio/include/romioconf.h: ";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
