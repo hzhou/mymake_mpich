@@ -78,6 +78,7 @@ if(!@ARGV && -f "mymake/args"){
         close In;
     }
     @ARGV = split /\s+/, $t;
+    print "loading last ARGV: @ARGV\n";
 }
 elsif(@ARGV){
     $need_save_args = 1;
@@ -97,7 +98,7 @@ foreach my $a (@ARGV){
         elsif($a=~/--(dis|en)able-.*tests/){
             push @test_config_args, $a;
         }
-        elsif($a=~/--diable-(romio|fortran)/){
+        elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
             push @config_args, $a;
             push @test_config_args, $a;
@@ -666,16 +667,13 @@ push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if(!$opts{disable_romio}){
-    my $cmd = "rsync -r confdb/ src/mpi/romio/confdb/";
-    print "$cmd\n";
-    system $cmd;
-    my $cmd = "cp maint/version.m4 src/mpi/romio/";
-    print "$cmd\n";
-    system $cmd;
+    system "rsync -r confdb/ src/mpi/romio/confdb/";
+    system "cp maint/version.m4 src/mpi/romio/";
     my @t_env;
     push @t_env, "FROM_MPICH=yes";
     push @t_env, "master_top_srcdir=$pwd";
     push @t_env, "master_top_builddir=$pwd";
+    push @t_env, "CPPFLAGS='-I$moddir/mpl/include'";
     $I_list .= " -Isrc/mpi/romio/include";
     $L_list .= " src/mpi/romio/libromio.la";
     push @CONFIGS, "src/mpi/romio/adio/include/romioconf.h";
@@ -691,6 +689,35 @@ if(!$opts{disable_romio}){
     push @extra_make_rules, "src/mpi/romio/libromio.la: src/mpi/romio/adio/include/romioconf.h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
+    $dst_hash{"src/mpi/romio/include/mpio.h"} = "$prefix/include";
+    $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$prefix/include";
+}
+if(!$opts{disable_cxx}){
+    print ": buildiface - cxx\n";
+    chdir "src/binding/cxx";
+    system "perl buildiface -nosep -initfile=./cxx.vlist";
+    chdir $pwd;
+    $dst_hash{"src/binding/cxx/mpicxx.h"}="$prefix/include";
+}
+if(!$opts{disable_fortran}){
+    print ": buildiface - mpif_h\n";
+    chdir "src/binding/fortran/mpif_h";
+    system "perl buildiface >/dev/null";
+    chdir $pwd;
+    print ": buildiface - use_mpi\n";
+    chdir "src/binding/fortran/use_mpi";
+    system "perl buildiface >/dev/null";
+    chdir $pwd;
+    print ": buildiface - use_mpi_f08\n";
+    chdir "src/binding/fortran/use_mpi_f08";
+    system "perl buildiface >/dev/null";
+    chdir $pwd;
+    $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$prefix/include";
+    print ": buildiface - use_mpi_f08/wrappers_c\n";
+    chdir "src/binding/fortran/use_mpi_f08/wrappers_c";
+    system "perl buildiface $pwd/src/include/mpi.h.in";
+    system "perl buildiface $pwd/src/mpi/romio/include/mpio.h.in";
+    chdir $pwd;
 }
 if($opts{device}=~/ucx/){
     if(!-d "$moddir/ucx"){
@@ -1094,6 +1121,13 @@ while (my ($k, $v) = each %special_targets){
     }
     print Out "\n";
 }
+my $t1 = get_list("include_HEADERS");
+my $t2 = get_list("nodist_include_HEADERS");
+if(@$t1 or @$t2){
+    foreach my $t (@$t1, @$t2){
+        $dst_hash{$t} = "$prefix/include";
+    }
+}
 my (%dirs, @install_list, @install_deps, @lns_list);
 while (my ($k, $v) = each %dst_hash){
     if($k=~/^LN_S-(.*)/){
@@ -1111,14 +1145,10 @@ while (my ($k, $v) = each %dst_hash){
             push @install_list, "/bin/sh ./libtool --mode=install $lt_opt install $k $v";
             push @install_deps, $k;
         }
+        elsif($v=~/\/include$/){
+            push @install_list, "cp $k $v";
+        }
     }
-}
-my $t1 = get_list("include_HEADERS");
-my $t2 = get_list("nodist_include_HEADERS");
-if(@$t1 or @$t2){
-    $dirs{"$prefix/include"} = 1;
-    my $t = join(' ', @$t1, @$t2);
-    push @install_list, "cp $t $prefix/include";
 }
 my @install_list = sort @install_list;
 foreach my $d (keys %dirs){

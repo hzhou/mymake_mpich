@@ -45,7 +45,7 @@ $ENV{test_script}="test_quick";
 $ENV{skip_test}=1;
 $ENV{config}="default";
 if(!$ENV{configOption}){
-    $ENV{configOption}="--enable-strict --disable-romio --disable-fortran";
+    $ENV{configOption}="--enable-strict --disable-fortran";
 }
 $ENV{SLURM_SUBMIT_HOST}="";
 $ENV{SLURM_SUBMIT_DIR}="";

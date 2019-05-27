@@ -80,6 +80,7 @@ if(!@ARGV && -f "mymake/args"){
         close In;
     }
     @ARGV = split /\s+/, $t;
+    print "loading last ARGV: @ARGV\n";
 }
 elsif(@ARGV){
     $need_save_args = 1;
@@ -99,7 +100,7 @@ foreach my $a (@ARGV){
         elsif($a=~/--(dis|en)able-.*tests/){
             push @test_config_args, $a;
         }
-        elsif($a=~/--diable-(romio|fortran)/){
+        elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
             push @config_args, $a;
             push @test_config_args, $a;
@@ -766,6 +767,13 @@ while (my ($k, $v) = each %special_targets){
     }
     print Out "\n";
 }
+my $t1 = get_list("include_HEADERS");
+my $t2 = get_list("nodist_include_HEADERS");
+if(@$t1 or @$t2){
+    foreach my $t (@$t1, @$t2){
+        $dst_hash{$t} = "$prefix/include";
+    }
+}
 my (%dirs, @install_list, @install_deps, @lns_list);
 while (my ($k, $v) = each %dst_hash){
     if($k=~/^LN_S-(.*)/){
@@ -783,14 +791,10 @@ while (my ($k, $v) = each %dst_hash){
             push @install_list, "/bin/sh ./libtool --mode=install $lt_opt install $k $v";
             push @install_deps, $k;
         }
+        elsif($v=~/\/include$/){
+            push @install_list, "cp $k $v";
+        }
     }
-}
-my $t1 = get_list("include_HEADERS");
-my $t2 = get_list("nodist_include_HEADERS");
-if(@$t1 or @$t2){
-    $dirs{"$prefix/include"} = 1;
-    my $t = join(' ', @$t1, @$t2);
-    push @install_list, "cp $t $prefix/include";
 }
 my @install_list = sort @install_list;
 foreach my $d (keys %dirs){

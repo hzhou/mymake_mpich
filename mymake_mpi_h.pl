@@ -19,6 +19,7 @@ if(!@ARGV && -f "mymake/args"){
         close In;
     }
     @ARGV = split /\s+/, $t;
+    print "loading last ARGV: @ARGV\n";
 }
 elsif(@ARGV){
     $need_save_args = 1;
@@ -38,7 +39,7 @@ foreach my $a (@ARGV){
         elsif($a=~/--(dis|en)able-.*tests/){
             push @test_config_args, $a;
         }
-        elsif($a=~/--diable-(romio|fortran)/){
+        elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
             push @config_args, $a;
             push @test_config_args, $a;
