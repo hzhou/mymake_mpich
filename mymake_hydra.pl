@@ -148,7 +148,7 @@ elsif(-e "modules.tar.gz"){
     my $cmd = "tar -C $moddir -xf modules.tar.gz";
     print "$cmd\n";
     system $cmd;
-    my $cmd = "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir,g\"";
+    my $cmd = "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir/ucx,g\"";
     print "$cmd\n";
     system $cmd;
 }
