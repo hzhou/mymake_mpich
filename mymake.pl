@@ -231,6 +231,7 @@ push @extra_make_rules, "$mkfile:";
 push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
 push @extra_make_rules, "";
 if(!$opts{disable_cxx}){
+    $opts{enable_cxx}=1;
     print ": buildiface - cxx\n";
     chdir "src/binding/cxx";
     system "perl buildiface -nosep -initfile=./cxx.vlist";
@@ -851,12 +852,25 @@ print Out "$l\n";
 print Out "\n";
 my $cc = get_object("CC");
 my $ccld = get_object("CCLD");
-my $LD="\x24(LINK)";
 print Out "COMPILE = $cc \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) \x24(AM_CFLAGS) \x24(CFLAGS)\n";
 print Out "LINK = $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
 print Out "LTCC = /bin/sh ./libtool --mode=compile $lt_opt \x24(COMPILE)\n";
 print Out "LTLD = /bin/sh ./libtool --mode=link $lt_opt \x24(LINK)\n";
 print Out "\n";
+if($opts{enable_cxx}){
+    my $cxx = get_object("CXX");
+    my $t = get_object("CXXFLAGS");
+    my $l = "CXXFLAGS = $t";
+    $l=~s/$moddir/\x24(MODDIR)/g;
+    print Out "$l\n";
+    my $t = get_object("AM_CXXFLAGS");
+    my $l = "AM_CXXFLAGS = $t";
+    $l=~s/$moddir/\x24(MODDIR)/g;
+    print Out "$l\n";
+    print Out "CXXCOMPILE = $cxx \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) \x24(AM_CXXFLAGS) \x24(CXXFLAGS)\n";
+    print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt \x24(CXXCOMPILE)\n";
+    print Out "\n";
+}
 my $tlist = get_list("lib_LTLIBRARIES");
 foreach my $t (@$tlist){
     $dst_hash{$t} = "\x24(PREFIX)/lib";
@@ -1098,6 +1112,15 @@ else{
     print Out "\t\x24(LTCC) -c -o \$\@ \$<\n";
 }
 print Out "\n";
+if($opts{enable_cxx}){
+    print Out "%.lo: %.cxx\n";
+    if($opts{V}==0){
+        print Out "\t\@echo LTCXX \$\@ && \x24(LTCXX) -c -o \$\@ \$<\n";
+    }
+    else{
+        print Out "\t\x24(LTCXX) -c -o \$\@ \$<\n";
+    }
+}
 while (my ($k, $v) = each %special_targets){
     print Out "%.$k.lo: %.c\n";
     if($opts{V}==0){
