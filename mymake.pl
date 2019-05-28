@@ -261,6 +261,9 @@ if(!$opts{disable_fortran}){
     chdir $pwd;
 }
 else{
+    system "touch src/binding/fortran/mpif_h/Makefile.mk";
+    system "touch src/binding/fortran/use_mpi/Makefile.mk";
+    system "touch src/binding/fortran/use_mpi_f08/Makefile.mk";
     system "touch src/binding/fortran/mpif_h/mpif.h.in";
     system "touch src/binding/fortran/mpif_h/setbotf.h.in";
     system "touch src/binding/fortran/mpif_h/setbot.c.in";
