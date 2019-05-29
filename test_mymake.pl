@@ -69,18 +69,23 @@ print "parsing trigger phrase: \n   [$t]...\n";
 while($t=~/(--(enable|disable|with|without)-\S+)/g){
     push @mpich_config, $1;
 }
-while($trigger_phrase=~/^testlist:\s*(.+)/mg){
-    print "testlist [$1]\n";
-    push @testlist, $1;
+if($trigger_phrase=~/^\s*skip_test\s*=\s*(1|true)/){
+    $ENV{skip_test}="true";
 }
-if(@testlist){
-    open Out, ">test/mpi/testlist.custom" or die "Can't write test/mpi/testlist.custom.\n";
-    print "  --> [test/mpi/testlist.custom]\n";
-    foreach my $l (@testlist){
-        print Out "$l\n";
+else{
+    while($trigger_phrase=~/^testlist:\s*(.+)/mg){
+        print "testlist [$1]\n";
+        push @testlist, $1;
     }
-    close Out;
-    $ENV{skip_test}="custom";
+    if(@testlist){
+        open Out, ">test/mpi/testlist.custom" or die "Can't write test/mpi/testlist.custom.\n";
+        print "  --> [test/mpi/testlist.custom]\n";
+        foreach my $l (@testlist){
+            print Out "$l\n";
+        }
+        close Out;
+        $ENV{skip_test}="custom";
+    }
 }
 if($trigger_phrase=~/^\s*compiler\s*[:=]\s*([\w\-\.]+)/m){
     $ENV{compiler}=$1;
