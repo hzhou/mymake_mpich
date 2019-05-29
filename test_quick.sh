@@ -240,7 +240,7 @@ else
     cd test/mpi
     sh autogen.sh
     autoreconf -ivf
-    ./configure $testmpi_config
+    ./configure $testmpi_config --disable-romio
     if test x$skip_test = xcustom ; then
         perl $mymake_dir/runtests.pl -tests=testlist.custom -junitfile=summary.junit.xml
     else

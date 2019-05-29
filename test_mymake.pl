@@ -186,8 +186,6 @@ print "    mpich_device: $ENV{mpich_device}\n";
 print "    mpich_config: $ENV{mpich_config}\n";
 print "    testmpi_config: $ENV{testmpi_config}\n";
 print "    N_MAKE_JOBS: $ENV{N_MAKE_JOBS}\n";
-print "    SLURM_SUBMIT_HOST: $ENV{SLURM_SUBMIT_HOST}\n";
-print "    SLURM_SUBMIT_DIR: $ENV{SLURM_SUBMIT_DIR}\n";
 print "    outoftree: $ENV{outoftree}\n";
 print "    test_script: $test_script\n";
 $compiler = $ENV{compiler};
