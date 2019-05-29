@@ -132,18 +132,22 @@ if($opts{moddir}){
 if($opts{prefix}){
     $prefix = $opts{prefix};
 }
+my $mod_tarball = "modules.tar.gz";
+if($ENV{MODTARBALL}){
+    $mod_tarball = $ENV{MODTARBALL};
+}
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
 }
 elsif(-d "modules"){
     $moddir = "$pwd/modules";
 }
-elsif(-e "modules.tar.gz"){
+elsif(-e $mod_tarball){
     $moddir = "$pwd/modules";
     my $cmd = "mkdir $moddir";
     print "$cmd\n";
     system $cmd;
-    my $cmd = "tar -C $moddir -xf modules.tar.gz";
+    my $cmd = "tar -C $moddir -xf $mod_tarball";
     print "$cmd\n";
     system $cmd;
     my $cmd = "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir/ucx,g\"";
