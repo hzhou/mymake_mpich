@@ -100,6 +100,13 @@ foreach my $a (@ARGV){
         }
         elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
+            $opts{"enable_$1"}=0;
+            push @config_args, $a;
+            push @test_config_args, $a;
+        }
+        elsif($a=~/--enable-fortran=(\w+)/){
+            $opts{disable_fortran}=0;
+            $opts{enable_fortran}=$1;
             push @config_args, $a;
             push @test_config_args, $a;
         }
@@ -236,34 +243,51 @@ push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
 push @extra_make_rules, "";
 if(!$opts{disable_cxx}){
     $opts{enable_cxx}=1;
-    print ": buildiface - cxx\n";
-    chdir "src/binding/cxx";
-    system "perl buildiface -nosep -initfile=./cxx.vlist";
-    chdir $pwd;
+    if(!-f "configure"){
+        print ": buildiface - cxx\n";
+        chdir "src/binding/cxx";
+        system "perl buildiface -nosep -initfile=./cxx.vlist";
+        chdir $pwd;
+    }
     $dst_hash{"src/binding/cxx/mpicxx.h"}="$prefix/include";
 }
 else{
     system "touch src/binding/cxx/mpicxx.h.in";
 }
 if(!$opts{disable_fortran}){
-    print ": buildiface - mpif_h\n";
-    chdir "src/binding/fortran/mpif_h";
-    system "perl buildiface >/dev/null";
-    chdir $pwd;
-    print ": buildiface - use_mpi\n";
-    chdir "src/binding/fortran/use_mpi";
-    system "perl buildiface >/dev/null";
-    chdir $pwd;
-    print ": buildiface - use_mpi_f08\n";
-    chdir "src/binding/fortran/use_mpi_f08";
-    system "perl buildiface >/dev/null";
-    chdir $pwd;
+    if(!-f "configure"){
+        print ": buildiface - mpif_h\n";
+        chdir "src/binding/fortran/mpif_h";
+        system "perl buildiface >/dev/null";
+        chdir $pwd;
+    }
+    if(!-f "configure"){
+        print ": buildiface - use_mpi\n";
+        chdir "src/binding/fortran/use_mpi";
+        system "perl buildiface >/dev/null";
+        system "perl ../mpif_h/buildiface -infile=cf90t.h -deffile=./cf90tdefs";
+        chdir $pwd;
+    }
+    push @extra_make_rules, "src/binding/fortran/use_mpi/mpi.lo: src/binding/fortran/use_mpi/mpi_constants.lo src/binding/fortran/use_mpi/mpi_sizeofs.lo src/binding/fortran/use_mpi/mpi_base.lo";
+    push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_base.lo: src/binding/fortran/use_mpi/mpi_constants.lo", "";
+    push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_sizeofs.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
+    push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_constants.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
+    push @extra_make_rules, "src/binding/fortran/use_mpi/mpifnoext.h: src/binding/fortran/mpif_h/mpif.h";
+    push @extra_make_rules, "\tsed -e 's/^C/!/g' -e '/EXTERNAL|REAL\*8|DOUBLE PRECISION|MPI_WTICK/d' \$< > \$@";
+    push @extra_make_rules, "";
+    if(!-f "configure"){
+        print ": buildiface - use_mpi_f08\n";
+        chdir "src/binding/fortran/use_mpi_f08";
+        system "perl buildiface >/dev/null";
+        chdir $pwd;
+        print ": buildiface - use_mpi_f08/wrappers_c\n";
+        chdir "src/binding/fortran/use_mpi_f08/wrappers_c";
+        system "rm -f Makefile.mk";
+        system "perl buildiface $pwd/src/include/mpi.h.in";
+        system "perl buildiface $pwd/src/mpi/romio/include/mpio.h.in";
+        chdir $pwd;
+    }
     $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$prefix/include";
-    print ": buildiface - use_mpi_f08/wrappers_c\n";
-    chdir "src/binding/fortran/use_mpi_f08/wrappers_c";
-    system "perl buildiface $pwd/src/include/mpi.h.in";
-    system "perl buildiface $pwd/src/mpi/romio/include/mpio.h.in";
-    chdir $pwd;
 }
 else{
     system "touch src/binding/fortran/mpif_h/Makefile.mk";
@@ -604,6 +628,7 @@ push @extra_make_rules, "src/mpi/errhan/errutil.lo: src/mpi/errhan/defmsg.h";
 push @extra_make_rules, "src/mpi/errhan/defmsg.h:";
 push @extra_make_rules, "\t\x24(DO_errmsg)";
 push @extra_make_rules, "";
+push @CONFIGS, "src/include/mpichconf.h";
 push @CONFIGS, "src/include/mpir_cvars.h";
 push @extra_make_rules, "src/include/mpir_cvars.h:";
 push @extra_make_rules, "\t\x24(DO_cvars)";
@@ -861,18 +886,32 @@ print Out "LINK = $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
 print Out "LTCC = /bin/sh ./libtool --mode=compile $lt_opt \x24(COMPILE)\n";
 print Out "LTLD = /bin/sh ./libtool --mode=link $lt_opt \x24(LINK)\n";
 print Out "\n";
-if($opts{enable_cxx}){
+if(!$opts{disable_cxx}){
     my $cxx = get_object("CXX");
-    my $t = get_object("CXXFLAGS");
-    my $l = "CXXFLAGS = $t";
-    $l=~s/$moddir/\x24(MODDIR)/g;
-    print Out "$l\n";
-    my $t = get_object("AM_CXXFLAGS");
-    my $l = "AM_CXXFLAGS = $t";
-    $l=~s/$moddir/\x24(MODDIR)/g;
-    print Out "$l\n";
-    print Out "CXXCOMPILE = $cxx \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) \x24(AM_CXXFLAGS) \x24(CXXFLAGS)\n";
+    my $flags = get_object("CXXFLAGS");
+    my $am_flags = get_object("AM_CXXFLAGS");
+    print Out "CXXCOMPILE = $cxx \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) $flags $am_flags\n";
     print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt \x24(CXXCOMPILE)\n";
+    my $cxxld = get_object("CXXLD");
+    print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CXX $cxxld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+    print Out "\n";
+}
+if(!$opts{disable_fortran}){
+    my $fc = get_object("F77");
+    my $flags = get_object("FFLAGS");
+    my $am_flags = get_object("AM_FFLAGS");
+    print Out "F77COMPILE = $fc $flags $am_flags\n";
+    print Out "LTF77 = /bin/sh ./libtool --mode=compile $lt_opt \x24(F77COMPILE)\n";
+    my $ld = get_object("F77LD");
+    print Out "F77LD = /bin/sh ./libtool --mode=link $lt_opt --tag=F77 $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+    print Out "\n";
+    my $fc = get_object("FC");
+    my $flags = get_object("FCFLAGS");
+    my $am_flags = get_object("AM_FCFLAGS");
+    print Out "FCCOMPILE = $fc $flags $am_flags\n";
+    print Out "LTFC = /bin/sh ./libtool --mode=compile $lt_opt \x24(FCCOMPILE)\n";
+    my $ld = get_object("FCLD");
+    print Out "FCLD = /bin/sh ./libtool --mode=link $lt_opt --tag=FC $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     print Out "\n";
 }
 my $tlist = get_list("lib_LTLIBRARIES");
@@ -899,11 +938,18 @@ foreach my $t (@$tlist){
 }
 print Out "all: @ltlibs @programs\n";
 print Out "\n";
-my $cmd = "\x24(LTLD)";
-if($opts{V}==0){
-    $cmd = "\@echo LTLD \$\@ && $cmd";
-}
 foreach my $p (@ltlibs){
+    my $ld = "LTLD";
+    if($p=~/libmpifort.la/){
+        $ld = "F77LD";
+    }
+    elsif($p=~/libmpicxx.la/){
+        $ld = "CXXLD";
+    }
+    my $cmd = "\x24($ld)";
+    if($opts{V}==0){
+        $cmd = "\@echo $ld \$\@ && $cmd";
+    }
     my $a = $p;
     $a=~s/[\.\/]/_/g;
     my ($deps, $objs);
@@ -949,11 +995,13 @@ foreach my $p (@ltlibs){
     my $add = $a."_LIBADD";
     if($objects{$add}){
         my $t = get_object($add);
-        $t=~s/\bsrc\/(mpl|openpa)\/\S+\s*//g;
-        $t=~s/\bsrc\/mpi\/romio\/\S+\s*//g;
-        $t=~s/\@ucxlib\@\s*//g;
-        $t=~s/\@ofilib\@\s*//g;
-        $t.= $L_list;
+        if($add!~/mpi(fort|cxx)/){
+            $t=~s/\bsrc\/(mpl|openpa)\/\S+\s*//g;
+            $t=~s/\bsrc\/mpi\/romio\/\S+\s*//g;
+            $t=~s/\@ucxlib\@\s*//g;
+            $t=~s/\@ofilib\@\s*//g;
+            $t.= $L_list;
+        }
         $t=~s/^\s+//;
         my @tlist = split /\s+/, $t;
         my @t;
@@ -995,11 +1043,18 @@ foreach my $p (@ltlibs){
     print Out "\t$cmd -o \$\@ $objs\n";
     print Out "\n";
 }
-my $cmd = "\x24(LTLD)";
-if($opts{V}==0){
-    $cmd = "\@echo LTLD \$\@ && $cmd";
-}
 foreach my $p (@programs){
+    my $ld = "LTLD";
+    if($p=~/libmpifort.la/){
+        $ld = "F77LD";
+    }
+    elsif($p=~/libmpicxx.la/){
+        $ld = "CXXLD";
+    }
+    my $cmd = "\x24($ld)";
+    if($opts{V}==0){
+        $cmd = "\@echo $ld \$\@ && $cmd";
+    }
     my $a = $p;
     $a=~s/[\.\/]/_/g;
     my ($deps, $objs);
@@ -1116,7 +1171,7 @@ else{
     print Out "\t\x24(LTCC) -c -o \$\@ \$<\n";
 }
 print Out "\n";
-if($opts{enable_cxx}){
+if(!$opts{disable_cxx}){
     print Out "%.lo: %.cxx\n";
     if($opts{V}==0){
         print Out "\t\@echo LTCXX \$\@ && \x24(LTCXX) -c -o \$\@ \$<\n";
@@ -1124,6 +1179,25 @@ if($opts{enable_cxx}){
     else{
         print Out "\t\x24(LTCXX) -c -o \$\@ \$<\n";
     }
+    print Out "\n";
+}
+if(!$opts{disable_fortran}){
+    print Out "%.lo: %.f\n";
+    if($opts{V}==0){
+        print Out "\t\@echo LTF77 \$\@ && \x24(LTF77) -c -o \$\@ \$<\n";
+    }
+    else{
+        print Out "\t\x24(LTF77) -c -o \$\@ \$<\n";
+    }
+    print Out "\n";
+    print Out "%.lo: %.f90\n";
+    if($opts{V}==0){
+        print Out "\t\@echo LTFC \$\@ && \x24(LTFC) -c -o \$\@ \$<\n";
+    }
+    else{
+        print Out "\t\x24(LTFC) -c -o \$\@ \$<\n";
+    }
+    print Out "\n";
 }
 while (my ($k, $v) = each %special_targets){
     print Out "%.$k.lo: %.c\n";
@@ -1135,6 +1209,14 @@ while (my ($k, $v) = each %special_targets){
     }
     print Out "\n";
 }
+print Out "%.i: %.c\n";
+if($opts{V}==0){
+    print Out "\t\@echo CC -E \$\@ && \x24(COMPILE) -CC -E -o \$\@ \$<\n";
+}
+else{
+    print Out "\t\x24(COMPILE) -CC -E -o \$\@ \$<\n";
+}
+print Out "\n";
 my $t1 = get_list("include_HEADERS");
 my $t2 = get_list("nodist_include_HEADERS");
 if(@$t1 or @$t2){

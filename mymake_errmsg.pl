@@ -63,6 +63,13 @@ foreach my $a (@ARGV){
         }
         elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
+            $opts{"enable_$1"}=0;
+            push @config_args, $a;
+            push @test_config_args, $a;
+        }
+        elsif($a=~/--enable-fortran=(\w+)/){
+            $opts{disable_fortran}=0;
+            $opts{enable_fortran}=$1;
             push @config_args, $a;
             push @test_config_args, $a;
         }
