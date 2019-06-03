@@ -287,6 +287,11 @@ if(!$opts{disable_fortran}){
         system "perl buildiface $pwd/src/mpi/romio/include/mpio.h.in";
         chdir $pwd;
     }
+    push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08.lo: src/binding/fortran/use_mpi_f08/pmpi_f08.lo", "";
+    push @extra_make_rules, "src/binding/fortran/use_mpi_f08/pmpi_f08.lo: mpi_f08_callbacks.lo mpi_f08_compile_constants.lo mpi_f08_link_constants.lo", "";
+    push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo: src/binding/fortran/use_mpi_f08/mpi_f08_types.lo", "";
+    push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo: src/binding/fortran/use_mpi_f08/mpi_f08_types.lo", "";
+    push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_types.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo", "";
     $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$prefix/include";
 }
 else{
