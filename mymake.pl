@@ -1229,8 +1229,9 @@ else{
 print Out "\n";
 my $t1 = get_list("include_HEADERS");
 my $t2 = get_list("nodist_include_HEADERS");
-if(@$t1 or @$t2){
-    foreach my $t (@$t1, @$t2){
+my $t3 = get_list("modinc_HEADERS");
+if(@$t1 or @$t2 or @$t3){
+    foreach my $t (@$t1, @$t2, @$t3){
         $dst_hash{$t} = "$prefix/include";
     }
 }
