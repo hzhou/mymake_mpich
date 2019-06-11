@@ -1,4 +1,5 @@
 set -x
+printenv
 hostname
 date
 uptime

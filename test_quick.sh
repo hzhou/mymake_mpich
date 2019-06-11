@@ -1,5 +1,6 @@
 export LD=ld.gold
 set -x
+printenv
 hostname
 date
 uptime
