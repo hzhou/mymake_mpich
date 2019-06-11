@@ -93,6 +93,9 @@ if($trigger_phrase=~/^\s*compiler\s*[:=]\s*([\w\-\.]+)/m){
 if($trigger_phrase=~/^\s*build_out_of_tree\s*[:=]\s*(yes|true|1)/m){
     $ENV{outoftree}="true";
 }
+if($trigger_phrase=~/^env:\s*(\w+)\s*=\s*(\S*)/m){
+    $ENV{$1}=$2;
+}
 my $test_script = $ENV{test_script};
 if(!$test_script){
     $test_script = "test_build";
