@@ -104,7 +104,6 @@ if(!$ENV{compiler}){
     $ENV{compiler}='gnu';
 }
 if($ENV{test_script} eq "test_quick"){
-    push @mpich_config, "--disable-fortran";
 }
 my (%config_hash);
 if(@mpich_config){
