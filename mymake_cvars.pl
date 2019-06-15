@@ -81,9 +81,15 @@ if($opts{moddir}){
 if($opts{prefix}){
     $prefix = $opts{prefix};
 }
-my $mod_tarball = "modules.tar.gz";
+my $mod_tarball;
 if($ENV{MODTARBALL}){
     $mod_tarball = $ENV{MODTARBALL};
+}
+elsif(-e "mymake.tar.gz"){
+    $mod_tarball = "mymake.tar.gz";
+}
+elsif(-e "mymake/mymake.tar.gz"){
+    $mod_tarball = "mymake/mymake.tar.gz";
 }
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
