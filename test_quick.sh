@@ -216,7 +216,7 @@ $FC --version
 WORKSPACE=$PWD
 SRC=$PWD
 PREFIX=$WORKSPACE/_inst
-if test -z $MPIEXEC
+if test -z $MPIEXEC ; then
     MPIEXEC=$PREFIX/bin/mpiexec
 fi
 set -o pipefail
