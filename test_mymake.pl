@@ -103,7 +103,6 @@ if(!$ENV{compiler}){
 }
 if($ENV{test_script} eq "test_quick"){
 }
-$config_hash{device}="ch3:tcp";
 if(@mpich_config){
     foreach my $t (@mpich_config){
         my $k=$t;
@@ -128,6 +127,9 @@ if(@mpich_config){
             push @testmpi_config, $t;
         }
     }
+}
+if(!$config_hash{device}){
+    $config_hash{device}="ch3:tcp";
 }
 push @testmpi_config, "--disable-perftest";
 if($config_hash{pmix} or $config_hash{device}=~/ucx/ or $config_hash{pmi}=~/pmi2/){
