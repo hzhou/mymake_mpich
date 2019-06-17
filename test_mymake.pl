@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 use strict;
 our $compiler;
+our %config_hash;
 our @mpich_config;
 our @testmpi_config;
 our @testlist;
-our $conflict_with_device;
 sub parse_warning {
     my ($t) = @_;
     my $o;
@@ -69,10 +69,17 @@ print "parsing trigger phrase: \n   [$t]...\n";
 while($t=~/(--(enable|disable|with|without)-\S+)/g){
     push @mpich_config, $1;
 }
-if($trigger_phrase=~/^\s*skip_test\s*=\s*(1|true)/){
-    $ENV{skip_test}="true";
+if($trigger_phrase=~/^\s*(compiler|skip_test|out_of_tree)\s*[:=]\s*([\w\-\.]+)/m){
+    my ($key, $val) = ($1, $2);
+    if($val=~/(yes|1)/){
+        $val = "true";
+    }
+    $ENV{$key}=$val;
 }
-else{
+if($trigger_phrase=~/^env:\s*(\w+)\s*=\s*(\S*)/m){
+    $ENV{$1}=$2;
+}
+if(!$ENV{skip_test}){
     while($trigger_phrase=~/^testlist:\s*(.+)/mg){
         print "testlist [$1]\n";
         push @testlist, $1;
@@ -87,15 +94,6 @@ else{
         $ENV{skip_test}="custom";
     }
 }
-if($trigger_phrase=~/^\s*compiler\s*[:=]\s*([\w\-\.]+)/m){
-    $ENV{compiler}=$1;
-}
-if($trigger_phrase=~/^\s*build_out_of_tree\s*[:=]\s*(yes|true|1)/m){
-    $ENV{outoftree}="true";
-}
-if($trigger_phrase=~/^env:\s*(\w+)\s*=\s*(\S*)/m){
-    $ENV{$1}=$2;
-}
 my $test_script = $ENV{test_script};
 if(!$test_script){
     $test_script = "test_build";
@@ -105,18 +103,9 @@ if(!$ENV{compiler}){
 }
 if($ENV{test_script} eq "test_quick"){
 }
-my (%config_hash);
+$config_hash{device}="ch3:tcp";
 if(@mpich_config){
     foreach my $t (@mpich_config){
-        if($t=~/--with-device=(\S+)/){
-            if($config_hash{device}){
-                if($config_hash{device} ne $1){
-                    $conflict_with_device=1;
-                }
-            }
-            $config_hash{device}=$1;
-            next;
-        }
         my $k=$t;
         $k=~s/=.*$//;
         $k=~s/^--(disable|enable|with|without)-//;
@@ -124,7 +113,12 @@ if(@mpich_config){
             $t='';
             next;
         }
-        $config_hash{$k}=1;
+        if($t=~/=(.+)/){
+            $config_hash{$k}=$1;
+        }
+        else{
+            $config_hash{$k}=1;
+        }
         if($t=~/--(disable|enable)-(.*-tests)/){
             push @testmpi_config, $t;
             $t='';
@@ -134,39 +128,58 @@ if(@mpich_config){
             push @testmpi_config, $t;
         }
     }
-    my $t = join(' ', @mpich_config);
-    if($t=~/gforker/){
-        if($t!~/--with-namepublisher/){
-            $t .= " --with-namepublisher=file";
-        }
-        else{
-            $t=~s/--with-pm=gforker//;
-        }
-    }
-}
-if($config_hash{device}=~/^(ch\d:\w+)/){
-    $ENV{mpich_device}=$1;
-}
-else{
-    $ENV{mpich_device}="ch3:tcp";
-}
-if($ENV{mpich_device}=~/ch3:sock/){
-    push @testmpi_config, "--disable-ft-tests";
-    push @testmpi_config, "--disable-comm-overlap-tests";
-}
-if($ENV{mpich_device}=~/ch4:ucx/){
-    push @testmpi_config, "--disable-ft-tests";
-    push @testmpi_config, "--disable-spawn";
-}
-if($ENV{mpich_device}=~/ch4:ofi/){
-    push @testmpi_config, "--disable-ft-tests";
 }
 push @testmpi_config, "--disable-perftest";
+if($config_hash{pmix} or $config_hash{device}=~/ucx/ or $config_hash{pmi}=~/pmi2/){
+    push @testmpi_config, "--disable-spawn";
+}
+if($config_hash{device}!~/ch3:tcp/){
+    push @testmpi_config, "--disable-ft-tests";
+}
+if($config_hash{device}=~/ch3:sock/){
+    push @testmpi_config, "--disable-comm-overlap-tests";
+}
+if($config_hash{pm} eq "gforker"){
+    if(!$config_hash{namepublisher}){
+        push @mpich_config, "--with-namepublisher=file";
+    }
+    else{
+        $config_hash{conflict} = "Conflicting config option: --with-pm=gforker and --with-namepublisher=$config_hash{namepublisher}";
+    }
+}
 if(@mpich_config){
     $ENV{mpich_config}= join(' ', @mpich_config);
 }
 if(@testmpi_config){
     $ENV{testmpi_config} = join(' ', @testmpi_config);
+}
+if($config_hash{device}=~/^(ch\d:\w+)/){
+    $ENV{mpich_device}=$1;
+}
+if($config=~/(ch\d+:\w+)/){
+    my ($t) = ($1);
+    if($config_hash{device} !~ /$t/){
+        $config_hash{conflict} = "config: $config and option: --with-device=$config_hash{device} are in conflict";
+    }
+}
+if($config=~/(ch3:\w+)/){
+    my ($t) = ($1);
+    if($config_hash{pmix}){
+        $config_hash{conflict} = "config: $config and option: --with-pmix=$config_hash{pmix} are in conflict";
+    }
+}
+if($config_hash{conflict}){
+    open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
+    print "  --> [summary.junit.xml]\n";
+    print Out "<testsuites>\n";
+    print Out "<testsuite failures=\"0\" errors=\"0\" skipped=\"1\" tests=\"1\" name=\"skip\">\n";
+    print Out "<testcase name=\"1 - skip\">\n";
+    print Out "<skipped type=\"conflict\" message=\"$config_hash{conflict}\" />\n";
+    print Out "</testcase>\n";
+    print Out "</testsuite>\n";
+    print Out "</testsuites>\n";
+    close Out;
+    exit 0;
 }
 if($ENV{N_MAKE_JOBS} > 0){
 }
@@ -188,7 +201,7 @@ print "    mpich_device: $ENV{mpich_device}\n";
 print "    mpich_config: $ENV{mpich_config}\n";
 print "    testmpi_config: $ENV{testmpi_config}\n";
 print "    N_MAKE_JOBS: $ENV{N_MAKE_JOBS}\n";
-print "    outoftree: $ENV{outoftree}\n";
+print "    out_of_tree: $ENV{out_of_tree}\n";
 print "    test_script: $test_script\n";
 $compiler = $ENV{compiler};
 print "Running $mymake_dir/$test_script.sh...\n";
@@ -270,15 +283,5 @@ else{
     print Out "</testsuite>\n";
     print Out "</testsuites>\n";
     close Out;
-}
-if($ENV{SLURM_SUBMIT_HOST}){
-    my @files=qw(apply-xfail.sh config.log make.log Makefile.custom summary.junit.xml);
-    my $t = "find . \\( ";
-    foreach my $f (@files){
-        $t .= "-name \"$f\" -o ";
-    }
-    $t=~s/ -o $/ \\)/;
-    system "$t -exec ssh $ENV{SLURM_SUBMIT_HOST} \"mkdir -p $ENV{SLURM_SUBMIT_DIR}/\\\x24(dirname {})\" \\;";
-    system "$t -exec scp {} $ENV{SLURM_SUBMIT_HOST}:$ENV{SLURM_SUBMIT_DIR}/{} \\;";
 }
 exit $ret;

@@ -215,11 +215,12 @@ $FC --version
 WORKSPACE=$PWD
 SRC=$PWD
 PREFIX=$WORKSPACE/_inst
-MPIEXEC=$PREFIX/bin/mpiexec
+if -z $MPIEXEC
+    MPIEXEC=$PREFIX/bin/mpiexec
 set -o pipefail
 git submodule update --init --recursive
 sh autogen.sh
-if test x$outoftree = xtrue ; then
+if test x$out_of_tree = xtrue ; then
     mkdir build
     cd build
     ../configure --prefix=$PREFIX $mpich_config $testmpi_config
@@ -240,7 +241,7 @@ if test x$skip_test = xtrue ; then
 else
     cd test/mpi
     if test x$skip_test = xcustom ; then
-        if test x$outoftree = xtrue ; then
+        if test x$out_of_tree = xtrue ; then
             cp -v ../../../test/mpi/testlist.custom testlist
         else
             cp -v testlist.custom testlist
