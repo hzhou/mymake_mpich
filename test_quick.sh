@@ -216,8 +216,9 @@ $FC --version
 WORKSPACE=$PWD
 SRC=$PWD
 PREFIX=$WORKSPACE/_inst
-if -z $MPIEXEC
+if test -z $MPIEXEC
     MPIEXEC=$PREFIX/bin/mpiexec
+fi
 set -o pipefail
 perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config
 ls -lt

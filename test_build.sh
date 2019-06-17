@@ -215,8 +215,9 @@ $FC --version
 WORKSPACE=$PWD
 SRC=$PWD
 PREFIX=$WORKSPACE/_inst
-if -z $MPIEXEC
+if test -z $MPIEXEC
     MPIEXEC=$PREFIX/bin/mpiexec
+fi
 set -o pipefail
 git submodule update --init --recursive
 sh autogen.sh
