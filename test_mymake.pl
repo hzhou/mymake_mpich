@@ -103,8 +103,12 @@ if(!$ENV{compiler}){
 }
 if($ENV{test_script} eq "test_quick"){
 }
+my @config_devices;
 if(@mpich_config){
     foreach my $t (@mpich_config){
+        if($t=~/--with-device=(.*)/){
+            push @config_devices, $1;
+        }
         my $k=$t;
         $k=~s/=.*$//;
         $k=~s/^--(disable|enable|with|without)-//;
@@ -127,9 +131,6 @@ if(@mpich_config){
             push @testmpi_config, $t;
         }
     }
-}
-if(!$config_hash{device}){
-    $config_hash{device}="ch3:tcp";
 }
 push @testmpi_config, "--disable-perftest";
 if($config_hash{pmix} or $config_hash{device}=~/ucx/ or $config_hash{pmi}=~/pmi2/){
@@ -160,8 +161,10 @@ if($config_hash{device}=~/^(ch\d:\w+)/){
 }
 if($config=~/(ch\d+:\w+)/){
     my ($t) = ($1);
-    if($config_hash{device} !~ /$t/){
-        $config_hash{conflict} = "config: $config and option: --with-device=$config_hash{device} are in conflict";
+    foreach my $dev (@config_devices){
+        if($dev !~ /$t/){
+            $config_hash{conflict} = "config: $config and option: --with-device=$dev are in conflict";
+        }
     }
 }
 if($config=~/(ch3:\w+)/){

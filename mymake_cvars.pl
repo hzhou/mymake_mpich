@@ -19,6 +19,7 @@ if(!@ARGV && -f "mymake/args"){
         $t=<In>;
         close In;
     }
+    chomp $t;
     @ARGV = split /\s+/, $t;
     print "loading last ARGV: @ARGV\n";
 }

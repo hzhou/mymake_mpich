@@ -79,6 +79,7 @@ if(!@ARGV && -f "mymake/args"){
         $t=<In>;
         close In;
     }
+    chomp $t;
     @ARGV = split /\s+/, $t;
     print "loading last ARGV: @ARGV\n";
 }
@@ -918,7 +919,7 @@ if(@install_list){
 print Out "\x23 --------------------\n";
 print Out ".PHONY: clean realclean realrealclean\n";
 print Out "clean:\n";
-print Out "\t(find . -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' |xargs rm -f)\n";
+print Out "\t(find . -not \\( -path ./modules -prune \\) -a \\( -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' \\) |xargs rm -f)\n";
 print Out "\n";
 print Out "realclean: clean\n";
 print Out "\t\x24(DO_clean)\n";

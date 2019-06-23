@@ -77,6 +77,7 @@ if(!@ARGV && -f "mymake/args"){
         $t=<In>;
         close In;
     }
+    chomp $t;
     @ARGV = split /\s+/, $t;
     print "loading last ARGV: @ARGV\n";
 }
@@ -224,7 +225,7 @@ push @extra_make_rules, "";
 if($need_save_args){
     my $t = join(' ', @ARGV);
     open Out, ">mymake/args" or die "Can't write mymake/args.\n";
-    print Out $t;
+    print Out $t, "\n";
     close Out;
     system "rm -f mymake/Makefile.orig";
     system "rm -f $moddir/mpl/include/mplconfig.h $moddir/openpa/src/opa_config.h";
@@ -463,6 +464,32 @@ if(!-f "configure"){
         system "cp -v $m[2] $m[0]";
     }
     if($opts{device}=~/ofi/){
+        my $f = "src/mpid/ch4/netmod/ofi/Makefile.mk";
+        my $f_ = $f;
+        $f_=~s/[\.\/]/_/g;
+        my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+        push @mod_list, \@m;
+        system "mv $m[0] $m[1]";
+        my @lines;
+        {
+            open In, "$m[1]" or die "Can't open $m[1].\n";
+            @lines=<In>;
+            close In;
+        }
+        my $flag_skip=0;
+        open Out, ">$m[2]" or die "Can't write $m[2].\n";
+        print "  --> [$m[2]]\n";
+        foreach my $l (@lines){
+            if($l=~/^(\s*)src.mpid.ch4.netmod.ofi.ofi_init.c/){
+                print Out $1, "src/mpid/ch4/netmod/ofi/ofi_noinline.c \\\n";
+            }
+            if($flag_skip){
+                next;
+            }
+            print Out $l;
+        }
+        close Out;
+        system "cp -v $m[2] $m[0]";
         my $flag;
         my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
         my $f_ = $f;
@@ -489,6 +516,11 @@ if(!-f "configure"){
                     $flag = 0;
                     print Out "    AC_DEFINE([MPIDI_CH4_OFI_USE_SET_RUNTIME], [1], [Define to use runtime capability set])\n";
                     next;
+                }
+                elsif($l=~/AC_ARG_ENABLE.*legacy-ofi/){
+                    $flag=2;
+                }
+                elsif($flag==2){
                 }
                 else{
                     next;
@@ -1290,7 +1322,7 @@ if(@install_list){
 print Out "\x23 --------------------\n";
 print Out ".PHONY: clean realclean realrealclean\n";
 print Out "clean:\n";
-print Out "\t(find . -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' |xargs rm -f)\n";
+print Out "\t(find . -not \\( -path ./modules -prune \\) -a \\( -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' \\) |xargs rm -f)\n";
 print Out "\n";
 print Out "realclean: clean\n";
 print Out "\t\x24(DO_clean)\n";
