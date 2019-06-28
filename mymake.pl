@@ -925,7 +925,12 @@ if(!$opts{disable_fortran}){
     $flags.=" $am_flags";
     if($flags=~/-I(\S+)/){
         my ($modpath) = ($1);
-        $flags.=" -J$modpath";
+        if($ENV{compiler} =~/pgi/){
+            $flags.=" -module $modpath";
+        }
+        else{
+            $flags.=" -J$modpath";
+        }
     }
     print Out "F77COMPILE = $fc $flags\n";
     print Out "LTF77 = /bin/sh ./libtool --mode=compile $lt_opt \x24(F77COMPILE)\n";
@@ -938,7 +943,12 @@ if(!$opts{disable_fortran}){
     $flags.=" $am_flags";
     if($flags=~/-I(\S+)/){
         my ($modpath) = ($1);
-        $flags.=" -J$modpath";
+        if($ENV{compiler} =~/pgi/){
+            $flags.=" -module $modpath";
+        }
+        else{
+            $flags.=" -J$modpath";
+        }
     }
     print Out "FCCOMPILE = $fc $flags\n";
     print Out "LTFC = /bin/sh ./libtool --mode=compile $lt_opt \x24(FCCOMPILE)\n";
