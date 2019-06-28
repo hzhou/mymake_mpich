@@ -642,26 +642,6 @@ foreach my $p (@ltlibs){
             push @t, $t;
         }
     }
-    if($o=~/mpifort.*_OBJECTS/){
-        my @f08_wrappers_f;
-        foreach my $t (@t){
-            if($t=~/use_mpi_f08\/wrappers_f\//){
-                push @f08_wrappers_f, $t;
-                $t=undef;
-            }
-        }
-        if(@f08_wrappers_f){
-            push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
-            print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
-            my $last_item = pop @f08_wrappers_f;
-            foreach my $t (@f08_wrappers_f){
-                print Out "    $t \\\n";
-            }
-            print Out "    $last_item\n";
-        }
-        print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
-        print Out "\n";
-    }
     print Out "$o = \\\n";
     my $last_item = pop @t;
     foreach my $t (@t){
@@ -698,26 +678,6 @@ foreach my $p (@ltlibs){
             else{
                 push @t, $t;
             }
-        }
-        if($add=~/mpifort.*_OBJECTS/){
-            my @f08_wrappers_f;
-            foreach my $t (@t){
-                if($t=~/use_mpi_f08\/wrappers_f\//){
-                    push @f08_wrappers_f, $t;
-                    $t=undef;
-                }
-            }
-            if(@f08_wrappers_f){
-                push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
-                print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
-                my $last_item = pop @f08_wrappers_f;
-                foreach my $t (@f08_wrappers_f){
-                    print Out "    $t \\\n";
-                }
-                print Out "    $last_item\n";
-            }
-            print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
-            print Out "\n";
         }
         print Out "$add = \\\n";
         my $last_item = pop @t;
@@ -788,26 +748,6 @@ foreach my $p (@programs){
             push @t, $t;
         }
     }
-    if($o=~/mpifort.*_OBJECTS/){
-        my @f08_wrappers_f;
-        foreach my $t (@t){
-            if($t=~/use_mpi_f08\/wrappers_f\//){
-                push @f08_wrappers_f, $t;
-                $t=undef;
-            }
-        }
-        if(@f08_wrappers_f){
-            push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
-            print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
-            my $last_item = pop @f08_wrappers_f;
-            foreach my $t (@f08_wrappers_f){
-                print Out "    $t \\\n";
-            }
-            print Out "    $last_item\n";
-        }
-        print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
-        print Out "\n";
-    }
     print Out "$o = \\\n";
     my $last_item = pop @t;
     foreach my $t (@t){
@@ -844,26 +784,6 @@ foreach my $p (@programs){
             else{
                 push @t, $t;
             }
-        }
-        if($add=~/mpifort.*_OBJECTS/){
-            my @f08_wrappers_f;
-            foreach my $t (@t){
-                if($t=~/use_mpi_f08\/wrappers_f\//){
-                    push @f08_wrappers_f, $t;
-                    $t=undef;
-                }
-            }
-            if(@f08_wrappers_f){
-                push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
-                print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
-                my $last_item = pop @f08_wrappers_f;
-                foreach my $t (@f08_wrappers_f){
-                    print Out "    $t \\\n";
-                }
-                print Out "    $last_item\n";
-            }
-            print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
-            print Out "\n";
         }
         print Out "$add = \\\n";
         my $last_item = pop @t;
