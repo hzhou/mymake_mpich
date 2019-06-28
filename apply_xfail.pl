@@ -9,6 +9,11 @@ foreach my $a (@ARGV){
 if(!$opt{netmod}){
     $opt{netmod}="ch3:tcp";
 }
+if(!$opt{job}){
+    if($opt{netmod}=~/(ch\d)/){
+        $opt{job}=$1;
+    }
+}
 if(!-f $opt{conf}){
     print "No config file exist, exit.\n";
     exit 0;
