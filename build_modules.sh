@@ -3,6 +3,7 @@ git clone https://github.com/pmodels/hwloc
 git clone https://github.com/pmodels/izem
 git clone https://github.com/pmodels/ucx
 git clone https://github.com/pmodels/libfabric
+git clone https://github.com/json-c/json-c
 pushd libfabric
 git checkout -b mpich origin/v1.7.1-mpich
 git log --oneline -n 5
@@ -28,4 +29,11 @@ sh autogen.sh
 ./configure --enable-embedded --disable-verbs
 make -j 16
 cd ..
+cd json-c
+sh autogen.sh
+./configure 
+make -j 16
+cd ..
+rm -rf */.git
+find . -name '*.o' |xargs rm -f
 tar czf modules.tar.gz hwloc izem ucx libfabric

@@ -925,7 +925,7 @@ if(!$opts{disable_fortran}){
     $flags.=" $am_flags";
     if($flags=~/-I(\S+)/){
         my ($modpath) = ($1);
-        if($ENV{compiler} =~/pgi/){
+        if($fc =~/(pgfortran|ifort)/){
             $flags.=" -module $modpath";
         }
         else{
@@ -943,7 +943,7 @@ if(!$opts{disable_fortran}){
     $flags.=" $am_flags";
     if($flags=~/-I(\S+)/){
         my ($modpath) = ($1);
-        if($ENV{compiler} =~/pgi/){
+        if($fc =~/(pgfortran|ifort)/){
             $flags.=" -module $modpath";
         }
         else{
