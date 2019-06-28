@@ -1021,12 +1021,36 @@ foreach my $p (@ltlibs){
             push @t, $t;
         }
     }
+    if($o=~/mpifort.*_OBJECTS/){
+        my @f08_wrappers_f;
+        foreach my $t (@t){
+            if($t=~/use_mpi_f08\/wrappers_f\//){
+                push @f08_wrappers_f, $t;
+                $t=undef;
+            }
+        }
+        if(@f08_wrappers_f){
+            push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
+            print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
+            my $last_item = pop @f08_wrappers_f;
+            foreach my $t (@f08_wrappers_f){
+                my $l = "    $t \\";
+                $l=~s/$moddir/\x24(MODDIR)/g;
+                print Out "$l\n";
+            }
+            my $l = "    $last_item";
+            $l=~s/$moddir/\x24(MODDIR)/g;
+            print Out "$l\n";
+        }
+    }
     print Out "$o = \\\n";
     my $last_item = pop @t;
     foreach my $t (@t){
-        my $l = "    $t \\";
-        $l=~s/$moddir/\x24(MODDIR)/g;
-        print Out "$l\n";
+        if($t){
+            my $l = "    $t \\";
+            $l=~s/$moddir/\x24(MODDIR)/g;
+            print Out "$l\n";
+        }
     }
     my $l = "    $last_item";
     $l=~s/$moddir/\x24(MODDIR)/g;
@@ -1059,12 +1083,36 @@ foreach my $p (@ltlibs){
                 push @t, $t;
             }
         }
+        if($add=~/mpifort.*_OBJECTS/){
+            my @f08_wrappers_f;
+            foreach my $t (@t){
+                if($t=~/use_mpi_f08\/wrappers_f\//){
+                    push @f08_wrappers_f, $t;
+                    $t=undef;
+                }
+            }
+            if(@f08_wrappers_f){
+                push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
+                print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
+                my $last_item = pop @f08_wrappers_f;
+                foreach my $t (@f08_wrappers_f){
+                    my $l = "    $t \\";
+                    $l=~s/$moddir/\x24(MODDIR)/g;
+                    print Out "$l\n";
+                }
+                my $l = "    $last_item";
+                $l=~s/$moddir/\x24(MODDIR)/g;
+                print Out "$l\n";
+            }
+        }
         print Out "$add = \\\n";
         my $last_item = pop @t;
         foreach my $t (@t){
-            my $l = "    $t \\";
-            $l=~s/$moddir/\x24(MODDIR)/g;
-            print Out "$l\n";
+            if($t){
+                my $l = "    $t \\";
+                $l=~s/$moddir/\x24(MODDIR)/g;
+                print Out "$l\n";
+            }
         }
         my $l = "    $last_item";
         $l=~s/$moddir/\x24(MODDIR)/g;
@@ -1126,12 +1174,36 @@ foreach my $p (@programs){
             push @t, $t;
         }
     }
+    if($o=~/mpifort.*_OBJECTS/){
+        my @f08_wrappers_f;
+        foreach my $t (@t){
+            if($t=~/use_mpi_f08\/wrappers_f\//){
+                push @f08_wrappers_f, $t;
+                $t=undef;
+            }
+        }
+        if(@f08_wrappers_f){
+            push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
+            print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
+            my $last_item = pop @f08_wrappers_f;
+            foreach my $t (@f08_wrappers_f){
+                my $l = "    $t \\";
+                $l=~s/$moddir/\x24(MODDIR)/g;
+                print Out "$l\n";
+            }
+            my $l = "    $last_item";
+            $l=~s/$moddir/\x24(MODDIR)/g;
+            print Out "$l\n";
+        }
+    }
     print Out "$o = \\\n";
     my $last_item = pop @t;
     foreach my $t (@t){
-        my $l = "    $t \\";
-        $l=~s/$moddir/\x24(MODDIR)/g;
-        print Out "$l\n";
+        if($t){
+            my $l = "    $t \\";
+            $l=~s/$moddir/\x24(MODDIR)/g;
+            print Out "$l\n";
+        }
     }
     my $l = "    $last_item";
     $l=~s/$moddir/\x24(MODDIR)/g;
@@ -1157,12 +1229,36 @@ foreach my $p (@programs){
                 push @t, $t;
             }
         }
+        if($add=~/mpifort.*_OBJECTS/){
+            my @f08_wrappers_f;
+            foreach my $t (@t){
+                if($t=~/use_mpi_f08\/wrappers_f\//){
+                    push @f08_wrappers_f, $t;
+                    $t=undef;
+                }
+            }
+            if(@f08_wrappers_f){
+                push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
+                print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
+                my $last_item = pop @f08_wrappers_f;
+                foreach my $t (@f08_wrappers_f){
+                    my $l = "    $t \\";
+                    $l=~s/$moddir/\x24(MODDIR)/g;
+                    print Out "$l\n";
+                }
+                my $l = "    $last_item";
+                $l=~s/$moddir/\x24(MODDIR)/g;
+                print Out "$l\n";
+            }
+        }
         print Out "$add = \\\n";
         my $last_item = pop @t;
         foreach my $t (@t){
-            my $l = "    $t \\";
-            $l=~s/$moddir/\x24(MODDIR)/g;
-            print Out "$l\n";
+            if($t){
+                my $l = "    $t \\";
+                $l=~s/$moddir/\x24(MODDIR)/g;
+                print Out "$l\n";
+            }
         }
         my $l = "    $last_item";
         $l=~s/$moddir/\x24(MODDIR)/g;
