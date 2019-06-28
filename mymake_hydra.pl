@@ -155,12 +155,12 @@ elsif(-e "mymake/modules.tar.gz"){
 if($ENV{MODDIR}){
     $moddir = $ENV{MODDIR};
 }
-elsif(-d "modules"){
-    $moddir = "$pwd/modules";
+elsif(-d "mymake/hwloc"){
+    $moddir = "$pwd/mymake";
 }
 elsif(-e $mod_tarball){
-    $moddir = "$pwd/modules";
-    my $cmd = "mkdir $moddir";
+    $moddir = "$pwd/mymake";
+    my $cmd = "mkdir -p $moddir";
     print "$cmd\n";
     system $cmd;
     my $cmd = "tar -C $moddir -xf $mod_tarball";
