@@ -3,11 +3,7 @@ git clone https://github.com/pmodels/hwloc
 git clone https://github.com/pmodels/izem
 git clone https://github.com/pmodels/ucx
 git clone https://github.com/pmodels/libfabric
-git clone https://github.com/json-c/json-c
-pushd libfabric
-git checkout -b mpich origin/v1.7.1-mpich
-git log --oneline -n 5
-popd
+git clone https://github.com/json-c/json-c jsonc
 cd hwloc
 sh autogen.sh
 ./configure --enable-embedded-mode --enable-visibility
@@ -25,11 +21,13 @@ make -j 16
 find . -name '*.la' |xargs --verbose sed -i "s,$PWD,MODDIR,g"
 cd ..
 cd libfabric
+git checkout -b mpich origin/v1.7.1-mpich
+git log --oneline -n 5
 sh autogen.sh
 ./configure --enable-embedded --disable-verbs
 make -j 16
 cd ..
-cd json-c
+cd jsonc
 sh autogen.sh
 ./configure 
 make -j 16
