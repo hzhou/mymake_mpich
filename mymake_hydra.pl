@@ -895,6 +895,7 @@ my $t2 = get_list("nodist_include_HEADERS");
 my $t3 = get_list("modinc_HEADERS");
 if(@$t1 or @$t2 or @$t3){
     foreach my $t (@$t1, @$t2, @$t3){
+        $t=~s/use_mpi_f08/use_mpi/;
         $dst_hash{$t} = "$prefix/include";
     }
 }
