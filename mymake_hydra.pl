@@ -655,14 +655,12 @@ foreach my $p (@ltlibs){
             print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
             my $last_item = pop @f08_wrappers_f;
             foreach my $t (@f08_wrappers_f){
-                my $l = "    $t \\";
-                $l=~s/$moddir/\x24(MODDIR)/g;
-                print Out "$l\n";
+                print Out "    $t \\\n";
             }
-            my $l = "    $last_item";
-            $l=~s/$moddir/\x24(MODDIR)/g;
-            print Out "$l\n";
+            print Out "    $last_item\n";
         }
+        print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo\n";
+        print Out "\n";
     }
     print Out "$o = \\\n";
     my $last_item = pop @t;
@@ -714,14 +712,12 @@ foreach my $p (@ltlibs){
                 print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
                 my $last_item = pop @f08_wrappers_f;
                 foreach my $t (@f08_wrappers_f){
-                    my $l = "    $t \\";
-                    $l=~s/$moddir/\x24(MODDIR)/g;
-                    print Out "$l\n";
+                    print Out "    $t \\\n";
                 }
-                my $l = "    $last_item";
-                $l=~s/$moddir/\x24(MODDIR)/g;
-                print Out "$l\n";
+                print Out "    $last_item\n";
             }
+            print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo\n";
+            print Out "\n";
         }
         print Out "$add = \\\n";
         my $last_item = pop @t;
@@ -805,14 +801,12 @@ foreach my $p (@programs){
             print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
             my $last_item = pop @f08_wrappers_f;
             foreach my $t (@f08_wrappers_f){
-                my $l = "    $t \\";
-                $l=~s/$moddir/\x24(MODDIR)/g;
-                print Out "$l\n";
+                print Out "    $t \\\n";
             }
-            my $l = "    $last_item";
-            $l=~s/$moddir/\x24(MODDIR)/g;
-            print Out "$l\n";
+            print Out "    $last_item\n";
         }
+        print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo\n";
+        print Out "\n";
     }
     print Out "$o = \\\n";
     my $last_item = pop @t;
@@ -864,14 +858,12 @@ foreach my $p (@programs){
                 print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
                 my $last_item = pop @f08_wrappers_f;
                 foreach my $t (@f08_wrappers_f){
-                    my $l = "    $t \\";
-                    $l=~s/$moddir/\x24(MODDIR)/g;
-                    print Out "$l\n";
+                    print Out "    $t \\\n";
                 }
-                my $l = "    $last_item";
-                $l=~s/$moddir/\x24(MODDIR)/g;
-                print Out "$l\n";
+                print Out "    $last_item\n";
             }
+            print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo\n";
+            print Out "\n";
         }
         print Out "$add = \\\n";
         my $last_item = pop @t;
