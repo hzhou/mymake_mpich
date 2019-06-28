@@ -7,6 +7,7 @@ our $srcdir;
 our $moddir;
 our $prefix;
 our (%cvars, @cvars, %cats, @cats);
+our %enum_groups;
 my $pwd=`pwd`;
 chomp $pwd;
 $opts{V}=0;
@@ -194,7 +195,7 @@ foreach my $f (@files){
         elsif(/^\s*-\s*name\s*:\s*(MPIR_CVAR_\w+)/){
             my ($name) = ($1);
             push @cvars, $name;
-            $cvar={file=>$f};
+            $cvar={file=>$f, name=>$name};
             $cvars{$name} = $cvar;
         }
         elsif(/^\s*-\s*name\s*:\s*(\w+)/){
@@ -245,9 +246,15 @@ foreach my $f (@files){
                 if($cvar->{type} eq "enum"){
                     my @enum;
                     while($t=~/^\s*(\w+)\s+-\s/mg){
-                        push @enum, $1;
+                        push @enum, "$cvar->{name}\_$1";
                     }
                     $cvar->{enum}=\@enum;
+                    if($cvar->{group}){
+                        if(!$enum_groups{$cvar->{group}}){
+                            $enum_groups{$cvar->{group}} = [];
+                        }
+                        push @{$enum_groups{$cvar->{group}}}, @enum;
+                    }
                 }
             }
         }
@@ -287,28 +294,48 @@ foreach my $v (@cvars){
     }
     print Out "/* $h->{file} */\n";
     print Out "extern $type $v;\n";
-    if($h->{enum}){
+    if($h->{enum} and !$h->{group}){
         print Out "enum $v\_choice {\n";
         my $n = @{$h->{enum}};
         my $i = -1;
         foreach my $a (@{$h->{enum}}){
             $i++;
             if($i<$n-1){
-                print Out "    $v\_$a,\n";
+                print Out "    $a,\n";
             }
             else{
-                print Out "    $v\_$a\n";
+                print Out "    $a\n";
             }
         }
         print Out "};\n";
     }
 }
 print Out "\n";
+foreach my $k (sort keys %enum_groups){
+    my $v = $enum_groups{$k};
+    print Out "int MPIR_$k\_from_str(const char *s);\n";
+    print Out "enum $k\_t {\n";
+    my $n = @{$v};
+    my $i = -1;
+    foreach my $a (@{$v}){
+        $i++;
+        if($i<$n-1){
+            print Out "    $a,\n";
+        }
+        else{
+            print Out "    $a\n";
+        }
+    }
+    print Out "};\n";
+}
 print Out "/* TODO: this should be defined elsewhere */\n";
 print Out "#define MPIR_CVAR_assert MPIR_Assert\n";
 print Out "\n";
 print Out "/* Arbitrary, simplifies interaction with external interfaces like MPI_T_ */\n";
 print Out "#define MPIR_CVAR_MAX_STRLEN (384)\n";
+print Out "\n";
+my $t = join(" ## ", qw(MPIR_CVAR_ A _ a));
+print Out "#define MPIR_CVAR_ENUM_IS(A, a) ($t)\n";
 print Out "\n";
 print Out "#endif /* MPIR_CVARS_H_INCLUDED */\n";
 close Out;
@@ -354,7 +381,6 @@ foreach my $v (@cvars){
     }
     print Out "\n";
 }
-print Out "#define FCNAME __func__\n";
 print Out "int MPIR_T_cvar_init(void)\n";
 print Out "{\n";
 print Out "    int mpi_errno = MPI_SUCCESS;\n";
@@ -480,7 +506,7 @@ foreach my $v (@cvars){
         my $c = "if";
         foreach my $t (@{$h->{enum}}){
             print Out "        $c (0 == strcmp(tmp_str, \"$t\"))\n";
-            print Out "            $v = $v\_$t;\n";
+            print Out "            $v = $t;\n";
             $c = "else if";
         }
         print Out "    }\n";
@@ -529,4 +555,14 @@ foreach my $v (@cvars){
 }
 print Out "    return mpi_errno;\n";
 print Out "}\n";
+foreach my $k (sort keys %enum_groups){
+    print Out "int MPIR_$k\_from_str(const char *s) {\n";
+    my $t_if = "if";
+    foreach my $a (@{$enum_groups{$k}}){
+        print Out "    $t_if (strcmp(s, \"$a\")==0) return $a;\n";
+        $t_if = "else if";
+    }
+    print Out "    else return -1;\n";
+    print Out "}\n";
+}
 close Out;
