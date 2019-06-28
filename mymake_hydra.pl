@@ -659,7 +659,7 @@ foreach my $p (@ltlibs){
             }
             print Out "    $last_item\n";
         }
-        print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo\n";
+        print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
         print Out "\n";
     }
     print Out "$o = \\\n";
@@ -716,7 +716,7 @@ foreach my $p (@ltlibs){
                 }
                 print Out "    $last_item\n";
             }
-            print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo\n";
+            print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
             print Out "\n";
         }
         print Out "$add = \\\n";
@@ -805,7 +805,7 @@ foreach my $p (@programs){
             }
             print Out "    $last_item\n";
         }
-        print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo\n";
+        print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
         print Out "\n";
     }
     print Out "$o = \\\n";
@@ -862,7 +862,7 @@ foreach my $p (@programs){
                 }
                 print Out "    $last_item\n";
             }
-            print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo\n";
+            print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
             print Out "\n";
         }
         print Out "$add = \\\n";
