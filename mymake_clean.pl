@@ -154,6 +154,12 @@ if(-d "$moddir/ucx"){
 if(-d "$moddir/libfabric"){
     push @realclean_list, "$moddir/libfabric/config.h";
 }
+if(-d "src/mpi/romio"){
+    push @realclean_list, "src/mpi/romio/adio/include/romioconf.h";
+}
+if(-d "modules/jsonc"){
+    push @realclean_list, "";
+}
 push @realclean_list, "src/pm/hydra/mymake/Makefile.orig";
 push @realclean_list, "src/mpi/errhan/defmsg.h";
 push @realclean_list, "src/include/mpir_cvars.h";
