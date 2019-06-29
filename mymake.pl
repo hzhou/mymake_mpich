@@ -764,6 +764,18 @@ if($opts{device}=~/ucx/){
         print "$cmd\n";
         system $cmd;
     }
+    if($ENV{compiler} =~ /pgi/){
+        my @lines;
+        open In, "$moddir/ucx/src/ucs/type/status.h" or die "Can't open $moddir/ucx/src/ucs/type/status.h.\n";
+        while(<In>){
+            s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
+            push @lines, $_;
+        }
+        close In;
+        open Out, ">$moddir/ucx/src/ucs/type/status.h" or die "Can't write $moddir/ucx/src/ucs/type/status.h.\n";
+        print Out @lines;
+        close Out;
+    }
     $I_list .= " -I$moddir/ucx/src";
     $L_list .= " $moddir/ucx/src/ucp/libucp.la";
     push @CONFIGS, "$moddir/ucx/config.h";
