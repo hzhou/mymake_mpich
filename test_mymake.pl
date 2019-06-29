@@ -233,6 +233,7 @@ else{
         while(<In>){
             if(/^(PGC-W-\d+-.*)/){
                 my ($t) = ($1);
+                $t=~s/\(\/.*(centos64)\//\(/;
                 push @make_log, $t;
             }
         }
