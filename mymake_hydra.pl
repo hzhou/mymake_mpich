@@ -884,10 +884,10 @@ while (my ($k, $v) = each %special_targets){
 }
 print Out "%.i: %.c\n";
 if($opts{V}==0){
-    print Out "\t\@echo CC -E \$\@ && \x24(COMPILE) -CC -E -o \$\@ \$<\n";
+    print Out "\t\@echo CC -E \$\@ && \x24(COMPILE) -E -o \$\@ \$<\n";
 }
 else{
-    print Out "\t\x24(COMPILE) -CC -E -o \$\@ \$<\n";
+    print Out "\t\x24(COMPILE) -E -o \$\@ \$<\n";
 }
 print Out "\n";
 my $t1 = get_list("include_HEADERS");
@@ -938,7 +938,7 @@ if(@install_list){
 print Out "\x23 --------------------\n";
 print Out ".PHONY: clean realclean realrealclean\n";
 print Out "clean:\n";
-print Out "\t(find . -not \\( -path ./modules -prune \\) -a \\( -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' \\) |xargs rm -f)\n";
+print Out "\t(find . -not \\( -path $moddir -prune \\) -a \\( -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' \\) |xargs rm -f)\n";
 print Out "\n";
 print Out "realclean: clean\n";
 print Out "\t\x24(DO_clean)\n";
