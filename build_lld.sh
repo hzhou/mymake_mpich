@@ -18,8 +18,16 @@ export LIBRARY_PATH=/nfs/gce/projects/login-pmrs/opt/gcc-8/lib:$LIBRARY_PATH
 export LD_LIBRARY_PATH=/nfs/gce/projects/login-pmrs/opt/gcc-8/lib:/nfs/gce/projects/login-pmrs/opt/gcc-8/lib64:$LD_LIBRARY_PATH
 export CC=gcc-8
 export CXX=g++-8
-git clone https://github.com/llvm/llvm-project llvm-project
-cd llvm-project
+if test -d llvm-projects ; then
+    cd llvm-project
+    if test -d build; then
+        rm -rf build
+    fi
+    git pull
+else
+    git clone https://github.com/llvm/llvm-project llvm-project
+    cd llvm-project
+fi
 mkdir -p build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS=lld -DCMAKE_INSTALL_PREFIX=$PREFIX ../llvm
