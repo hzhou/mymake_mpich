@@ -18,7 +18,7 @@ export LIBRARY_PATH=/nfs/gce/projects/login-pmrs/opt/gcc-8/lib:$LIBRARY_PATH
 export LD_LIBRARY_PATH=/nfs/gce/projects/login-pmrs/opt/gcc-8/lib:/nfs/gce/projects/login-pmrs/opt/gcc-8/lib64:$LD_LIBRARY_PATH
 export CC=gcc-8
 export CXX=g++-8
-if test -d llvm-projects ; then
+if test -d llvm-project ; then
     cd llvm-project
     if test -d build; then
         rm -rf build
