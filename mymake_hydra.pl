@@ -938,7 +938,7 @@ if(@install_list){
 print Out "\x23 --------------------\n";
 print Out ".PHONY: clean realclean realrealclean\n";
 print Out "clean:\n";
-print Out "\t(find . -not \\( -path $moddir -prune \\) -a \\( -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' \\) |xargs rm -f)\n";
+print Out "\t(find src -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' |xargs rm -f)\n";
 print Out "\n";
 print Out "realclean: clean\n";
 print Out "\t\x24(DO_clean)\n";
