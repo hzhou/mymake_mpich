@@ -1,13 +1,16 @@
 #!/usr/bin/perl
 use strict;
+
 our %opts;
 our @config_args;
 our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
+
 my $pwd=`pwd`;
 chomp $pwd;
+
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -60,6 +63,7 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
+
 if($opts{CC}){
     $ENV{CC}=$opts{CC};
 }
@@ -174,6 +178,7 @@ foreach my $f (@files){
     }
     close In;
 }
+
 my @timer_states = sort @timer_states;
 my $n = @timer_states;
 open Out, ">src/include/mpiallstates.h" or die "Can't write src/include/mpiallstates.h.\n";
@@ -190,6 +195,7 @@ print Out "     MPID_NUM_TIMER_STATES\n";
 print Out "};\n";
 print Out "#endif /* MPIALLSTATES_H_INCLUDED */\n";
 close Out;
+
 open Out, ">src/util/logging/common/state_names.h" or die "Can't write src/util/logging/common/state_names.h.\n";
 print "  --> [src/util/logging/common/state_names.h]\n";
 print Out "#ifndef STATE_NAMES_H_INCLUDED\n";
@@ -209,5 +215,6 @@ foreach my $t (@timer_states){
 }
 print Out "\"    { -1, NULL, NULL }\n";
 print Out "};\n";
+
 print Out "#endif /* STATE_NAMES_H_INCLUDED */\n";
 close Out;

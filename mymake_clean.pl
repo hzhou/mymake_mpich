@@ -1,13 +1,16 @@
 #!/usr/bin/perl
 use strict;
+
 our %opts;
 our @config_args;
 our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
+
 my $pwd=`pwd`;
 chomp $pwd;
+
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -60,6 +63,7 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
+
 if($opts{CC}){
     $ENV{CC}=$opts{CC};
 }
@@ -131,6 +135,7 @@ if(!$prefix){
     $prefix="$pwd/_inst";
     system "mkdir -p $prefix";
 }
+
 my @realclean_list;
 push @realclean_list, "subsys_include.m4";
 push @realclean_list, "configure";

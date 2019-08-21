@@ -1,13 +1,16 @@
 #!/usr/bin/perl
 use strict;
+
 our %opts;
 our @config_args;
 our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
+
 my $pwd=`pwd`;
 chomp $pwd;
+
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -60,6 +63,7 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
+
 if($opts{CC}){
     $ENV{CC}=$opts{CC};
 }
@@ -137,7 +141,11 @@ chdir $dir or die "Can't chdir $dir\n";
 if(!-d "mymake"){
     mkdir "mymake" or die "Can't mkdir mymake\n";
 }
+
 my $cmd = "rsync -r $srcdir/confdb/ confdb/";
+print ": $cmd\n";
+system $cmd;
+my $cmd = "rsync -r $srcdir/confdb/ dtpools/confdb/";
 print ": $cmd\n";
 system $cmd;
 my $cmd = "cp $srcdir/maint/version.m4 .";
@@ -153,6 +161,7 @@ my $t = join(' ', @test_config_args);
 my $cmd = "./configure $t";
 print ": $cmd\n";
 system $cmd;
+
 my $cmd = "cp Makefile mymake/Makefile.orig";
 print ": $cmd\n";
 system $cmd;

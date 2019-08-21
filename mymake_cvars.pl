@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 use strict;
+
 our %opts;
 our @config_args;
 our @test_config_args;
@@ -8,8 +9,10 @@ our $moddir;
 our $prefix;
 our (%cvars, @cvars, %cats, @cats);
 our %enum_groups;
+
 my $pwd=`pwd`;
 chomp $pwd;
+
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -62,6 +65,7 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
+
 if($opts{CC}){
     $ENV{CC}=$opts{CC};
 }
@@ -157,6 +161,7 @@ my %env_hash=(
     range=>"range",
     enum=>"str",
 );
+
 my %value_hash=(
     true=>"1",
     false=>"0",
@@ -184,9 +189,11 @@ foreach my $f (@files){
             $in_block=0;
             next;
         }
+
         if(!$in_block){
             next;
         }
+
         if(/^(categories|cvars)\s*:/){
             $which = $1;
             undef $cvar;
@@ -249,6 +256,7 @@ foreach my $f (@files){
                         push @enum, "$cvar->{name}\_$1";
                     }
                     $cvar->{enum}=\@enum;
+
                     if($cvar->{group}){
                         if(!$enum_groups{$cvar->{group}}){
                             $enum_groups{$cvar->{group}} = [];
@@ -261,6 +269,7 @@ foreach my $f (@files){
     }
     close In;
 }
+
 open Out, ">src/include/mpir_cvars.h" or die "Can't write src/include/mpir_cvars.h.\n";
 print "  --> [src/include/mpir_cvars.h]\n";
 print Out "#ifndef MPIR_CVARS_H_INCLUDED\n";
@@ -270,6 +279,7 @@ print Out "#include \"mpitimpl.h\" /* for MPIR_T_cvar_range_value_t */\n";
 print Out "int MPIR_T_cvar_init(void);\n";
 print Out "int MPIR_T_cvar_finalize(void);\n";
 print Out "\n";
+
 foreach my $v (@cvars){
     my $h=$cvars{$v};
     my $type=$type_hash{$h->{type}};
@@ -311,6 +321,7 @@ foreach my $v (@cvars){
     }
 }
 print Out "\n";
+
 foreach my $k (sort keys %enum_groups){
     my $v = $enum_groups{$k};
     print Out "int MPIR_$k\_from_str(const char *s);\n";
@@ -328,6 +339,7 @@ foreach my $k (sort keys %enum_groups){
     }
     print Out "};\n";
 }
+
 print Out "/* TODO: this should be defined elsewhere */\n";
 print Out "#define MPIR_CVAR_assert MPIR_Assert\n";
 print Out "\n";
@@ -339,8 +351,12 @@ print Out "#define MPIR_CVAR_ENUM_IS(A, a) ($t)\n";
 print Out "\n";
 print Out "#endif /* MPIR_CVARS_H_INCLUDED */\n";
 close Out;
-open Out, ">src/util/cvar/mpir_cvars.c" or die "Can't write src/util/cvar/mpir_cvars.c.\n";
-print "  --> [src/util/cvar/mpir_cvars.c]\n";
+my $cvars_c = "src/util/mpir_cvars.c";
+if(-f "src/util/cvar/Makefile.mk"){
+    $cvars_c = "src/util/cvar/mpir_cvars.c";
+}
+open Out, ">$cvars_c" or die "Can't write $cvars_c.\n";
+print "  --> [$cvars_c]\n";
 print Out "#include \"mpiimpl.h\"\n";
 print Out "\n";
 my $n = @cvars;
@@ -447,6 +463,7 @@ foreach my $v (@cvars){
     elsif($h->{type} eq "enum"){
         print Out "    tmp_str = NULL;\n";
     }
+
     my @t;
     if($h->{"alt-env"}){
         foreach my $t (split /[:,;\s]+/, $h->{"alt-env"}){
@@ -455,6 +472,7 @@ foreach my $v (@cvars){
         }
     }
     push @t, $v;
+
     foreach my $env (@t){
         $env=~s/^MPIR_CVAR_//;
         if($h->{type} eq "string" or $h->{type} eq "enum"){
@@ -505,10 +523,16 @@ foreach my $v (@cvars){
         print Out "    if (tmp_str != NULL) {\n";
         my $c = "if";
         foreach my $t (@{$h->{enum}}){
-            print Out "        $c (0 == strcmp(tmp_str, \"$t\"))\n";
+            my $t2 = $t;
+            $t2=~s/^$v\_//;
+            print Out "        $c (0 == strcmp(tmp_str, \"$t2\"))\n";
             print Out "            $v = $t;\n";
             $c = "else if";
         }
+        print Out "        else {\n";
+        print Out "            mpi_errno = MPIR_Err_create_code(mpi_errno,MPIR_ERR_RECOVERABLE,__func__,__LINE__, MPI_ERR_OTHER, \"**cvar_val\", \"**cvar_val %s %s\", \"$v\", tmp_str);\n";
+        print Out "            goto fn_fail;\n";
+        print Out "        }\n";
         print Out "    }\n";
     }
     print Out "\n";
@@ -555,6 +579,7 @@ foreach my $v (@cvars){
 }
 print Out "    return mpi_errno;\n";
 print Out "}\n";
+
 foreach my $k (sort keys %enum_groups){
     print Out "int MPIR_$k\_from_str(const char *s) {\n";
     my $t_if = "if";

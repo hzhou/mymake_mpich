@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 use strict;
+
 our %opts;
 our @config_args;
 our @test_config_args;
@@ -15,46 +16,10 @@ our @programs;
 our @ltlibs;
 our %special_targets;
 our @extra_make_rules;
-sub get_list {
-    my ($key) = @_;
-    my @t;
-    my $tlist = $objects{$key};
-    foreach my $t (@{$objects{$key}}){
-        if($t=~/^\$\((\w+)\)$/){
-            my $L = get_list($1);
-            push @t, @$L;
-        }
-        else{
-            $t=~s/\$\((\w+)\)/get_object($1)/ge;
-            push @t, $t;
-        }
-    }
-    return \@t;
-}
-
-sub get_object {
-    my ($key) = @_;
-    my $arr = $objects{$key};
-    if(defined $arr){
-        my $t;
-        if(ref($arr) eq "ARRAY"){
-            $t = join(' ', @$arr);
-        }
-        else{
-            $t = $arr;
-        }
-        $t=~s/\$\(am__v_[\w]+\)//g;
-        $t=~s/\$\((\w+)\)/get_object($1)/ge;
-        $t=~s/\s+/ /g;
-        return $t;
-    }
-    else{
-        return "";
-    }
-}
 
 my $pwd=`pwd`;
 chomp $pwd;
+
 my $mymake;
 if($0=~/^(\/.*)\//){
     $mymake = $1;
@@ -63,10 +28,12 @@ elsif($0=~/^(.*)\//){
     $mymake .= "$pwd/$1";
 }
 $mymake .="/mymake";
+
 if(-d "pm"){
     system "perl $mymake\_hydra.pl @ARGV";
     exit(0);
 }
+
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -119,6 +86,7 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
+
 if($opts{CC}){
     $ENV{CC}=$opts{CC};
 }
@@ -190,6 +158,7 @@ if(!$prefix){
     $prefix="$pwd/_inst";
     system "mkdir -p $prefix";
 }
+
 if($opts{do}){
     system "perl $mymake\_$opts{do}.pl";
     exit(0);
@@ -202,6 +171,7 @@ if(!-d "mymake"){
 }
 if(!-f 'src/util/cvar/mpir_cvars.c'){
     system "touch src/util/cvar/mpir_cvars.c";
+
 }
 push @extra_make_rules, "DO_stage = perl $mymake\_stage.pl";
 push @extra_make_rules, "DO_clean = perl $mymake\_clean.pl";
@@ -222,6 +192,7 @@ push @extra_make_rules, "";
 push @extra_make_rules, "errmsg:";
 push @extra_make_rules, "\t\x24(DO_errmsg)";
 push @extra_make_rules, "";
+
 if($need_save_args){
     my $t = join(' ', @ARGV);
     open Out, ">mymake/args" or die "Can't write mymake/args.\n";
@@ -236,6 +207,7 @@ print "prefix: $prefix\n";
 if($opts{device}){
     print "device: $opts{device}\n";
 }
+
 my $mkfile="src/pm/hydra/Makefile";
 my $add="$moddir/mpl/libmpl.la $moddir/hwloc/hwloc/libhwloc_embedded.la";
 push @extra_make_rules, ".PHONY: hydra hydra-install";
@@ -261,6 +233,7 @@ if(!$opts{disable_cxx}){
 else{
     system "touch src/binding/cxx/mpicxx.h.in";
 }
+
 if(!$opts{disable_fortran}){
     if(!-f "configure"){
         print ": buildiface - mpif_h\n";
@@ -297,6 +270,7 @@ if(!$opts{disable_fortran}){
     push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_nobuf.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_cdesc.lo", "";
     push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_nobuf.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_glue.lo", "";
     push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_glue.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo", "";
+
     push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08.lo: src/binding/fortran/use_mpi_f08/pmpi_f08.lo", "";
     push @extra_make_rules, "src/binding/fortran/use_mpi_f08/pmpi_f08.lo: src/binding/fortran/use_mpi_f08/mpi_f08_callbacks.lo src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo", "";
     push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_callbacks.lo: src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo", "";
@@ -304,6 +278,7 @@ if(!$opts{disable_fortran}){
     push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo: src/binding/fortran/use_mpi_f08/mpi_f08_types.lo", "";
     push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_types.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo", "";
     push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_cdesc.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo", "";
+
     $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$prefix/include";
 }
 else{
@@ -317,7 +292,9 @@ else{
     system "touch src/binding/fortran/use_mpi/mpi_base.f90.in";
     system "touch src/binding/fortran/use_mpi/mpi_constants.f90.in";
     system "touch src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.f90.in";
+
     system "touch src/binding/fortran/use_mpi_f08/mpi_c_interface_types.f90.in";
+
 }
 if(!-f "subsys_include.m4"){
     print "---------------------------\n";
@@ -336,6 +313,7 @@ if(!-f "configure"){
     $f_=~s/[\.\/]/_/g;
     my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
     push @mod_list, \@m;
+
     system "mv $m[0] $m[1]";
     my @lines;
     {
@@ -368,6 +346,7 @@ if(!-f "configure"){
     $f_=~s/[\.\/]/_/g;
     my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
     push @mod_list, \@m;
+
     system "mv $m[0] $m[1]";
     my @lines;
     {
@@ -395,6 +374,7 @@ if(!-f "configure"){
     $f_=~s/[\.\/]/_/g;
     my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
     push @mod_list, \@m;
+
     system "mv $m[0] $m[1]";
     my @lines;
     {
@@ -429,6 +409,7 @@ if(!-f "configure"){
         $f_=~s/[\.\/]/_/g;
         my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
         push @mod_list, \@m;
+
         system "mv $m[0] $m[1]";
         my @lines;
         {
@@ -464,12 +445,14 @@ if(!-f "configure"){
         system "cp -v $m[2] $m[0]";
     }
     if($opts{device}=~/ofi/){
+
         my $flag;
         my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
         my $f_ = $f;
         $f_=~s/[\.\/]/_/g;
         my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
         push @mod_list, \@m;
+
         system "mv $m[0] $m[1]";
         my @lines;
         {
@@ -526,6 +509,7 @@ if(!-f "mymake/Makefile.orig"){
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
     my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+
     system "mv $m[0] $m[1]";
     my @lines;
     {
@@ -552,6 +536,7 @@ if(!-f "mymake/Makefile.orig"){
         system "cp $m->[1] $m->[0]";
     }
 }
+
 open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h.\n";
 while(<In>){
     if(/^#define\s+HAVE_.*WEAK.* 1/){
@@ -573,9 +558,11 @@ while(<In>){
     }
 }
 close In;
+
 if(!$opts{have_weak}){
     $special_targets{lib_libmpi_la}="\x24(LTCC) -DMPICH_MPI_FROM_PMPI";
 }
+
 my $bin="\x24(PREFIX)/bin";
 if(-f "src/env/mpicc.bash"){
     my @lines;
@@ -643,9 +630,11 @@ if(-f "src/env/mpifort.bash"){
 }
 $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
 $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
+
 push @extra_make_rules, "examples/cpi: lib/libmpi.la";
 push @extra_make_rules, "\t\x24(CC) -o examples/cpi examples/cpi.c lib/.libs/libmpi.a $opts{WRAPPER_LIBS}";
 push @extra_make_rules, "";
+
 push @extra_make_rules, "src/mpi/errhan/errutil.lo: src/mpi/errhan/defmsg.h";
 push @extra_make_rules, "src/mpi/errhan/defmsg.h:";
 push @extra_make_rules, "\t\x24(DO_errmsg)";
@@ -655,6 +644,7 @@ push @CONFIGS, "src/include/mpir_cvars.h";
 push @extra_make_rules, "src/include/mpir_cvars.h:";
 push @extra_make_rules, "\t\x24(DO_cvars)";
 push @extra_make_rules, "";
+
 my @t = ("cd src/glue/romio");
 push @t, "perl all_romio_symbols ../../mpi/romio/include/mpio.h.in";
 push @extra_make_rules, "src/glue/romio/all_romio_symbols.c: ";
@@ -732,6 +722,7 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc/include/hwloc/autogen/config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
+
 if(!$opts{disable_romio}){
     system "rsync -r confdb/ src/mpi/romio/confdb/";
     system "cp maint/version.m4 src/mpi/romio/";
@@ -740,6 +731,7 @@ if(!$opts{disable_romio}){
     push @t_env, "master_top_srcdir=$pwd";
     push @t_env, "master_top_builddir=$pwd";
     push @t_env, "CPPFLAGS='-I$moddir/mpl/include'";
+
     $I_list .= " -Isrc/mpi/romio/include";
     $L_list .= " src/mpi/romio/libromio.la";
     push @CONFIGS, "src/mpi/romio/adio/include/romioconf.h";
@@ -755,9 +747,11 @@ if(!$opts{disable_romio}){
     push @extra_make_rules, "src/mpi/romio/libromio.la: src/mpi/romio/adio/include/romioconf.h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
+
     $dst_hash{"src/mpi/romio/include/mpio.h"} = "$prefix/include";
     $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$prefix/include";
 }
+
 if($opts{device}=~/ucx/){
     if(!-d "$moddir/ucx"){
         my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
@@ -769,6 +763,7 @@ if($opts{device}=~/ucx/){
         open In, "$moddir/ucx/src/ucs/type/status.h" or die "Can't open $moddir/ucx/src/ucs/type/status.h.\n";
         while(<In>){
             s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
+
             push @lines, $_;
         }
         close In;
@@ -819,6 +814,7 @@ my $lt_opt;
 if($opts{V}==0){
     $lt_opt = "--quiet";
 }
+
 %objects=();
 my $tlist;
 open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig.\n";
@@ -827,11 +823,13 @@ while(<In>){
         my ($a, $b) = ($1, $2);
         $tlist=[];
         $objects{$a} = $tlist;
+
         my $done=1;
         if($b=~/\\$/){
             $done = 0;
             $b=~s/\s*\\$//;
         }
+
         if($b){
             push @$tlist, split /\s+/, $b;
         }
@@ -847,6 +845,7 @@ while(<In>){
                 $done = 0;
                 $b=~s/\s*\\$//;
             }
+
             if($b){
                 push @$tlist, split /\s+/, $b;
             }
@@ -913,8 +912,10 @@ my $l = "LIBS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
 print Out "\n";
+
 my $cc = get_object("CC");
 my $ccld = get_object("CCLD");
+
 print Out "COMPILE = $cc \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) \x24(AM_CFLAGS) \x24(CFLAGS)\n";
 print Out "LINK = $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
 print Out "LTCC = /bin/sh ./libtool --mode=compile $lt_opt \x24(COMPILE)\n";
@@ -926,8 +927,14 @@ if(!$opts{disable_cxx}){
     my $am_flags = get_object("AM_CXXFLAGS");
     print Out "CXXCOMPILE = $cxx \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) $flags $am_flags\n";
     print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt \x24(CXXCOMPILE)\n";
+
     my $cxxld = get_object("CXXLD");
-    print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CXX $cxxld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+    if($cxxld){
+        print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CXX $cxxld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+    }
+    else{
+        print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CC $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+    }
     print Out "\n";
 }
 if(!$opts{disable_fortran}){
@@ -946,6 +953,7 @@ if(!$opts{disable_fortran}){
     }
     print Out "F77COMPILE = $fc $flags\n";
     print Out "LTF77 = /bin/sh ./libtool --mode=compile $lt_opt \x24(F77COMPILE)\n";
+
     my $ld = get_object("F77LD");
     print Out "F77LD = /bin/sh ./libtool --mode=link $lt_opt --tag=F77 $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     print Out "\n";
@@ -964,10 +972,12 @@ if(!$opts{disable_fortran}){
     }
     print Out "FCCOMPILE = $fc $flags\n";
     print Out "LTFC = /bin/sh ./libtool --mode=compile $lt_opt \x24(FCCOMPILE)\n";
+
     my $ld = get_object("FCLD");
     print Out "FCLD = /bin/sh ./libtool --mode=link $lt_opt --tag=FC $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     print Out "\n";
 }
+
 my $tlist = get_list("lib_LTLIBRARIES");
 foreach my $t (@$tlist){
     $dst_hash{$t} = "\x24(PREFIX)/lib";
@@ -986,12 +996,15 @@ foreach my $t (@$tlist){
     }
     push @programs, $t;
 }
+
 my $tlist = get_list("LTLIBRARIES");
 foreach my $t (@$tlist){
     push @ltlibs, $t;
 }
+
 print Out "all: @ltlibs @programs\n";
 print Out "\n";
+
 foreach my $p (@ltlibs){
     my $ld = "LTLD";
     if($p=~/libmpifort.la/){
@@ -1004,8 +1017,10 @@ foreach my $p (@ltlibs){
     if($opts{V}==0){
         $cmd = "\@echo $ld \$\@ && $cmd";
     }
+
     my $a = $p;
     $a=~s/[\.\/]/_/g;
+
     my ($deps, $objs);
     my $o= "${a}_OBJECTS";
     my $tlist = get_list($o);
@@ -1020,6 +1035,7 @@ foreach my $p (@ltlibs){
             $t=~s/[^\/]+-//;
         }
     }
+
     my @t;
     foreach my $t (@tlist){
         if($t=~/^-l\w+/){
@@ -1032,6 +1048,7 @@ foreach my $p (@ltlibs){
             push @t, $t;
         }
     }
+
     if($o=~/mpifort.*_OBJECTS/){
         my @f08_wrappers_f;
         foreach my $t (@t){
@@ -1040,8 +1057,10 @@ foreach my $p (@ltlibs){
                 $t=undef;
             }
         }
+
         if(@f08_wrappers_f){
             push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
+
             print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
             my $last_item = pop @f08_wrappers_f;
             foreach my $t (@f08_wrappers_f){
@@ -1052,6 +1071,7 @@ foreach my $p (@ltlibs){
         print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
         print Out "\n";
     }
+
     print Out "$o = \\\n";
     my $last_item = pop @t;
     foreach my $t (@t){
@@ -1064,11 +1084,13 @@ foreach my $p (@ltlibs){
     my $l = "    $last_item";
     $l=~s/$moddir/\x24(MODDIR)/g;
     print Out "$l\n";
+
     if(@CONFIGS and "$o"=~/_OBJECTS$/){
         print Out "\x24($o): \x24(CONFIGS)\n";
     }
     $deps .= " \x24($o)";
     my $add = $a."_LIBADD";
+
     if($objects{$add}){
         my $t = get_object($add);
         if($add!~/mpi(fort|cxx)/){
@@ -1092,6 +1114,7 @@ foreach my $p (@ltlibs){
                 push @t, $t;
             }
         }
+
         if($add=~/mpifort.*_OBJECTS/){
             my @f08_wrappers_f;
             foreach my $t (@t){
@@ -1100,8 +1123,10 @@ foreach my $p (@ltlibs){
                     $t=undef;
                 }
             }
+
             if(@f08_wrappers_f){
                 push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
+
                 print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
                 my $last_item = pop @f08_wrappers_f;
                 foreach my $t (@f08_wrappers_f){
@@ -1112,6 +1137,7 @@ foreach my $p (@ltlibs){
             print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
             print Out "\n";
         }
+
         print Out "$add = \\\n";
         my $last_item = pop @t;
         foreach my $t (@t){
@@ -1124,12 +1150,15 @@ foreach my $p (@ltlibs){
         my $l = "    $last_item";
         $l=~s/$moddir/\x24(MODDIR)/g;
         print Out "$l\n";
+
         if(@CONFIGS and "$add"=~/_OBJECTS$/){
             print Out "\x24($add): \x24(CONFIGS)\n";
         }
         $deps .= " \x24($add)";
     }
+
     $objs = "$deps $objs \x24(LIBS)";
+
     if($dst_hash{$p}=~/\/lib$/){
         my $opt="-rpath $dst_hash{$p}";
         if($opts{so_version}){
@@ -1137,10 +1166,12 @@ foreach my $p (@ltlibs){
         }
         $objs = "$opt $objs";
     }
+
     print Out "$p: $deps\n";
     print Out "\t$cmd -o \$\@ $objs\n";
     print Out "\n";
 }
+
 foreach my $p (@programs){
     my $ld = "LTLD";
     if($p=~/libmpifort.la/){
@@ -1153,8 +1184,10 @@ foreach my $p (@programs){
     if($opts{V}==0){
         $cmd = "\@echo $ld \$\@ && $cmd";
     }
+
     my $a = $p;
     $a=~s/[\.\/]/_/g;
+
     my ($deps, $objs);
     my $o= "${a}_OBJECTS";
     my $tlist = get_list($o);
@@ -1169,6 +1202,7 @@ foreach my $p (@programs){
             $t=~s/[^\/]+-//;
         }
     }
+
     my @t;
     foreach my $t (@tlist){
         if($t=~/^-l\w+/){
@@ -1181,6 +1215,7 @@ foreach my $p (@programs){
             push @t, $t;
         }
     }
+
     if($o=~/mpifort.*_OBJECTS/){
         my @f08_wrappers_f;
         foreach my $t (@t){
@@ -1189,8 +1224,10 @@ foreach my $p (@programs){
                 $t=undef;
             }
         }
+
         if(@f08_wrappers_f){
             push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
+
             print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
             my $last_item = pop @f08_wrappers_f;
             foreach my $t (@f08_wrappers_f){
@@ -1201,6 +1238,7 @@ foreach my $p (@programs){
         print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
         print Out "\n";
     }
+
     print Out "$o = \\\n";
     my $last_item = pop @t;
     foreach my $t (@t){
@@ -1213,11 +1251,13 @@ foreach my $p (@programs){
     my $l = "    $last_item";
     $l=~s/$moddir/\x24(MODDIR)/g;
     print Out "$l\n";
+
     if(@CONFIGS and "$o"=~/_OBJECTS$/){
         print Out "\x24($o): \x24(CONFIGS)\n";
     }
     $deps .= " \x24($o)";
     my $add = $a."_LDADD";
+
     if($objects{$add}){
         my $t = get_object($add);
         $t=~s/^\s+//;
@@ -1234,6 +1274,7 @@ foreach my $p (@programs){
                 push @t, $t;
             }
         }
+
         if($add=~/mpifort.*_OBJECTS/){
             my @f08_wrappers_f;
             foreach my $t (@t){
@@ -1242,8 +1283,10 @@ foreach my $p (@programs){
                     $t=undef;
                 }
             }
+
             if(@f08_wrappers_f){
                 push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
+
                 print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
                 my $last_item = pop @f08_wrappers_f;
                 foreach my $t (@f08_wrappers_f){
@@ -1254,6 +1297,7 @@ foreach my $p (@programs){
             print Out "\x24(F08_WRAPPERS_F_OBJECTS): \x24(CONFIGS) src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo\n";
             print Out "\n";
         }
+
         print Out "$add = \\\n";
         my $last_item = pop @t;
         foreach my $t (@t){
@@ -1266,6 +1310,7 @@ foreach my $p (@programs){
         my $l = "    $last_item";
         $l=~s/$moddir/\x24(MODDIR)/g;
         print Out "$l\n";
+
         if(@CONFIGS and "$add"=~/_OBJECTS$/){
             print Out "\x24($add): \x24(CONFIGS)\n";
         }
@@ -1279,7 +1324,9 @@ foreach my $p (@programs){
         $cmd.= ' '. get_object("${a}_LDFLAGS");
         $cmd .= " \x24(LDFLAGS)";
     }
+
     $objs = "$deps $objs \x24(LIBS)";
+
     if($dst_hash{$p}=~/\/lib$/){
         my $opt="-rpath $dst_hash{$p}";
         if($opts{so_version}){
@@ -1287,10 +1334,12 @@ foreach my $p (@programs){
         }
         $objs = "$opt $objs";
     }
+
     print Out "$p: $deps\n";
     print Out "\t$cmd -o \$\@ $objs\n";
     print Out "\n";
 }
+
 print Out "\x23 --------------------\n";
 foreach my $l (@extra_make_rules){
     $l=~s/$moddir/\x24(MODDIR)/g;
@@ -1368,6 +1417,7 @@ if(@$t1 or @$t2 or @$t3){
         $dst_hash{$t} = "$prefix/include";
     }
 }
+
 my (%dirs, @install_list, @install_deps, @lns_list);
 while (my ($k, $v) = each %dst_hash){
     if($k=~/^LN_S-(.*)/){
@@ -1390,11 +1440,13 @@ while (my ($k, $v) = each %dst_hash){
         }
     }
 }
+
 my @install_list = sort @install_list;
 foreach my $d (keys %dirs){
     unshift @install_list, "mkdir -p $d";
 }
 push @install_list, sort @lns_list;
+
 if(@install_list){
     print Out "\x23 --------------------\n";
     print Out ".PHONY: install\n";
@@ -1412,6 +1464,47 @@ print Out "\n";
 print Out "realclean: clean\n";
 print Out "\t\x24(DO_clean)\n";
 print Out "\n";
+
 close Out;
 system "rm -f Makefile";
 system "ln -s mymake/Makefile.custom Makefile";
+
+# ---- subroutines --------------------------------------------
+sub get_object {
+    my ($key) = @_;
+    my $arr = $objects{$key};
+    if(defined $arr){
+        my $t;
+        if(ref($arr) eq "ARRAY"){
+            $t = join(' ', @$arr);
+        }
+        else{
+            $t = $arr;
+        }
+        $t=~s/\$\(am__v_[\w]+\)//g;
+        $t=~s/\$\((\w+)\)/get_object($1)/ge;
+        $t=~s/\s+/ /g;
+        return $t;
+    }
+    else{
+        return "";
+    }
+}
+
+sub get_list {
+    my ($key) = @_;
+    my @t;
+    my $tlist = $objects{$key};
+    foreach my $t (@{$objects{$key}}){
+        if($t=~/^\$\((\w+)\)$/){
+            my $L = get_list($1);
+            push @t, @$L;
+        }
+        else{
+            $t=~s/\$\((\w+)\)/get_object($1)/ge;
+            push @t, $t;
+        }
+    }
+    return \@t;
+}
+

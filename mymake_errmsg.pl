@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 use strict;
+
 our %opts;
 our @config_args;
 our @test_config_args;
@@ -10,26 +11,10 @@ our %errnames;
 our %generics;
 our %specifics;
 our %generic_index;
-sub arg_split {
-    my ($t) = @_;
-    my @strs;
-    while($t=~/(.*)("(?:[^\\]|\\")*")(.*)/){
-        my $i=@strs;
-        push @strs, $2;
-        $t=$1."str:$i".$3;
-    }
-    $t=~s/(\((?:[^()]++|(?-1))*+\))/--/g;
-    my @t = split /\s*,\s*/, $t;
-    foreach my $t (@t){
-        if($t =~/^str:(\d+)/){
-            $t=$strs[$1];
-        }
-    }
-    return @t;
-}
 
 my $pwd=`pwd`;
 chomp $pwd;
+
 $opts{V}=0;
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
@@ -82,6 +67,7 @@ foreach my $a (@ARGV){
         $opts{do}=$1;
     }
 }
+
 if($opts{CC}){
     $ENV{CC}=$opts{CC};
 }
@@ -293,9 +279,12 @@ foreach my $f (@files){
 }
 $generics{"**envvarparse"}++;
 $specifics{"**envvarparse %s"}++;
+$generics{"**cvar_val"}++;
+$specifics{"**cvar_val %s %s"}++;
 $generics{"**inttoosmall"}++;
 $generics{"**notcstatignore"}++;
 $generics{"**notfstatignore"}++;
+
 my @sorted_generics=sort keys %generics;
 my @sorted_specifics=sort keys %specifics;
 open Out, ">src/mpi/errhan/defmsg.h" or die "Can't write src/mpi/errhan/defmsg.h.\n";
@@ -325,6 +314,7 @@ print Out "/* The names are in sorted order, allowing the use of a simple\n";
 print Out "   linear search or bisection algorithm to find the message corresponding to\n";
 print Out "   a particular message.\n";
 print Out "*/\n";
+
 my $n = @sorted_generics;
 print Out "static const int generic_msgs_len = $n;\n";
 my $_i = -1;
@@ -338,6 +328,7 @@ foreach my $name (@sorted_generics){
         warn "missing: $name\n";
     }
 }
+
 print Out "static const msgpair generic_err_msgs[] = {\n";
 for (my $i = 0; $i<$n; $i++) {
     my $sep=",";
@@ -349,6 +340,7 @@ for (my $i = 0; $i<$n; $i++) {
 print Out "};\n";
 print Out "#endif\n\n";
 print Out "#if MPICH_ERROR_MSG_LEVEL > MPICH_ERROR_MSG__GENERIC\n";
+
 my $n = @sorted_specifics;
 print Out "static const int specific_msgs_len = $n;\n";
 my $_i = -1;
@@ -362,6 +354,7 @@ foreach my $name (@sorted_specifics){
         warn "missing: $name\n";
     }
 }
+
 print Out "static const msgpair specific_err_msgs[] = {\n";
 for (my $i = 0; $i<$n; $i++) {
     my $sep=",";
@@ -372,6 +365,7 @@ for (my $i = 0; $i<$n; $i++) {
 }
 print Out "};\n";
 print Out "#endif\n\n";
+
 print Out "#if MPICH_ERROR_MSG_LEVEL > MPICH_ERROR_MSG__CLASS\n";
 my $i = -1;
 foreach my $name (@sorted_generics){
@@ -395,3 +389,23 @@ foreach my $name (@classnames){
 print Out "};\n";
 print Out "#endif\n\n";
 close Out;
+
+# ---- subroutines --------------------------------------------
+sub arg_split {
+    my ($t) = @_;
+    my @strs;
+    while($t=~/(.*)("(?:[^\\]|\\")*")(.*)/){
+        my $i=@strs;
+        push @strs, $2;
+        $t=$1."str:$i".$3;
+    }
+    $t=~s/(\((?:[^()]++|(?-1))*+\))/--/g;
+    my @t = split /\s*,\s*/, $t;
+    foreach my $t (@t){
+        if($t =~/^str:(\d+)/){
+            $t=$strs[$1];
+        }
+    }
+    return @t;
+}
+
