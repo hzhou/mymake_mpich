@@ -169,8 +169,12 @@ if($srcdir ne "."){
 if(!-d "mymake"){
     mkdir "mymake" or die "can't mkdir mymake\n";
 }
-if(!-f 'src/util/cvar/mpir_cvars.c'){
-    system "touch src/util/cvar/mpir_cvars.c";
+my $cvars_c = "src/util/mpir_cvars.c";
+if(-f "src/util/cvar/Makefile.mk"){
+    $cvars_c = "src/util/cvar/mpir_cvars.c";
+}
+if(!-f $cvars_c){
+    system "touch $cvars_c";
 
 }
 push @extra_make_rules, "DO_stage = perl $mymake\_stage.pl";
