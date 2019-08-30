@@ -151,7 +151,7 @@ if(-d "$moddir/hwloc"){
     push @realclean_list, "$moddir/hwloc/include/hwloc/autogen/config.h";
 }
 if(-d "$moddir/izem"){
-    push @realclean_list, "$moddir/izem/src/include/izem/src/include/zm_config.h";
+    push @realclean_list, "$moddir/izem/src/include/zm_config.h";
 }
 if(-d "$moddir/ucx"){
     push @realclean_list, "$moddir/ucx/config.h";
