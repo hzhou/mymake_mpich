@@ -224,7 +224,6 @@ push @extra_make_rules, "";
 push @extra_make_rules, "$mkfile:";
 push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
 push @extra_make_rules, "";
-push @config_args, "--enable-izem=atomic --with-zm-prefix=yes";
 if(!$opts{disable_cxx}){
     $opts{enable_cxx}=1;
     if(!-f "configure"){
@@ -728,26 +727,6 @@ push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 
-if(!-d "$moddir/izem"){
-    my $cmd = "cp -r src/izem $moddir/izem";
-    print "$cmd\n";
-    system $cmd;
-}
-$I_list .= " -I$moddir/izem/src/include";
-$L_list .= " $moddir/izem/src/libzm.la";
-push @CONFIGS, "$moddir/izem/src/include/zm_config.h";
-my @t = ("cd $moddir/izem");
-push @t, "\x24(DO_stage) Configure IZEM";
-push @t, "sh autogen.sh";
-push @t, "./configure --enable-embedded";
-push @extra_make_rules, "$moddir/izem/src/include/zm_config.h: ";
-push @extra_make_rules, "\t(".join(' && ', @t).")";
-push @extra_make_rules, "";
-my @t = ("cd $moddir/izem");
-push @t, "\x24(MAKE)";
-push @extra_make_rules, "$moddir/izem/src/libzm.la: $moddir/izem/src/include/zm_config.h";
-push @extra_make_rules, "\t(".join(' && ', @t).")";
-push @extra_make_rules, "";
 
 if(!$opts{disable_romio}){
     system "rsync -r confdb/ src/mpi/romio/confdb/";
