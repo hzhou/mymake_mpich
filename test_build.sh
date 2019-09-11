@@ -1,3 +1,4 @@
+
 set -x
 printenv
 hostname
@@ -39,10 +40,11 @@ if test x$jenkins = xold ; then
             ;;
     esac
 else
-    PMRS=/nfs/gce/projects/login-pmrs
+    PMRS=/nfs/gce/projects/pmrs
     if test -d $HOME/software/autotools/bin; then
         export PATH=$HOME/software/autotools/bin:$PATH
     fi
+
     export UCX_NET_DEVICES=mlx5_0:1
 fi
 if test -n $compiler ; then
@@ -137,6 +139,7 @@ if test -n $compiler ; then
                 echo "Unknown compiler suite"
                 exit 1
         esac
+
         if test $queue eq "ubuntu32" -a $compiler eq "solstudio" ; then
             CFLAGS="-O1"
         fi
@@ -234,9 +237,11 @@ if test "$?" != "0"; then
 fi
 make install
 $MPIEXEC -n 2 examples/cpi
+
 export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include:$CPATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
+
 if test x$skip_test = xtrue ; then
     exit 0
 else

@@ -1,4 +1,5 @@
-PREFIX=/nfs/gce/projects/login-pmrs/opt
+
+PREFIX=/nfs/gce/projects/pmrs/opt
 wget --no-verbose https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz
 tar xf autoconf-*
 cd autoconf-*

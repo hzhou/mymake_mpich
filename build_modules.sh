@@ -1,9 +1,12 @@
+
 uname -a
+
 git clone https://github.com/pmodels/hwloc
 git clone https://github.com/pmodels/izem
 git clone https://github.com/pmodels/ucx
 git clone https://github.com/pmodels/libfabric
 git clone https://github.com/json-c/json-c jsonc
+
 cd hwloc
 sh autogen.sh
 ./configure --enable-embedded-mode --enable-visibility
@@ -32,6 +35,7 @@ sh autogen.sh
 ./configure 
 make -j 16
 cd ..
+
 rm -rf */.git
 find . -name '*.o' |xargs rm -f
 tar czf modules.tar.gz hwloc izem ucx libfabric

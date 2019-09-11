@@ -1,4 +1,6 @@
+
 VER=$1
+
 if test x$1 = x4.6 ; then
     URL=https://bigsearcher.com/mirrors/gcc/releases/gcc-4.6.3/gcc-4.6.3.tar.bz2
 elif test x$1 = x7 ; then
@@ -8,20 +10,23 @@ elif test x$1 = x8 ; then
 else
     URL=https://bigsearcher.com/mirrors/gcc/releases/gcc-9.1.0/gcc-9.1.0.tar.xz
 fi
+
 set -e
 if test -z $NJOB ; then
     NJOB=16
 fi
-PATH=/nfs/gce/projects/login-pmrs/opt/bin:/usr/bin:/bin
-CPATH=/nfs/gce/projects/login-pmrs/opt/include
-LIBRARY_PATH=/nfs/gce/projects/login-pmrs/opt/lib
-PREFIX=/nfs/gce/projects/login-pmrs/opt/gcc-$VER
+PATH=/nfs/gce/projects/pmrs/opt/bin:/usr/bin:/bin
+CPATH=/nfs/gce/projects/pmrs/opt/include
+LIBRARY_PATH=/nfs/gce/projects/pmrs/opt/lib
+
+PREFIX=/nfs/gce/projects/pmrs/opt/gcc-$VER
 rm -rf $PREFIX
 PATH=$PREFIX/bin:$PATH
 CPATH=$PREFIX/include
 LIBRARY_PATH=$PREFIX/lib
 export LD_LIBRARY_PATH=$PREFIX/lib
 export PATH CPATH LIBRARY_PATH
+
 wget --no-verbose https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz
 tar xf gmp-*
 cd gmp-*
@@ -40,6 +45,7 @@ cd mpc-*
 ./configure --prefix=$PREFIX --disable-shared
 make -j$NJOB install
 cd ..
+
 wget --no-verbose $URL
 tar xf gcc-*
 cd gcc-*

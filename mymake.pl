@@ -224,6 +224,7 @@ push @extra_make_rules, "";
 push @extra_make_rules, "$mkfile:";
 push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
 push @extra_make_rules, "";
+
 if(!$opts{disable_cxx}){
     $opts{enable_cxx}=1;
     if(!-f "configure"){
@@ -257,7 +258,7 @@ if(!$opts{disable_fortran}){
     push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_sizeofs.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
     push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_constants.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
     push @extra_make_rules, "src/binding/fortran/use_mpi/mpifnoext.h: src/binding/fortran/mpif_h/mpif.h";
-    push @extra_make_rules, "\tsed -e 's/^C/!/g' -e '/EXTERNAL|REAL\*8|DOUBLE PRECISION|MPI_WTICK/d' \$< > \$@";
+    push @extra_make_rules, "\tsed -e 's/^C/!/g' -e '/EXTERNAL/d' -e '/MPI_WTICK/d' \$< > \$@";
     push @extra_make_rules, "";
     if(!-f "configure"){
         print ": buildiface - use_mpi_f08\n";
@@ -299,6 +300,10 @@ else{
 
     system "touch src/binding/fortran/use_mpi_f08/mpi_c_interface_types.f90.in";
 
+}
+my $t = `uname -m`;
+if($t=~/x86_64/){
+    $ENV{FORTRAN_MPI_OFFSET}="integer*8";
 }
 if(!-f "subsys_include.m4"){
     print "---------------------------\n";
@@ -726,7 +731,6 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc/include/hwloc/autogen/config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-
 
 if(!$opts{disable_romio}){
     system "rsync -r confdb/ src/mpi/romio/confdb/";
