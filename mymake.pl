@@ -761,7 +761,7 @@ if(!$opts{disable_romio}){
     $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$prefix/include";
 }
 
-if($opts{device}=~/ucx/){
+if($opts{device}=~/ch4:ucx/){
     if(!-d "$moddir/ucx"){
         my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
         print "$cmd\n";
@@ -797,7 +797,7 @@ if($opts{device}=~/ucx/){
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
 }
-if($opts{device}=~/ofi/){
+if($opts{device}=~/ch4:ofi/){
     if(!-d "$moddir/libfabric"){
         my $cmd = "cp -r src/mpid/ch4/netmod/ofi/libfabric $moddir/libfabric";
         print "$cmd\n";
