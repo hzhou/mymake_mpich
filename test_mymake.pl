@@ -51,7 +51,7 @@ if($trigger_phrase=~/^\s*(compiler|skip_test|out_of_tree)\s*[:=]\s*([\w\-\.]+)/m
     $ENV{$key}=$val;
 }
 
-if($trigger_phrase=~/^env:\s*(\w+)\s*=\s*(.*?)\s*$/m){
+while($trigger_phrase=~/^env:\s*(\w+)\s*=\s*(.*?)\s*$/mg){
     $ENV{$1}=$2;
 }
 
