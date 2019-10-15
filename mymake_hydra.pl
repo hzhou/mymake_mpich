@@ -16,7 +16,6 @@ our @programs;
 our @ltlibs;
 our %special_targets;
 our @extra_make_rules;
-
 my $pwd=`pwd`;
 chomp $pwd;
 

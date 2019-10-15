@@ -9,7 +9,6 @@ our $moddir;
 our $prefix;
 our (%cvars, @cvars, %cats, @cats);
 our %enum_groups;
-
 my $pwd=`pwd`;
 chomp $pwd;
 

@@ -16,7 +16,6 @@ our @programs;
 our @ltlibs;
 our %special_targets;
 our @extra_make_rules;
-
 my $pwd=`pwd`;
 chomp $pwd;
 
@@ -483,7 +482,7 @@ if(!-f "configure"){
                     print Out "    AC_DEFINE([MPIDI_CH4_OFI_USE_SET_RUNTIME], [1], [Define to use runtime capability set])\n";
                     next;
                 }
-                elsif($l=~/AC_ARG_ENABLE.*legacy-ofi/){
+                elsif($l=~/AC_ARG_ENABLE/){
                     $flag=2;
                 }
                 elsif($flag==2){

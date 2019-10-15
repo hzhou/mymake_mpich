@@ -7,7 +7,6 @@ our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
-
 my $pwd=`pwd`;
 chomp $pwd;
 

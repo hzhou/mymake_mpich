@@ -11,7 +11,6 @@ our %errnames;
 our %generics;
 our %specifics;
 our %generic_index;
-
 my $pwd=`pwd`;
 chomp $pwd;
 
