@@ -357,6 +357,9 @@ open Out, ">$cvars_c" or die "Can't write $cvars_c.\n";
 print "  --> [$cvars_c]\n";
 print Out "#include \"mpiimpl.h\"\n";
 print Out "\n";
+if(1){
+    print Out "#define FCNAME __func__\n";
+}
 my $n = @cvars;
 print Out "/* $n cvars */\n";
 foreach my $v (@cvars){

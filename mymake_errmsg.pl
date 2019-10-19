@@ -325,6 +325,8 @@ foreach my $name (@sorted_generics){
     }
     else{
         warn "missing: $name\n";
+        print Out "static const char short_gen$_i\[\] = \"$name\";\n";
+        print Out "static const char long_gen$_i\[\]  = \"$name (missing description)\";\n";
     }
 }
 
@@ -351,6 +353,8 @@ foreach my $name (@sorted_specifics){
     }
     else{
         warn "missing: $name\n";
+        print Out "static const char short_spc$_i\[\] = \"$name\";\n";
+        print Out "static const char long_spc$_i\[\]  = \"$name (missing description)\";\n";
     }
 }
 
