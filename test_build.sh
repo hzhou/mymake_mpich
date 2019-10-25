@@ -197,7 +197,7 @@ if test -n $compiler ; then
                 CC=suncc
                 CXX=sunCC
                 F77=sunf77
-                FC=funf90
+                FC=sunf90
                 ;;
             *)
                 echo "Unknown compiler suite"
