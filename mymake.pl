@@ -539,6 +539,7 @@ if(!-f "configure"){
     foreach my $m (@mod_list){
         system "cp $m->[1] $m->[0]";
     }
+    system "patch -N -s -l confdb/libtool.m4 maint/patches/optional/confdb/oracle-fort.patch";
 }
 if(!-f "mymake/Makefile.orig"){
     print "---------------------------\n";

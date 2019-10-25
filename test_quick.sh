@@ -192,6 +192,14 @@ if test -n $compiler ; then
                 F77=pgfortran
                 FC=pgfortran
                 ;;
+            sun)
+                source /etc/profile.d/spack.sh
+                module load oracledeveloperstudio/12.5
+                CC=suncc
+                CXX=sunCC
+                F77=sunf77
+                FC=funf90
+                ;;
             *)
                 echo "Unknown compiler suite"
                 exit 1
