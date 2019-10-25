@@ -11,6 +11,8 @@ our $I_list;
 our $L_list;
 our %objects;
 our @CONFIGS;
+our @extra_DEFS;
+our @extra_INCLUDES;
 our %dst_hash;
 our @programs;
 our @ltlibs;
@@ -244,6 +246,9 @@ push @extra_make_rules,  ".PHONY: gforker-install";
 push @extra_make_rules,  "gforker-install: mpiexec.gforker";
 push @extra_make_rules,  "\t/bin/sh ./libtool --mode=install --quiet install mpiexec.gforker \x24(PREFIX)/bin";
 push @extra_make_rules, "";
+
+push @extra_INCLUDES, "-Isrc/pm/util";
+push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE-SIGACTION";
 
 if(!$opts{disable_cxx}){
     $opts{enable_cxx}=1;
@@ -897,6 +902,7 @@ if(@CONFIGS){
     print Out "\n";
 }
 my $t = get_object("DEFS");
+$t .= " @extra_DEFS";
 my $l = "DEFS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
@@ -905,6 +911,7 @@ my $l = "DEFAULT_INCLUDES = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("INCLUDES");
+$t .= " @extra_INCLUDES";
 my $l = "INCLUDES = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";

@@ -11,6 +11,8 @@ our $I_list;
 our $L_list;
 our %objects;
 our @CONFIGS;
+our @extra_DEFS;
+our @extra_INCLUDES;
 our %dst_hash;
 our @programs;
 our @ltlibs;
@@ -463,6 +465,7 @@ if(@CONFIGS){
     print Out "\n";
 }
 my $t = get_object("DEFS");
+$t .= " @extra_DEFS";
 my $l = "DEFS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
@@ -471,6 +474,7 @@ my $l = "DEFAULT_INCLUDES = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("INCLUDES");
+$t .= " @extra_INCLUDES";
 my $l = "INCLUDES = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
