@@ -214,16 +214,32 @@ which libtool
 libtool --version
 export CC
 which $CC
-$CC --version
+if test $compiler = "sun" ; then
+    $CC -V
+else
+    $CC --version
+fi
 export CXX
 which $CXX
-$CXX --version
+if test $compiler = "sun" ; then
+    $CXX -V
+else
+    $CXX --version
+fi
 export F77
 which $F77
-$F77 --version
+if test $compiler = "sun" ; then
+    $F77 -V
+else
+    $F77 --version
+fi
 export FC
 which $FC
-$FC --version
+if test $compiler = "sun" ; then
+    $FC -V
+else
+    $FC --version
+fi
 WORKSPACE=$PWD
 SRC=$PWD
 PREFIX=$WORKSPACE/_inst
