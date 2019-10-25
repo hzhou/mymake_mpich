@@ -189,7 +189,7 @@ if test -n $compiler ; then
                 module load pgi
                 CC=pgcc
                 CXX=pgc++
-                F77=pgf77
+                F77=pgfortran
                 FC=pgfortran
                 ;;
             *)

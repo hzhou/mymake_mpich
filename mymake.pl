@@ -64,6 +64,9 @@ foreach my $a (@ARGV){
             $opts{device}=$1;
             push @config_args, $a;
         }
+        elsif($a=~/^--with-pm=(.*)/){
+            $opts{pm}=$1;
+        }
         elsif($a=~/--(dis|en)able-.*tests/){
             push @test_config_args, $a;
         }
@@ -213,42 +216,49 @@ if($opts{device}){
     print "device: $opts{device}\n";
 }
 
-my $mkfile="src/pm/hydra/Makefile";
-my $add="$moddir/mpl/libmpl.la $moddir/hwloc/hwloc/libhwloc_embedded.la";
-push @extra_make_rules, ".PHONY: hydra hydra-install";
-push @extra_make_rules, "hydra: $mkfile $add";
-push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
-push @extra_make_rules, "";
-push @extra_make_rules, "hydra-install: $mkfile";
-push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) install )";
-push @extra_make_rules, "";
-push @extra_make_rules, "$mkfile:";
-push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
-push @extra_make_rules, "";
-push @extra_make_rules,  "libmpiexec_la_OBJECTS = \\";
-foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface)){
-    push @extra_make_rules,  "    src/pm/util/$a.lo \\";
+if($opts{pm} eq "gforker"){
+    push @extra_make_rules,  "libmpiexec_la_OBJECTS = \\";
+    foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface)){
+        push @extra_make_rules,  "    src/pm/util/$a.lo \\";
+    }
+    push @extra_make_rules,  "    src/pm/util/simple_pmiutil2.lo";
+    push @extra_make_rules, "";
+
+    my $objs = "\x24(libmpiexec_la_OBJECTS) \x24(MODDIR)/mpl/libmpl.la";
+    push @extra_make_rules,  "libmpiexec.la: $objs";
+    push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
+    push @extra_make_rules, "";
+
+    my $objs = "src/pm/gforker/mpiexec.o libmpiexec.la";
+    push @extra_make_rules,  "mpiexec.gforker: $objs";
+    push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
+    push @extra_make_rules, "";
+
+    push @extra_make_rules,  ".PHONY: gforker-install";
+    push @extra_make_rules,  "gforker-install: mpiexec.gforker";
+    my $bin = "\x24(PREFIX)/bin";
+    push @extra_make_rules,  "\t/bin/sh ./libtool --mode=install --quiet install mpiexec.gforker $bin";
+    push @extra_make_rules,  "\trm -f $bin/mpiexec  && ln -s $bin/mpiexec.gforker $bin/mpiexec";
+    push @extra_make_rules,  "\trm -f $bin/mpirun  && ln -s $bin/mpiexec.gforker $bin/mpirun";
+    push @extra_make_rules, "";
+
+    push @extra_INCLUDES, "-Isrc/pm/util";
+    push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE_SIGACTION";
 }
-push @extra_make_rules,  "    src/pm/util/simple_pmiutil2.lo";
-push @extra_make_rules, "";
-
-my $objs = "\x24(libmpiexec_la_OBJECTS) \x24(MODDIR)/mpl/libmpl.la";
-push @extra_make_rules,  "libmpiexec.la: $objs";
-push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
-push @extra_make_rules, "";
-
-my $objs = "src/pm/gforker/mpiexec.o libmpiexec.la";
-push @extra_make_rules,  "mpiexec.gforker: $objs";
-push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
-push @extra_make_rules, "";
-
-push @extra_make_rules,  ".PHONY: gforker-install";
-push @extra_make_rules,  "gforker-install: mpiexec.gforker";
-push @extra_make_rules,  "\t/bin/sh ./libtool --mode=install --quiet install mpiexec.gforker \x24(PREFIX)/bin";
-push @extra_make_rules, "";
-
-push @extra_INCLUDES, "-Isrc/pm/util";
-push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE-SIGACTION";
+else{
+    my $mkfile="src/pm/hydra/Makefile";
+    my $add="$moddir/mpl/libmpl.la $moddir/hwloc/hwloc/libhwloc_embedded.la";
+    push @extra_make_rules, ".PHONY: hydra hydra-install";
+    push @extra_make_rules, "hydra: $mkfile $add";
+    push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
+    push @extra_make_rules, "";
+    push @extra_make_rules, "hydra-install: $mkfile";
+    push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) install )";
+    push @extra_make_rules, "";
+    push @extra_make_rules, "$mkfile:";
+    push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
+    push @extra_make_rules, "";
+}
 
 if(!$opts{disable_cxx}){
     $opts{enable_cxx}=1;

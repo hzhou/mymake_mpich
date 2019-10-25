@@ -43,6 +43,9 @@ foreach my $a (@ARGV){
             $opts{device}=$1;
             push @config_args, $a;
         }
+        elsif($a=~/^--with-pm=(.*)/){
+            $opts{pm}=$1;
+        }
         elsif($a=~/--(dis|en)able-.*tests/){
             push @test_config_args, $a;
         }
