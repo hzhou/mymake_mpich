@@ -211,34 +211,25 @@ which automake
 automake --version
 which libtool
 libtool --version
+
+if test $compiler = "sun" ; then
+    optV="-V"
+else
+    optV="--version"
+fi
 export CC
 which $CC
-if test $compiler = "sun" ; then
-    $CC -V
-else
-    $CC --version
-fi
+$CC $optV
 export CXX
 which $CXX
-if test $compiler = "sun" ; then
-    $CXX -V
-else
-    $CXX --version
-fi
+$CXX $optV
 export F77
 which $F77
-if test $compiler = "sun" ; then
-    $F77 -V
-else
-    $F77 --version
-fi
+$F77 $optV
 export FC
 which $FC
-if test $compiler = "sun" ; then
-    $FC -V
-else
-    $FC --version
-fi
+$FC $optV
+
 WORKSPACE=$PWD
 SRC=$PWD
 PREFIX=$WORKSPACE/_inst
