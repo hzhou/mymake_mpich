@@ -9,6 +9,7 @@ our $moddir;
 our $prefix;
 our (%cvars, @cvars, %cats, @cats);
 our %enum_groups;
+
 my $pwd=`pwd`;
 chomp $pwd;
 
@@ -58,6 +59,9 @@ foreach my $a (@ARGV){
             $opts{enable_fortran}=$1;
             push @config_args, $a;
             push @test_config_args, $a;
+        }
+        elsif($a=~/--with-atomic-primitives=(.*)/){
+            $opts{openpa_primitives} = $1;
         }
         else{
             push @config_args, $a;
