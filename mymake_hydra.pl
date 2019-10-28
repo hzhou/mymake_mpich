@@ -532,13 +532,14 @@ if(!$opts{disable_cxx}){
     my $flags = get_object("CXXFLAGS");
     my $am_flags = get_object("AM_CXXFLAGS");
     print Out "CXXCOMPILE = $cxx \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) $flags $am_flags\n";
-    print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt \x24(CXXCOMPILE)\n";
 
     my $cxxld = get_object("CXXLD");
     if($cxxld){
+        print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt --tag=CXX \x24(CXXCOMPILE)\n";
         print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CXX $cxxld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     }
     else{
+        print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt \x24(CXXCOMPILE)\n";
         print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CC $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     }
     print Out "\n";
@@ -558,7 +559,7 @@ if(!$opts{disable_fortran}){
         }
     }
     print Out "F77COMPILE = $fc $flags\n";
-    print Out "LTF77 = /bin/sh ./libtool --mode=compile $lt_opt \x24(F77COMPILE)\n";
+    print Out "LTF77 = /bin/sh ./libtool --mode=compile $lt_opt --tag=F77 \x24(F77COMPILE)\n";
 
     my $ld = get_object("F77LD");
     print Out "F77LD = /bin/sh ./libtool --mode=link $lt_opt --tag=F77 $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
@@ -577,7 +578,7 @@ if(!$opts{disable_fortran}){
         }
     }
     print Out "FCCOMPILE = $fc $flags\n";
-    print Out "LTFC = /bin/sh ./libtool --mode=compile $lt_opt \x24(FCCOMPILE)\n";
+    print Out "LTFC = /bin/sh ./libtool --mode=compile $lt_opt --tag=FC \x24(FCCOMPILE)\n";
 
     my $ld = get_object("FCLD");
     print Out "FCLD = /bin/sh ./libtool --mode=link $lt_opt --tag=FC $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
