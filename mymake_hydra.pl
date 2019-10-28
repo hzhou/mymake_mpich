@@ -356,6 +356,9 @@ if(!-f "mymake/Makefile.orig"){
                 $need_patch{link_static_flag}=" -Bstatic";
                 $need_patch{shared}="-G";
             }
+            else{
+                %need_patch=();
+            }
         }
         elsif($l=~/^(pic_flag|wl|link_static_flag)=/){
             if($need_patch{$1}){
