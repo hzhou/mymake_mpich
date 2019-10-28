@@ -575,6 +575,9 @@ if(!$opts{disable_fortran}){
         if($fc =~/(pgfortran|ifort)/){
             $flags.=" -module $modpath";
         }
+        elsif($fc =~/sunf\d+/){
+            $flags.=" -moddir=$modpath";
+        }
         else{
             $flags.=" -J$modpath";
         }
@@ -593,6 +596,9 @@ if(!$opts{disable_fortran}){
         my ($modpath) = ($1);
         if($fc =~/(pgfortran|ifort)/){
             $flags.=" -module $modpath";
+        }
+        elsif($fc =~/sunf\d+/){
+            $flags.=" -moddir=$modpath";
         }
         else{
             $flags.=" -J$modpath";
