@@ -328,6 +328,7 @@ if(!-f "mymake/Makefile.orig"){
     system "rm -f Makefile";
     system "./configure";
     my @mod_list;
+    my %need_patch;
     my $f = "libtool";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
@@ -346,6 +347,25 @@ if(!-f "mymake/Makefile.orig"){
     foreach my $l (@lines){
         if($l=~/^AR_FLAGS=/){
             $l = "AR_FLAGS=\"cr\"\n";
+        }
+        elsif($l=~/^CC="(.*)"/){
+            my ($CC) = ($1);
+            if($CC =~ /^sun(f77|f9.|fortran)/){
+                $need_patch{pic_flag}=" -KPIC";
+                $need_patch{wl}="-Qoption ld ";
+                $need_patch{link_static_flag}=" -Bstatic";
+                $need_patch{shared}="-G";
+            }
+        }
+        elsif($l=~/^(pic_flag|wl|link_static_flag)=/){
+            if($need_patch{$1}){
+                $l = "$1='$need_patch{$1}'\n";
+            }
+        }
+        elsif($l=~/^archive_cmds=/){
+            if($need_patch{shared}){
+                $l=~s/-shared /$need_patch{shared} /;
+            }
         }
         if($flag_skip){
             next;
@@ -386,6 +406,7 @@ my @t = ("cd $moddir/mpl");
 push @t, "\x24(DO_stage) Configure MPL";
 push @t, "autoreconf -ivf";
 push @t, "./configure $config_args";
+push @t, "cp $pwd/libtool .";
 push @extra_make_rules, "$moddir/mpl/include/mplconfig.h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";

@@ -543,7 +543,6 @@ if(!-f "configure"){
     foreach my $m (@mod_list){
         system "cp $m->[1] $m->[0]";
     }
-    system "patch -N -s -l confdb/libtool.m4 maint/patches/optional/confdb/oracle-fort.patch";
 }
 if(!-f "mymake/Makefile.orig"){
     print "---------------------------\n";
@@ -554,6 +553,7 @@ if(!-f "mymake/Makefile.orig"){
     system "./configure --with-pm=no $t";
     system "mv Makefile mymake/Makefile.orig";
     my @mod_list;
+    my %need_patch;
     my $f = "libtool";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
@@ -573,6 +573,25 @@ if(!-f "mymake/Makefile.orig"){
         if($l=~/^AR_FLAGS=/){
             $l = "AR_FLAGS=\"cr\"\n";
         }
+        elsif($l=~/^CC="(.*)"/){
+            my ($CC) = ($1);
+            if($CC =~ /^sun(f77|f9.|fortran)/){
+                $need_patch{pic_flag}=" -KPIC";
+                $need_patch{wl}="-Qoption ld ";
+                $need_patch{link_static_flag}=" -Bstatic";
+                $need_patch{shared}="-G";
+            }
+        }
+        elsif($l=~/^(pic_flag|wl|link_static_flag)=/){
+            if($need_patch{$1}){
+                $l = "$1='$need_patch{$1}'\n";
+            }
+        }
+        elsif($l=~/^archive_cmds=/){
+            if($need_patch{shared}){
+                $l=~s/-shared /$need_patch{shared} /;
+            }
+        }
         if($flag_skip){
             next;
         }
@@ -581,9 +600,6 @@ if(!-f "mymake/Makefile.orig"){
     close Out;
     system "cp -v $m[2] $m[0]";
     system "chmod a+x libtool";
-    foreach my $m (@mod_list){
-        system "cp $m->[1] $m->[0]";
-    }
 }
 
 open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h.\n";
@@ -720,6 +736,7 @@ my @t = ("cd $moddir/mpl");
 push @t, "\x24(DO_stage) Configure MPL";
 push @t, "autoreconf -ivf";
 push @t, "./configure $config_args";
+push @t, "cp $pwd/libtool .";
 push @extra_make_rules, "$moddir/mpl/include/mplconfig.h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
@@ -746,6 +763,7 @@ push @t, "./configure --disable-versioning --enable-embedded";
 if($opts{openpa_primitives}){
     $t[-1] .= " --with-atomic-primitives=$opts{openpa_primitives}";
 }
+push @t, "cp $pwd/libtool .";
 push @extra_make_rules, "$moddir/openpa/src/opa_config.h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
