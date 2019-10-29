@@ -61,6 +61,10 @@ foreach my $a (@ARGV){
         elsif($a=~/--with-atomic-primitives=(.*)/){
             $opts{openpa_primitives} = $1;
         }
+        elsif($a=~/--enable-strict/){
+            $opts{enable-strict} = 1;
+            push @config_args, $a;
+        }
         else{
             push @config_args, $a;
         }
