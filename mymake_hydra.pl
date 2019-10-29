@@ -369,7 +369,7 @@ if(!-f "mymake/Makefile.orig"){
                 $l = "$1='$need_patch{$1}'\n";
             }
         }
-        elsif($l=~/^archive_cmds=/){
+        elsif($l=~/^(archive_cmds=|\s*\\\$CC\s+-shared )/){
             if($need_patch{shared}){
                 $l=~s/-shared /$need_patch{shared} /;
             }
