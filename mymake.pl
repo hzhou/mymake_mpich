@@ -740,7 +740,7 @@ my $flag_skip=0;
 open Out, ">$m[2]" or die "Can't write $m[2].\n";
 print "  --> [$m[2]]\n";
 foreach my $l (@lines){
-    if($l=~/AC_PROG_CC_C99/){
+    if($l=~/AC_USE_SYSTEM_EXTENSIONS/){
         $l.="PAC_ARG_STRICT\n";
     }
     if($flag_skip){
