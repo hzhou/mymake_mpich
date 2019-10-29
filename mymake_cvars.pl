@@ -64,7 +64,7 @@ foreach my $a (@ARGV){
             $opts{openpa_primitives} = $1;
         }
         elsif($a=~/--enable-strict/){
-            $opts{enable-strict} = 1;
+            $opts{enable_strict} = 1;
             push @config_args, $a;
         }
         else{
