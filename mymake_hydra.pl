@@ -392,34 +392,6 @@ my $bin="\x24(PREFIX)/bin";
 $dst_hash{"LN_S-$bin/mpiexec"}="$bin/mpiexec.hydra";
 $dst_hash{"LN_S-$bin/mpirun"}="$bin/mpiexec.hydra";
 
-my @mod_list;
-my $f = "src/mpl/configure.ac";
-my $f_ = $f;
-$f_=~s/[\.\/]/_/g;
-my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-push @mod_list, \@m;
-
-system "mv $m[0] $m[1]";
-my @lines;
-{
-    open In, "$m[1]" or die "Can't open $m[1].\n";
-    @lines=<In>;
-    close In;
-}
-my $flag_skip=0;
-open Out, ">$m[2]" or die "Can't write $m[2].\n";
-print "  --> [$m[2]]\n";
-foreach my $l (@lines){
-    if($l=~/AC_PROG_CC_C99/){
-        $l.="PAC_ARG_STRICT\n";
-    }
-    if($flag_skip){
-        next;
-    }
-    print Out $l;
-}
-close Out;
-system "cp -v $m[2] $m[0]";
 if(!-d "$moddir/mpl"){
     my $cmd = "cp -r src/mpl $moddir/mpl";
     print "$cmd\n";
@@ -427,9 +399,6 @@ if(!-d "$moddir/mpl"){
     my $cmd = "cp -r confdb $moddir/mpl/";
     print "$cmd\n";
     system $cmd;
-}
-foreach my $m (@mod_list){
-    system "cp $m->[1] $m->[0]";
 }
 $I_list .= " -I$moddir/mpl/include";
 $L_list .= " $moddir/mpl/libmpl.la";

@@ -758,9 +758,6 @@ if(!-d "$moddir/mpl"){
     print "$cmd\n";
     system $cmd;
 }
-foreach my $m (@mod_list){
-    system "cp $m->[1] $m->[0]";
-}
 $I_list .= " -I$moddir/mpl/include";
 $L_list .= " $moddir/mpl/libmpl.la";
 push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
