@@ -763,7 +763,7 @@ $L_list .= " $moddir/mpl/libmpl.la";
 push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
 my $config_args = "--disable-versioning --enable-embedded";
 foreach my $t (@config_args){
-    if($t=~/--enable-g/){
+    if($t=~/--enable-(g|strict)/){
         $config_args.=" $t";
     }
 }
