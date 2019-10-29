@@ -722,34 +722,6 @@ push @t, "perl all_romio_symbols ../../mpi/romio/include/mpio.h.in";
 push @extra_make_rules, "src/glue/romio/all_romio_symbols.c: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-my @mod_list;
-my $f = "src/mpl/configure.ac";
-my $f_ = $f;
-$f_=~s/[\.\/]/_/g;
-my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-push @mod_list, \@m;
-
-system "mv $m[0] $m[1]";
-my @lines;
-{
-    open In, "$m[1]" or die "Can't open $m[1].\n";
-    @lines=<In>;
-    close In;
-}
-my $flag_skip=0;
-open Out, ">$m[2]" or die "Can't write $m[2].\n";
-print "  --> [$m[2]]\n";
-foreach my $l (@lines){
-    if($l=~/AC_USE_SYSTEM_EXTENSIONS/){
-        $l.="PAC_ARG_STRICT\n";
-    }
-    if($flag_skip){
-        next;
-    }
-    print Out $l;
-}
-close Out;
-system "cp -v $m[2] $m[0]";
 if(!-d "$moddir/mpl"){
     my $cmd = "cp -r src/mpl $moddir/mpl";
     print "$cmd\n";
