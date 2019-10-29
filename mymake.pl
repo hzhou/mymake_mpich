@@ -630,6 +630,13 @@ while(<In>){
     }
 }
 close In;
+open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig.\n";
+while(<In>){
+    if(/^CFLAGS *= *(.*)/){
+        $opts{CFLAGS}=$1;
+    }
+}
+close In;
 
 if(!$opts{have_weak}){
     $special_targets{lib_libmpi_la}="\x24(LTCC) -DMPICH_MPI_FROM_PMPI";
@@ -1555,6 +1562,9 @@ print Out "\n";
 close Out;
 system "rm -f Makefile";
 system "ln -s mymake/Makefile.custom Makefile";
+
+$ENV{CFLAGS}=$opts{CFLAGS};
+system "make $moddir/mpl/include/mplconfig.h";
 
 # ---- subroutines --------------------------------------------
 sub get_object {
