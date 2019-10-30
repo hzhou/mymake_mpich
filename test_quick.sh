@@ -46,6 +46,11 @@ else
         export PATH=$HOME/software/autotools/bin:$PATH
     fi
 
+    export OSU=$PMRS/opt/osu-micro-benchmarks/mpi
+    if test -n "$HOSTS"; then
+        export PATH=$PMRS/hosts.$HOSTS
+    fi
+
     export UCX_NET_DEVICES=mlx5_0:1
 fi
 if test -n $compiler ; then

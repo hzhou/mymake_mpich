@@ -226,7 +226,16 @@ else{
         while(<In>){
             if(/^(PGC-W-\d+-.*)/){
                 my ($t) = ($1);
-                $t=~s/\(\/.*(centos64)\//\(/;
+                push @make_log, $t;
+            }
+        }
+        close In;
+    }
+    elsif($compiler=~/sun/){
+        open In, "make.log" or die "Can't open make.log.\n";
+        while(<In>){
+            if(/^(".*",\s*line \d+:\s*warning:.*)/){
+                my ($t) = ($1);
                 push @make_log, $t;
             }
         }
@@ -299,9 +308,12 @@ sub parse_warning {
     elsif($t=~/^PGC-.*\((.*):\s*(\d+)\)/){
         $o = { file=>$1, line=>$2 };
     }
+    elsif($t=~/^"(.*)", line (\d+): warning:/){
+        $o = { file=>$1, line=>$2 };
+    }
 
     if($o){
-        if($o->{file}=~/^\/var\/.*\/modules\/(.*)/g){
+        if($o->{file}=~/^\/var\/.*\/mymake\/(.*)/g){
             $o->{file}="~$1";
             if($o->{file}=~/^~(ucx|libfabric)/){
                 $o->{skip}="external module: $1";

@@ -418,12 +418,25 @@ sub RunMPIProgram {
             $test->{found_error} = "Need set environment OSU to run osu micro benchmarks";
             goto done;
         }
-        elsif(! -e "$ENV{OSU}/$test->{prog}"){
-            $test->{found_error} = "$ENV{OSU}/$test->{prog} not found";
+        my $OSU=$ENV{OSU};
+
+        if(-e "$OSU/pt2pt/$test->{prog}"){
+            $test->{dir}="$OSU/pt2pt";
+        }
+        if(-e "$OSU/collective/$test->{prog}"){
+            $test->{dir}="$OSU/collective";
+        }
+        if(-e "$OSU/one-sided/$test->{prog}"){
+            $test->{dir}="$OSU/one-sided";
+        }
+        if(-e "$OSU/startup/$test->{prog}"){
+            $test->{dir}="$OSU/startup";
+        }
+        if(! $test->{dir}){
+            $test->{found_error} = "$test->{prog} not found";
             goto done;
         }
 
-        $test->{dir} = $ENV{OSU};
         $test->{resultTest} = "TestStatusZero";
     }
 
