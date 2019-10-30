@@ -14,6 +14,8 @@ my $pwd=`pwd`;
 chomp $pwd;
 
 $opts{V}=0;
+$opts{ucx}="embedded";
+$opts{libfabric}="embedded";
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
     my $t;
@@ -65,6 +67,10 @@ foreach my $a (@ARGV){
         }
         elsif($a=~/--enable-strict/){
             $opts{enable_strict} = 1;
+            push @config_args, $a;
+        }
+        elsif($a=~/--with-(ucx|libfabric)=(.*)/){
+            $opts{$1}=$2;
             push @config_args, $a;
         }
         else{

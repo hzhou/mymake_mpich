@@ -37,6 +37,8 @@ if(-d "pm"){
 }
 
 $opts{V}=0;
+$opts{ucx}="embedded";
+$opts{libfabric}="embedded";
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
     my $t;
@@ -88,6 +90,10 @@ foreach my $a (@ARGV){
         }
         elsif($a=~/--enable-strict/){
             $opts{enable_strict} = 1;
+            push @config_args, $a;
+        }
+        elsif($a=~/--with-(ucx|libfabric)=(.*)/){
+            $opts{$1}=$2;
             push @config_args, $a;
         }
         else{
@@ -497,7 +503,6 @@ if(!-f "configure"){
         system "cp -v $m[2] $m[0]";
     }
     if($opts{device}=~/ofi/){
-
         my $flag;
         my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
         my $f_ = $f;
@@ -837,62 +842,76 @@ if(!$opts{disable_romio}){
 }
 
 if($opts{device}=~/ch4:ucx/){
-    if(!-d "$moddir/ucx"){
-        my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
-        print "$cmd\n";
-        system $cmd;
-    }
-    if($ENV{compiler} =~ /pgi/){
-        my @lines;
-        open In, "$moddir/ucx/src/ucs/type/status.h" or die "Can't open $moddir/ucx/src/ucs/type/status.h.\n";
-        while(<In>){
-            s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
-
-            push @lines, $_;
+    if($opts{ucx} eq "embedded"){
+        $I_list .= " -I$moddir/ucx/src";
+        $L_list .= " $moddir/ucx/src/ucp/libucp.la";
+        if(!-d "$moddir/ucx"){
+            my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
+            print "$cmd\n";
+            system $cmd;
         }
-        close In;
-        open Out, ">$moddir/ucx/src/ucs/type/status.h" or die "Can't write $moddir/ucx/src/ucs/type/status.h.\n";
-        print Out @lines;
-        close Out;
+        if($ENV{compiler} =~ /pgi/){
+            my @lines;
+            open In, "$moddir/ucx/src/ucs/type/status.h" or die "Can't open $moddir/ucx/src/ucs/type/status.h.\n";
+            while(<In>){
+                s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
+                push @lines, $_;
+            }
+            close In;
+            open Out, ">$moddir/ucx/src/ucs/type/status.h" or die "Can't write $moddir/ucx/src/ucs/type/status.h.\n";
+            print Out @lines;
+            close Out;
+        }
+
+        push @CONFIGS, "$moddir/ucx/config.h";
+        my @t = ("cd $moddir/ucx");
+        push @t, "\x24(DO_stage) Configure UCX";
+        push @t, "mkdir -p config/m4 config/aux";
+        push @t, "autoreconf -iv";
+        push @t, "./configure --disable-shared --with-pic";
+        push @extra_make_rules, "$moddir/ucx/config.h: ";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
+        my @t = ("cd $moddir/ucx");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$moddir/ucx/src/ucp/libucp.la: $moddir/ucx/config.h";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
     }
-    $I_list .= " -I$moddir/ucx/src";
-    $L_list .= " $moddir/ucx/src/ucp/libucp.la";
-    push @CONFIGS, "$moddir/ucx/config.h";
-    my @t = ("cd $moddir/ucx");
-    push @t, "\x24(DO_stage) Configure UCX";
-    push @t, "mkdir -p config/m4 config/aux";
-    push @t, "autoreconf -iv";
-    push @t, "./configure --disable-shared --with-pic";
-    push @extra_make_rules, "$moddir/ucx/config.h: ";
-    push @extra_make_rules, "\t(".join(' && ', @t).")";
-    push @extra_make_rules, "";
-    my @t = ("cd $moddir/ucx");
-    push @t, "\x24(MAKE)";
-    push @extra_make_rules, "$moddir/ucx/src/ucp/libucp.la: $moddir/ucx/config.h";
-    push @extra_make_rules, "\t(".join(' && ', @t).")";
-    push @extra_make_rules, "";
+    else{
+        $I_list .= " -I$opts{ucx}/include";
+        $L_list .= " -L$opts{ucx}/lib";
+        $L_list .= " -lucp -lucs";
+    }
 }
 if($opts{device}=~/ch4:ofi/){
-    if(!-d "$moddir/libfabric"){
-        my $cmd = "cp -r src/mpid/ch4/netmod/ofi/libfabric $moddir/libfabric";
-        print "$cmd\n";
-        system $cmd;
+    if($opts{libfabric} eq "embedded"){
+        $I_list .= " -I$moddir/libfabric/include";
+        $L_list .= " $moddir/libfabric/src/libfabric.la";
+        if(!-d "$moddir/libfabric"){
+            my $cmd = "cp -r src/mpid/ch4/netmod/ofi/libfabric $moddir/libfabric";
+            print "$cmd\n";
+            system $cmd;
+        }
+        push @CONFIGS, "$moddir/libfabric/config.h";
+        my @t = ("cd $moddir/libfabric");
+        push @t, "\x24(DO_stage) Configure libfabric";
+        push @t, "sh autogen.sh";
+        push @t, "./configure --enable-embedded --enable-sockets=yes --enable-psm=no --enable-psm2=no --enable-verbs=no --enable-usnic=no --enable-mlx=no --enable-gni=no --enable-ugni=no --enable-rxm=no --enable-mrail=no --enable-rxd=no --enable-bgq=no --enable-rstream=no --enable-udp=no --enable-perf=no";
+        push @extra_make_rules, "$moddir/libfabric/config.h: ";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
+        my @t = ("cd $moddir/libfabric");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$moddir/libfabric/src/libfabric.la: $moddir/libfabric/config.h";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
     }
-    $I_list .= " -I$moddir/libfabric/include";
-    $L_list .= " $moddir/libfabric/src/libfabric.la";
-    push @CONFIGS, "$moddir/libfabric/config.h";
-    my @t = ("cd $moddir/libfabric");
-    push @t, "\x24(DO_stage) Configure libfabric";
-    push @t, "sh autogen.sh";
-    push @t, "./configure --enable-embedded --enable-sockets=yes --enable-psm=no --enable-psm2=no --enable-verbs=no --enable-usnic=no --enable-mlx=no --enable-gni=no --enable-ugni=no --enable-rxm=no --enable-mrail=no --enable-rxd=no --enable-bgq=no --enable-rstream=no --enable-udp=no --enable-perf=no";
-    push @extra_make_rules, "$moddir/libfabric/config.h: ";
-    push @extra_make_rules, "\t(".join(' && ', @t).")";
-    push @extra_make_rules, "";
-    my @t = ("cd $moddir/libfabric");
-    push @t, "\x24(MAKE)";
-    push @extra_make_rules, "$moddir/libfabric/src/libfabric.la: $moddir/libfabric/config.h";
-    push @extra_make_rules, "\t(".join(' && ', @t).")";
-    push @extra_make_rules, "";
+    else{
+        $I_list .= " -I$opts{libfabric}/include";
+        $L_list .= " -L$opts{libfabric}/lib";
+        $L_list .= " -lfabric";
+    }
 }
 my $lt_opt;
 if($opts{V}==0){
@@ -1564,7 +1583,7 @@ system "rm -f Makefile";
 system "ln -s mymake/Makefile.custom Makefile";
 
 $ENV{CFLAGS}=$opts{CFLAGS};
-system "make $moddir/mpl/include/mplconfig.h";
+system "make $moddir/mpl/include/mplconfig.h $moddir/openpa/src/opa_config.h";
 
 # ---- subroutines --------------------------------------------
 sub get_object {

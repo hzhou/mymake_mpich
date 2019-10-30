@@ -38,4 +38,4 @@ cd ..
 
 rm -rf */.git
 find . -name '*.o' |xargs rm -f
-tar czf modules.tar.gz hwloc izem ucx libfabric
+tar czf modules.tar.gz hwloc izem ucx libfabric jsonc

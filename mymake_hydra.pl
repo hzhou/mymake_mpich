@@ -37,6 +37,8 @@ push @extra_make_rules, "DO_stage = perl $mymake\_stage.pl";
 push @extra_make_rules, "DO_clean = perl $mymake\_clean.pl";
 push @extra_make_rules, "";
 $opts{V}=0;
+$opts{ucx}="embedded";
+$opts{libfabric}="embedded";
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
     my $t;
@@ -88,6 +90,10 @@ foreach my $a (@ARGV){
         }
         elsif($a=~/--enable-strict/){
             $opts{enable_strict} = 1;
+            push @config_args, $a;
+        }
+        elsif($a=~/--with-(ucx|libfabric)=(.*)/){
+            $opts{$1}=$2;
             push @config_args, $a;
         }
         else{

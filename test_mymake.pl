@@ -8,6 +8,7 @@ our @testmpi_config;
 our @testlist;
 
 
+
 my $mymake_dir = $ENV{mymake_dir};
 if(! $mymake_dir){
     if($0=~/^(\/.*)\//){
