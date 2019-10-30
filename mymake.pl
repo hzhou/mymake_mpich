@@ -913,6 +913,11 @@ if($opts{device}=~/ch4:ofi/){
         $L_list .= " -lfabric";
     }
 }
+
+if($ENV{EXTRA_LIB}){
+    $L_list .= " $ENV{EXTRA_LIB}";
+}
+
 my $lt_opt;
 if($opts{V}==0){
     $lt_opt = "--quiet";

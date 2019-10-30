@@ -199,6 +199,7 @@ if test -n $compiler ; then
                 CXX=sunCC
                 F77=sunf77
                 FC=sunf90
+                EXTRA_LIB="-latomic"
                 ;;
             *)
                 echo "Unknown compiler suite"
