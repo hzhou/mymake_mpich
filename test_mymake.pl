@@ -232,11 +232,21 @@ else{
         close In;
     }
     elsif($compiler=~/sun/){
+        my %got_hash;
         open In, "make.log" or die "Can't open make.log.\n";
         while(<In>){
             if(/^(".*",\s*line \d+:\s*warning:.*)/){
                 my ($t) = ($1);
-                push @make_log, $t;
+                if($t=~/opa_gcc_intel_32_64_ops/){
+                    if(!$got_hash{opa_asm}){
+                        push @make_log, $t;
+                        $got_hash{opa_asm}=1;
+                    }
+                }
+                else{
+                    push @make_log, $t;
+
+                }
             }
         }
         close In;
