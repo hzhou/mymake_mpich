@@ -256,6 +256,9 @@ else{
         close In;
     }
     my $n_fails = @make_log;
+    if($n_fails>=10000){
+        $n_fails = 10000;
+    }
     my $n_tests = $n_fails+1;
     open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
     print "  --> [summary.junit.xml]\n";
@@ -265,6 +268,9 @@ else{
     print Out "<testcase name=\"1 - build\" time=\"$dur\"></testcase>\n";
     my $i = 1;
     foreach my $t (@make_log){
+        if($i>10000){
+            last;
+        }
         $i++;
         $t=~s/"//g;
         $t=~s/</&lt;/g;
