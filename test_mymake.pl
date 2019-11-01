@@ -327,6 +327,9 @@ sub parse_warning {
     elsif($t=~/^"(.*)", line (\d+): warning:/){
         $o = { file=>$1, line=>$2 };
     }
+    elsif($t=~/^(\S+), line (\d+): warning:/){
+        $o = { file=>$1, line=>$2 };
+    }
 
     if($o){
         if($o->{file}=~/^\/var\/.*\/mymake\/(.*)/g){
