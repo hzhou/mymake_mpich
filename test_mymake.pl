@@ -324,10 +324,10 @@ sub parse_warning {
     elsif($t=~/^PGC-.*\((.*):\s*(\d+)\)/){
         $o = { file=>$1, line=>$2 };
     }
-    elsif($t=~/^"(.*)", line (\d+): warning:/){
+    elsif($t=~/"(.*)", line (\d+): warning:/){
         $o = { file=>$1, line=>$2 };
     }
-    elsif($t=~/^(\S+), line (\d+): warning:/){
+    elsif($t=~/(\S+), line (\d+): warning:/){
         $o = { file=>$1, line=>$2 };
     }
 
