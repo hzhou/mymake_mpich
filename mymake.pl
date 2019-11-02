@@ -850,7 +850,7 @@ if($opts{device}=~/ch4:ucx/){
             print "$cmd\n";
             system $cmd;
         }
-        if($ENV{compiler} =~ /pgi/){
+        if($ENV{compiler} =~ /pgi|sun/){
             my @lines;
             open In, "$moddir/ucx/src/ucs/type/status.h" or die "Can't open $moddir/ucx/src/ucs/type/status.h.\n";
             while(<In>){
