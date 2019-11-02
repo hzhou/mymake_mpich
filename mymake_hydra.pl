@@ -585,11 +585,14 @@ if(!$opts{disable_fortran}){
     $flags.=" $am_flags";
     if($flags=~/-I(\S+)/){
         my ($modpath) = ($1);
-        if($fc =~/(pgfortran|ifort)/){
+        if($fc =~/^(pgfortran|ifort)/){
             $flags.=" -module $modpath";
         }
-        elsif($fc =~/sunf\d+/){
+        elsif($fc =~/^sunf\d+/){
             $flags.=" -moddir=$modpath";
+        }
+        elsif($fc =~/^af\d+/){
+            $flags.=" -YMOD_OUT_DIR=$modpath";
         }
         else{
             $flags.=" -J$modpath";
@@ -607,11 +610,14 @@ if(!$opts{disable_fortran}){
     $flags.=" $am_flags";
     if($flags=~/-I(\S+)/){
         my ($modpath) = ($1);
-        if($fc =~/(pgfortran|ifort)/){
+        if($fc =~/^(pgfortran|ifort)/){
             $flags.=" -module $modpath";
         }
-        elsif($fc =~/sunf\d+/){
+        elsif($fc =~/^sunf\d+/){
             $flags.=" -moddir=$modpath";
+        }
+        elsif($fc =~/^af\d+/){
+            $flags.=" -YMOD_OUT_DIR=$modpath";
         }
         else{
             $flags.=" -J$modpath";
