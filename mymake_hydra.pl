@@ -1022,7 +1022,8 @@ print Out "clean:\n";
 print Out "\t(find src -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' |xargs rm -f)\n";
 print Out "\n";
 print Out "realclean: clean\n";
-print Out "\t\x24(DO_clean)\n";
+print Out "\trm -f configure mymake/Makefile.orig src/mpi/errhan/defmsg.h src/include/mpir_cvars.h src/utils/mpir_cvars.c src/pm/hydra/configure src/pm/hydra/mymake/Makefile.orig\n";
+print Out "\trm -rf mymake/mpl mymake/openpa mymake/romio\n";
 print Out "\n";
 
 close Out;
