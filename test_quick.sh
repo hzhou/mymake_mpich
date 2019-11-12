@@ -244,10 +244,6 @@ if test -z "$MPIEXEC" ; then
     MPIEXEC=$PREFIX/bin/mpiexec
 fi
 set -o pipefail
-which mpicc
-which mpirun
-mpicc examples/cpi.c -o examples/cpi
-mpirun -n 2 examples/cpi
 perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config
 ls -lt
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
@@ -264,6 +260,11 @@ make hydra-install
 export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include:$CPATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
+
+which mpicc
+which mpirun
+mpicc examples/cpi.c -o examples/cpi
+mpirun -n 2 examples/cpi
 
 if test x$skip_test = xtrue ; then
     exit 0

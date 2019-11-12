@@ -243,10 +243,6 @@ if test -z "$MPIEXEC" ; then
     MPIEXEC=$PREFIX/bin/mpiexec
 fi
 set -o pipefail
-which mpicc
-which mpirun
-mpicc examples/cpi.c -o examples/cpi
-mpirun -n 2 examples/cpi
 git submodule update --init --recursive
 sh autogen.sh
 if test x$out_of_tree = xtrue ; then
@@ -266,6 +262,11 @@ $MPIEXEC -n 2 examples/cpi
 export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include:$CPATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
+
+which mpicc
+which mpirun
+mpicc examples/cpi.c -o examples/cpi
+mpirun -n 2 examples/cpi
 
 if test x$skip_test = xtrue ; then
     exit 0
