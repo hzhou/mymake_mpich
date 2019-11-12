@@ -847,6 +847,7 @@ if($opts{device}=~/ch4:ucx/){
         print "Patch $moddir/ucx ...\n";
         system "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir/ucx,g\"";
         system "find $moddir/ucx -name '*.la*' | xargs sed -i \"s,/MODPREFIX,$prefix,g\"";
+        system "mkdir -p $prefix/lib/ucx";
         foreach my $m ("ucm", "ucs", "uct", "ucp"){
             system "$moddir/ucx/libtool --mode=install --quiet install $moddir/ucx/src/$m/lib$m.la $prefix/lib";
         }
