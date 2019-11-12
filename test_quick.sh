@@ -244,6 +244,10 @@ if test -z "$MPIEXEC" ; then
     MPIEXEC=$PREFIX/bin/mpiexec
 fi
 set -o pipefail
+which mpicc
+which mpirun
+mpicc examples/cpi.c -o examples/cpi
+mpirun -n 2 examples/cpi
 perl $mymake_dir/mymake.pl --prefix=$PREFIX $mpich_config
 ls -lt
 make -j$N_MAKE_JOBS  2>&1 | tee -a make.log
