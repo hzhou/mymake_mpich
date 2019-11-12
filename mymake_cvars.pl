@@ -16,6 +16,10 @@ chomp $pwd;
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
+if(@ARGV == 1 && $ARGV[0] eq "V=1"){
+    $opts{V} = 1;
+    @ARGV=();
+}
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
     my $t;
@@ -103,6 +107,10 @@ if($opts{moddir}){
 if($opts{prefix}){
     $prefix = $opts{prefix};
 }
+if(!$prefix){
+    $prefix="$pwd/_inst";
+    system "mkdir -p $prefix";
+}
 my $mod_tarball;
 if($ENV{MODTARBALL}){
     $mod_tarball = $ENV{MODTARBALL};
@@ -127,9 +135,6 @@ elsif(-e $mod_tarball){
     my $cmd = "tar -C $moddir -xf $mod_tarball";
     print "$cmd\n";
     system $cmd;
-    my $cmd = "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir/ucx,g\"";
-    print "$cmd\n";
-    system $cmd;
 }
 else{
     die "moddir not set\n";
@@ -148,10 +153,6 @@ elsif(-f "../../../maint/version.m4"){
 }
 if(!$srcdir){
     die "srcdir not set\n";
-}
-if(!$prefix){
-    $prefix="$pwd/_inst";
-    system "mkdir -p $prefix";
 }
 my %type_hash=(
     int=>"int",

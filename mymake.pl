@@ -39,6 +39,10 @@ if(-d "pm"){
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
+if(@ARGV == 1 && $ARGV[0] eq "V=1"){
+    $opts{V} = 1;
+    @ARGV=();
+}
 my $need_save_args;
 if(!@ARGV && -f "mymake/args"){
     my $t;
@@ -126,6 +130,10 @@ if($opts{moddir}){
 if($opts{prefix}){
     $prefix = $opts{prefix};
 }
+if(!$prefix){
+    $prefix="$pwd/_inst";
+    system "mkdir -p $prefix";
+}
 my $mod_tarball;
 if($ENV{MODTARBALL}){
     $mod_tarball = $ENV{MODTARBALL};
@@ -150,9 +158,6 @@ elsif(-e $mod_tarball){
     my $cmd = "tar -C $moddir -xf $mod_tarball";
     print "$cmd\n";
     system $cmd;
-    my $cmd = "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir/ucx,g\"";
-    print "$cmd\n";
-    system $cmd;
 }
 else{
     die "moddir not set\n";
@@ -171,10 +176,6 @@ elsif(-f "../../../maint/version.m4"){
 }
 if(!$srcdir){
     die "srcdir not set\n";
-}
-if(!$prefix){
-    $prefix="$pwd/_inst";
-    system "mkdir -p $prefix";
 }
 
 if($opts{do}){
@@ -842,9 +843,23 @@ if(!$opts{disable_romio}){
 }
 
 if($opts{device}=~/ch4:ucx/){
+    if(-e "$moddir/ucx/need_sed"){
+        print "Patch $moddir/ucx ...\n";
+        system "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir/ucx,g\"";
+        system "find $moddir/ucx -name '*.la*' | xargs sed -i \"s,/MODPREFIX,$prefix,g\"";
+        foreach my $m ("ucm", "ucs", "uct", "ucp"){
+            system "$moddir/ucx/libtool --mode=install --quiet install $moddir/ucx/src/$m/lib$m.la $prefix/lib";
+        }
+        my @tlist = glob("$moddir/ucx/modules/*.la");
+        foreach my $m (@tlist){
+            system "$moddir/ucx/libtool --mode=install --quiet install $m $prefix/lib/ucx";
+        }
+        unlink "$moddir/ucx/need_sed";
+    }
+
     if($opts{ucx} eq "embedded"){
         $I_list .= " -I$moddir/ucx/src";
-        $L_list .= " $moddir/ucx/src/ucp/libucp.la";
+        $L_list .= " $prefix/lib/libucp.la";
         if(!-d "$moddir/ucx"){
             my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
             print "$cmd\n";
@@ -868,7 +883,7 @@ if($opts{device}=~/ch4:ucx/){
         push @t, "\x24(DO_stage) Configure UCX";
         push @t, "mkdir -p config/m4 config/aux";
         push @t, "autoreconf -iv";
-        push @t, "./configure --disable-shared --with-pic";
+        push @t, "./configure --prefix=\x24(PREFIX) --disable-static";
         push @extra_make_rules, "$moddir/ucx/config.h: ";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
