@@ -390,8 +390,17 @@ if(!-f "configure"){
         elsif($l=~/^\s*HWLOC_/){
             next;
         }
-        elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/){
+        elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/){
             $l = "$1: \x23 $2\n";
+        }
+        elsif($l=~/^(\s*PAC_SUBDIR_MPL)/){
+            $l = "$1([$moddir/mpl])";
+        }
+        elsif($l=~/^(\s*PAC_SUBDIR_OPA)/){
+            $l = "$1([$moddir/openpa])";
+        }
+        elsif($l=~/^(\s*PAC_SUBDIR_HWLOC)/){
+            $l = "$1([$moddir/hwloc])";
         }
         if($flag_skip){
             next;
@@ -1011,7 +1020,7 @@ my $l = "AM_CPPFLAGS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("CPPFLAGS");
-$t=~s/-I.*\/(mpl|openpa|romio|izem)\/\S+\s*//g;
+$t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc)\/\S+\s*//g;
 $t .= $I_list;
 my $l = "CPPFLAGS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
@@ -1233,9 +1242,7 @@ foreach my $p (@ltlibs){
     if($objects{$add}){
         my $t = get_object($add);
         if($add!~/mpi(fort|cxx)/){
-            $t=~s/\bsrc\/(mpl|openpa)\/\S+\s*//g;
-            $t=~s/\bsrc\/mpi\/romio\/\S+\s*//g;
-            $t=~s/\S+\bsrc\/izem\/\S+\s*//g;
+            $t=~s/\S+\/(mpl|openpa|romio|izem|hwloc)\/\S+\.la\s*//g;
             $t=~s/\@ucxlib\@\s*//g;
             $t=~s/\@ofilib\@\s*//g;
             $t.= $L_list;
