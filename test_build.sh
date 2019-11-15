@@ -47,7 +47,7 @@ else
 
     export OSU=$PMRS/opt/osu-micro-benchmarks/mpi
     if test -n "$HOSTS"; then
-        export PATH=$PMRS/hosts.$HOSTS
+        export HOSTS=$PMRS/hosts.$HOSTS
     fi
 
     export UCX_NET_DEVICES=mlx5_0:1
@@ -173,7 +173,7 @@ if test -n $compiler ; then
                 ;;
             clang-*)
                 export PATH=$PMRS/opt/$compiler/bin:$PATH
-                export LD_LIBRARY_PATH=$PMRS/opt/gcc-8/lib64:$PMRS/opt/$PATH/lib:$LD_LIBRARY_PATH
+                export LD_LIBRARY_PATH=$PMRS/opt/gcc-8/lib64:$LD_LIBRARY_PATH
                 CC=$compiler
                 CXX=clang++
                 F77=gfortran
