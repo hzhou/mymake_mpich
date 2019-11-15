@@ -235,6 +235,10 @@ if(!-f "mymake/Makefile.orig"){
         elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/){
             $l = "$1: \x23 $2\n";
         }
+        elsif($l=~/^(\s*)PAC_SUBDIR_HWLOC/){
+            $l = $1."have_hwloc=yes\n";
+            $flag_skip=0;
+        }
         if($flag_skip){
             next;
         }
