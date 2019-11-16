@@ -225,9 +225,11 @@ if(!-f "mymake/Makefile.orig"){
         elsif($flag_skip && $l=~/AC_MSG_RESULT/){
             $flag_skip=2;
         }
-        elsif($flag_skip==2 && $l=~/^(\s*)if test.*\$have_hwloc.*then/){
+        elsif($l=~/^(\s*)if test.*\$have_hwloc.*then/){
             $l = $1."if true ; then\n";
-            $flag_skip=0;
+            if($flag_skip==2){
+                $flag_skip=0;
+            }
         }
         elsif($l=~/^(HWLOC_DO_AM_CONDITIONALS)/){
             $l = "\x23 $1";
@@ -236,7 +238,7 @@ if(!-f "mymake/Makefile.orig"){
             $l = "$1: \x23 $2\n";
         }
         elsif($l=~/^(\s*)PAC_SUBDIR_HWLOC/){
-            $l = $1."AM_CONDITIONAL([HAVE_HWLOC], [test \"\$have_hwloc\" = \"yes\"])\n";
+            $l = $1."AM_CONDITIONAL([HAVE_HWLOC], [true])\n";
             $flag_skip=0;
         }
         if($flag_skip){
@@ -291,9 +293,11 @@ if(!-f "mymake/Makefile.orig"){
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/if\s+HYDRA_HAVE_HWLOC/i){
+            $flag_skip=1;
             next;
         }
-        elsif($l=~/endif/){
+        elsif($flag_skip and $l=~/endif/){
+            $flag_skip=0;
             next;
         }
         if($flag_skip){
@@ -324,7 +328,7 @@ if(!-f "mymake/Makefile.orig"){
             $flag_skip=1;
             next;
         }
-        elsif($l=~/endif/){
+        elsif($flag_skip and $l=~/endif/){
             $flag_skip=0;
             next;
         }
