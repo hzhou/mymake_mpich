@@ -236,7 +236,7 @@ if(!-f "mymake/Makefile.orig"){
             $l = "$1: \x23 $2\n";
         }
         elsif($l=~/^(\s*)PAC_SUBDIR_HWLOC/){
-            $l = $1."AM_CONDITIONAL([HAVE_HWLOC], [test \"${have_hwloc}\" = \"yes\"])\n";
+            $l = $1."AM_CONDITIONAL([HAVE_HWLOC], [test \"\$have_hwloc\" = \"yes\"])\n";
             $flag_skip=0;
         }
         if($flag_skip){
