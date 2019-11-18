@@ -275,6 +275,23 @@ else{
     push @extra_make_rules, "";
 }
 
+if(!-d "$moddir/mpl"){
+    my $cmd = "cp -r src/mpl $moddir/mpl";
+    print "$cmd\n";
+    system $cmd;
+    my $cmd = "cp -r confdb $moddir/mpl/";
+    print "$cmd\n";
+    system $cmd;
+}
+if(!-d "$moddir/openpa"){
+    my $cmd = "cp -r src/openpa $moddir/openpa";
+    print "$cmd\n";
+    system $cmd;
+    my $cmd = "cp -r confdb $moddir/openpa/";
+    print "$cmd\n";
+    system $cmd;
+}
+
 if(!$opts{disable_cxx}){
     $opts{enable_cxx}=1;
     if(!-f "configure"){
@@ -744,14 +761,6 @@ push @t, "perl all_romio_symbols ../../mpi/romio/include/mpio.h.in";
 push @extra_make_rules, "src/glue/romio/all_romio_symbols.c: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-if(!-d "$moddir/mpl"){
-    my $cmd = "cp -r src/mpl $moddir/mpl";
-    print "$cmd\n";
-    system $cmd;
-    my $cmd = "cp -r confdb $moddir/mpl/";
-    print "$cmd\n";
-    system $cmd;
-}
 $I_list .= " -I$moddir/mpl/include";
 $L_list .= " $moddir/mpl/libmpl.la";
 push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
@@ -774,14 +783,6 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/mpl/libmpl.la: $moddir/mpl/include/mplconfig.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-if(!-d "$moddir/openpa"){
-    my $cmd = "cp -r src/openpa $moddir/openpa";
-    print "$cmd\n";
-    system $cmd;
-    my $cmd = "cp -r confdb $moddir/openpa/";
-    print "$cmd\n";
-    system $cmd;
-}
 $I_list .= " -I$moddir/openpa/src";
 $L_list .= " $moddir/openpa/src/libopa.la";
 push @CONFIGS, "$moddir/openpa/src/opa_config.h";
