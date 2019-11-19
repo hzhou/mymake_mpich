@@ -225,14 +225,13 @@ if(!-f "mymake/Makefile.orig"){
         elsif($flag_skip && $l=~/AC_MSG_RESULT/){
             $flag_skip=2;
         }
-        elsif($l=~/^(\s*)if test.*\$have_hwloc.*then/){
-            $l = $1."if true ; then\n";
-            if($flag_skip==2){
-                $flag_skip=0;
-            }
+        elsif($flag_skip==2 && $l=~/^(\s*)if test.*\$have_hwloc.*then/){
+            print Out $1, "have_hwloc=yes\n";
+            print Out $1, "hydra_use_embedded_hwloc=no\n";
+            $flag_skip=0;
         }
         elsif($l=~/^(HWLOC_DO_AM_CONDITIONALS)/){
-            $l = "\x23 $1";
+            $l = "\x23 $1\n";
         }
         elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/){
             $l = "$1: \x23 $2\n";
@@ -275,36 +274,6 @@ if(!-f "mymake/Makefile.orig"){
     }
     close Out;
     system "cp -v $m[2] $m[0]";
-    my $f = "tools/topo/Makefile.mk";
-    my $f_ = $f;
-    $f_=~s/[\.\/]/_/g;
-    my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-    push @mod_list, \@m;
-
-    system "mv $m[0] $m[1]";
-    my @lines;
-    {
-        open In, "$m[1]" or die "Can't open $m[1].\n";
-        @lines=<In>;
-        close In;
-    }
-    my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2].\n";
-    print "  --> [$m[2]]\n";
-    foreach my $l (@lines){
-        if($l=~/if\s+.*HAVE_HWLOC/i){
-            next;
-        }
-        elsif($l=~/endif/){
-            next;
-        }
-        if($flag_skip){
-            next;
-        }
-        print Out $l;
-    }
-    close Out;
-    system "cp -v $m[2] $m[0]";
     my $f = "tools/topo/hwloc/Makefile.mk";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
@@ -326,7 +295,7 @@ if(!-f "mymake/Makefile.orig"){
             $flag_skip=1;
             next;
         }
-        elsif($flag_skip and $l=~/endif/){
+        elsif($l=~/endif/){
             $flag_skip=0;
             next;
         }
@@ -337,7 +306,6 @@ if(!-f "mymake/Makefile.orig"){
     }
     close Out;
     system "cp -v $m[2] $m[0]";
-
     system "autoreconf -ivf";
     foreach my $m (@mod_list){
         system "cp $m->[1] $m->[0]";
