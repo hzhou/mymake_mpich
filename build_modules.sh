@@ -39,16 +39,15 @@ if test $do_hwloc = yes ; then
     cd hwloc
     sh autogen.sh
     ./configure --enable-embedded-mode --enable-visibility
-    make -j 16
+    make
     cd ..
-    find hwloc -name '*.o' |xargs rm -f
 fi
 if test $do_izem = yes ; then
     git clone https://github.com/pmodels/izem
     cd izem
     sh autogen.sh
     ./configure --enable-embedded
-    make -j 16
+    make
     cd ..
     find izem -name '*.o' |xargs rm -f
 fi
@@ -57,7 +56,7 @@ if test $do_ucx = yes ; then
     cd ucx
     sh autogen.sh
     ./configure --prefix=/MODPREFIX --disable-static
-    make -j 16
+    make
     find . -name '*.la' |xargs --verbose sed -i "s,$PWD,MODDIR,g"
     cd ..
     touch ucx/need_sed
@@ -69,7 +68,7 @@ if test $do_libfabric = yes ; then
     git log --oneline -n 5
     sh autogen.sh
     ./configure --enable-embedded --disable-verbs
-    make -j 16
+    make
     cd ..
     find libfabric -name '*.o' |xargs rm -f
 fi
@@ -78,10 +77,11 @@ if test $do_jsonc = yes ; then
     cd jsonc
     sh autogen.sh
     ./configure 
-    make -j 16
+    make
     cd ..
     find jsonc -name '*.o' |xargs rm -f
 fi
 
+find . -name '*.o' |xargs rm -f
 rm -rf */.git
 tar czf modules.tar.gz hwloc izem ucx libfabric jsonc
