@@ -25,7 +25,8 @@ my $config = $ENV{config};
 print "parsing config: [$config]...\n";
 $config=~s/[\/-]/:/g;
 if($config=~/^(default|ch3:tcp)/){
-    push @mpich_config, "--with-device=ch3:nemesis";
+    $config = "ch3:nemesis";
+    push @mpich_config, "--with-device=$config";
 }
 elsif($config=~/^ch[34]/){
     push @mpich_config, "--with-device=$config";
