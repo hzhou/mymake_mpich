@@ -3,7 +3,6 @@ use strict;
 
 our %opts;
 our @config_args;
-our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -53,20 +52,15 @@ foreach my $a (@ARGV){
         elsif($a=~/^--with-pm=(.*)/){
             $opts{pm}=$1;
         }
-        elsif($a=~/--(dis|en)able-.*tests/){
-            push @test_config_args, $a;
-        }
         elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
             $opts{"enable_$1"}=0;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--enable-fortran=(\w+)/){
             $opts{disable_fortran}=0;
             $opts{enable_fortran}=$1;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--with-atomic-primitives=(.*)/){
             $opts{openpa_primitives} = $1;
@@ -75,7 +69,7 @@ foreach my $a (@ARGV){
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-(ucx|libfabric)=(.*)/){
+        elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
             $opts{$1}=$2;
             push @config_args, $a;
         }
@@ -157,7 +151,7 @@ if(!$srcdir){
     die "srcdir not set\n";
 }
 my (@classnames, %generics);
-open In, "src/mpi/errhan/baseerrnames.txt" or die "Can't open src/mpi/errhan/baseerrnames.txt.\n";
+open In, "src/mpi/errhan/baseerrnames.txt" or die "Can't open src/mpi/errhan/baseerrnames.txt: $!\n";
 while(<In>){
     if(/^(MPI\S+)\s*(\d+)\s*(.*)/){
         my ($class, $id, $name) = ($1, $2, $3);
@@ -168,14 +162,14 @@ while(<In>){
 }
 close In;
 my @files;
-open In, "find . -name 'errnames.txt' |" or die "Can't open find . -name 'errnames.txt' |.\n";
+open In, "find . -name 'errnames.txt' |" or die "Can't open find . -name 'errnames.txt' |: $!\n";
 while(<In>){
     chomp;
     push @files, $_;
 }
 close In;
 foreach my $f (@files){
-    open In, "$f" or die "Can't open $f.\n";
+    open In, "$f" or die "Can't open $f: $!\n";
     while(<In>){
         if(/^(\*\*[^:]+):(.*)/){
             my ($name, $repl) = ($1, $2);
@@ -245,7 +239,7 @@ my %KnownErrRoutines = (
 );
 my @files;
 foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
-    open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |.\n";
+    open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |: $!\n";
     while(<In>){
         chomp;
         push @files, $_;
@@ -253,7 +247,7 @@ foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
     close In;
 }
 foreach my $f (@files){
-    open In, "$f" or die "Can't open $f.\n";
+    open In, "$f" or die "Can't open $f: $!\n";
     while(<In>){
         if(/\/\*\s+--BEGIN ERROR MACROS--/){
             while(<In>){
@@ -304,7 +298,7 @@ $generics{"**notfstatignore"}++;
 
 my @sorted_generics=sort keys %generics;
 my @sorted_specifics=sort keys %specifics;
-open Out, ">src/mpi/errhan/defmsg.h" or die "Can't write src/mpi/errhan/defmsg.h.\n";
+open Out, ">src/mpi/errhan/defmsg.h" or die "Can't write src/mpi/errhan/defmsg.h: $!\n";
 print "  --> [src/mpi/errhan/defmsg.h]\n";
 print Out "#if MPICH_ERROR_MSG_LEVEL > MPICH_ERROR_MSG__CLASS\n";
 print Out "typedef struct msgpair {\n";

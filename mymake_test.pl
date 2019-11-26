@@ -3,7 +3,6 @@ use strict;
 
 our %opts;
 our @config_args;
-our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -49,20 +48,15 @@ foreach my $a (@ARGV){
         elsif($a=~/^--with-pm=(.*)/){
             $opts{pm}=$1;
         }
-        elsif($a=~/--(dis|en)able-.*tests/){
-            push @test_config_args, $a;
-        }
         elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
             $opts{"enable_$1"}=0;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--enable-fortran=(\w+)/){
             $opts{disable_fortran}=0;
             $opts{enable_fortran}=$1;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--with-atomic-primitives=(.*)/){
             $opts{openpa_primitives} = $1;
@@ -71,7 +65,7 @@ foreach my $a (@ARGV){
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-(ucx|libfabric)=(.*)/){
+        elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
             $opts{$1}=$2;
             push @config_args, $a;
         }
@@ -174,8 +168,19 @@ system $cmd;
 my $cmd = "autoreconf -ivf";
 print ": $cmd\n";
 system $cmd;
-my $t = join(' ', @test_config_args);
-my $cmd = "./configure $t";
+my $config_args = "";
+foreach my $t (@config_args){
+    if($t=~/--(dis|en)able-.*tests/){
+        $config_args .= " $t";
+    }
+    elsif($t=~/--(dis|en)able-(fortran|cxx|romio)/){
+        $config_args .= " $t";
+    }
+    elsif($t=~/--with-thread-package/){
+        $config_args .= " $t";
+    }
+}
+my $cmd = "./configure $config_args";
 print ": $cmd\n";
 system $cmd;
 

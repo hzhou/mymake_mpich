@@ -3,7 +3,6 @@ use strict;
 
 our %opts;
 our @config_args;
-our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -74,20 +73,15 @@ foreach my $a (@ARGV){
         elsif($a=~/^--with-pm=(.*)/){
             $opts{pm}=$1;
         }
-        elsif($a=~/--(dis|en)able-.*tests/){
-            push @test_config_args, $a;
-        }
         elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
             $opts{"enable_$1"}=0;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--enable-fortran=(\w+)/){
             $opts{disable_fortran}=0;
             $opts{enable_fortran}=$1;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--with-atomic-primitives=(.*)/){
             $opts{openpa_primitives} = $1;
@@ -96,7 +90,7 @@ foreach my $a (@ARGV){
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-(ucx|libfabric)=(.*)/){
+        elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
             $opts{$1}=$2;
             push @config_args, $a;
         }
@@ -218,7 +212,7 @@ push @extra_make_rules, "";
 
 if($need_save_args){
     my $t = join(' ', @ARGV);
-    open Out, ">mymake/args" or die "Can't write mymake/args.\n";
+    open Out, ">mymake/args" or die "Can't write mymake/args: $!\n";
     print Out $t, "\n";
     close Out;
     system "rm -f mymake/Makefile.orig";
@@ -271,7 +265,11 @@ else{
     push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) install )";
     push @extra_make_rules, "";
     push @extra_make_rules, "$mkfile:";
-    push @extra_make_rules, "\t\x24(DO_hydra) --prefix=\x24(PREFIX)";
+    my $config_args = "--prefix=\x24(PREFIX)";
+    if($opts{argobots}){
+        $config_args .= " --with-argobots=$opts{argobots}";
+    }
+    push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
     push @extra_make_rules, "";
 }
 
@@ -398,7 +396,7 @@ if(!-f "configure"){
         close In;
     }
     my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/AC_CONFIG_SUBDIRS/){
@@ -440,7 +438,7 @@ if(!-f "configure"){
         close In;
     }
     my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/ACLOCAL_AMFLAGS/){
@@ -468,7 +466,7 @@ if(!-f "configure"){
         close In;
     }
     my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/AC_MSG_CHECKING.*OpenPA/){
@@ -503,7 +501,7 @@ if(!-f "configure"){
             close In;
         }
         my $flag_skip=0;
-        open Out, ">$m[2]" or die "Can't write $m[2].\n";
+        open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines){
             if($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_UCX\]/){
@@ -545,7 +543,7 @@ if(!-f "configure"){
             close In;
         }
         my $flag_skip=0;
-        open Out, ">$m[2]" or die "Can't write $m[2].\n";
+        open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines){
             if($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_OFI\]/){
@@ -603,7 +601,7 @@ if(!-f "mymake/Makefile.orig"){
         close In;
     }
     my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/^AR_FLAGS=/){
@@ -641,28 +639,28 @@ if(!-f "mymake/Makefile.orig"){
     system "chmod a+x libtool";
 }
 
-open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h.\n";
+open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
 while(<In>){
     if(/^#define\s+HAVE_.*WEAK.* 1/){
         $opts{have_weak}=1;
     }
 }
 close In;
-open In, "maint/version.m4" or die "Can't open maint/version.m4.\n";
+open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
 while(<In>){
     if(/libmpi_so_version_m4.*\[([\d:]*)\]/){
         $opts{so_version}=$1;
     }
 }
 close In;
-open In, "config.status" or die "Can't open config.status.\n";
+open In, "config.status" or die "Can't open config.status: $!\n";
 while(<In>){
     if(/S\["WRAPPER_LIBS"\]="(.*)"/){
         $opts{WRAPPER_LIBS}=$1;
     }
 }
 close In;
-open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig.\n";
+open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
 while(<In>){
     if(/^CFLAGS *= *(.*)/){
         $opts{CFLAGS}=$1;
@@ -683,7 +681,7 @@ if(-f "src/env/mpicc.bash"){
         close In;
     }
     my %tmp=(PREFIX=>$prefix, EXEC_PREFIX=>"$prefix/bin", SYSCONFDIR=>"$prefix/etc", INCLUDEDIR=>"$prefix/include", LIBDIR=>"$prefix/lib");
-    open Out, ">mymake/mpicc" or die "Can't write mymake/mpicc.\n";
+    open Out, ">mymake/mpicc" or die "Can't write mymake/mpicc: $!\n";
     foreach my $l (@lines){
         $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         print Out $l;
@@ -699,7 +697,7 @@ if(-f "src/env/mpicxx.bash"){
         close In;
     }
     my %tmp=(PREFIX=>$prefix, EXEC_PREFIX=>"$prefix/bin", SYSCONFDIR=>"$prefix/etc", INCLUDEDIR=>"$prefix/include", LIBDIR=>"$prefix/lib");
-    open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx.\n";
+    open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx: $!\n";
     foreach my $l (@lines){
         $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         print Out $l;
@@ -715,7 +713,7 @@ if(-f "src/env/mpif77.bash"){
         close In;
     }
     my %tmp=(PREFIX=>$prefix, EXEC_PREFIX=>"$prefix/bin", SYSCONFDIR=>"$prefix/etc", INCLUDEDIR=>"$prefix/include", LIBDIR=>"$prefix/lib");
-    open Out, ">mymake/mpif77" or die "Can't write mymake/mpif77.\n";
+    open Out, ">mymake/mpif77" or die "Can't write mymake/mpif77: $!\n";
     foreach my $l (@lines){
         $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         print Out $l;
@@ -731,7 +729,7 @@ if(-f "src/env/mpifort.bash"){
         close In;
     }
     my %tmp=(PREFIX=>$prefix, EXEC_PREFIX=>"$prefix/bin", SYSCONFDIR=>"$prefix/etc", INCLUDEDIR=>"$prefix/include", LIBDIR=>"$prefix/lib");
-    open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort.\n";
+    open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
     foreach my $l (@lines){
         $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         print Out $l;
@@ -767,6 +765,9 @@ push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
 my $config_args = "--disable-versioning --enable-embedded";
 foreach my $t (@config_args){
     if($t=~/--enable-(g|strict)/){
+        $config_args.=" $t";
+    }
+    elsif($t=~/--with-(thread-package|argobots)/){
         $config_args.=" $t";
     }
 }
@@ -831,6 +832,9 @@ if(!$opts{disable_romio}){
     push @t_env, "master_top_srcdir=$pwd";
     push @t_env, "master_top_builddir=$pwd";
     push @t_env, "CPPFLAGS='-I$moddir/mpl/include'";
+    if($opts{argobots}){
+        $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
+    }
 
     $I_list .= " -Isrc/mpi/romio/include";
     $L_list .= " src/mpi/romio/libromio.la";
@@ -878,13 +882,13 @@ if($opts{device}=~/ch4:ucx/){
         }
         if($ENV{compiler} =~ /pgi|sun/){
             my @lines;
-            open In, "$moddir/ucx/src/ucs/type/status.h" or die "Can't open $moddir/ucx/src/ucs/type/status.h.\n";
+            open In, "$moddir/ucx/src/ucs/type/status.h" or die "Can't open $moddir/ucx/src/ucs/type/status.h: $!\n";
             while(<In>){
                 s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
                 push @lines, $_;
             }
             close In;
-            open Out, ">$moddir/ucx/src/ucs/type/status.h" or die "Can't write $moddir/ucx/src/ucs/type/status.h.\n";
+            open Out, ">$moddir/ucx/src/ucs/type/status.h" or die "Can't write $moddir/ucx/src/ucs/type/status.h: $!\n";
             print Out @lines;
             close Out;
         }
@@ -951,7 +955,7 @@ if($opts{V}==0){
 
 %objects=();
 my $tlist;
-open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig.\n";
+open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
 while(<In>){
     if(/^(\w+)\s*=\s*(.*)/){
         my ($a, $b) = ($1, $2);
@@ -990,7 +994,7 @@ while(<In>){
     }
 }
 close In;
-open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom.\n";
+open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom: $!\n";
 print "  --> [mymake/Makefile.custom]\n";
 print Out "export MODDIR=$moddir\n";
 print Out "PREFIX=$prefix\n";

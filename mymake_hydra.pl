@@ -3,7 +3,6 @@ use strict;
 
 our %opts;
 our @config_args;
-our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -74,20 +73,15 @@ foreach my $a (@ARGV){
         elsif($a=~/^--with-pm=(.*)/){
             $opts{pm}=$1;
         }
-        elsif($a=~/--(dis|en)able-.*tests/){
-            push @test_config_args, $a;
-        }
         elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
             $opts{"enable_$1"}=0;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--enable-fortran=(\w+)/){
             $opts{disable_fortran}=0;
             $opts{enable_fortran}=$1;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--with-atomic-primitives=(.*)/){
             $opts{openpa_primitives} = $1;
@@ -96,7 +90,7 @@ foreach my $a (@ARGV){
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-(ucx|libfabric)=(.*)/){
+        elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
             $opts{$1}=$2;
             push @config_args, $a;
         }
@@ -214,7 +208,7 @@ if(!-f "mymake/Makefile.orig"){
         close In;
     }
     my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/^\s*hwloc\)/){
@@ -261,7 +255,7 @@ if(!-f "mymake/Makefile.orig"){
         close In;
     }
     my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/ACLOCAL_AMFLAGS/){
@@ -288,7 +282,7 @@ if(!-f "mymake/Makefile.orig"){
         close In;
     }
     my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/if\s+HYDRA_USE_EMBEDDED_HWLOC/i){
@@ -327,7 +321,7 @@ if(!-f "mymake/Makefile.orig"){
         close In;
     }
     my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2].\n";
+    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines){
         if($l=~/^AR_FLAGS=/){
@@ -381,6 +375,9 @@ foreach my $t (@config_args){
     if($t=~/--enable-(g|strict)/){
         $config_args.=" $t";
     }
+    elsif($t=~/--with-(thread-package|argobots)/){
+        $config_args.=" $t";
+    }
 }
 my @t = ("cd $moddir/mpl");
 push @t, "\x24(DO_stage) Configure MPL";
@@ -415,6 +412,10 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc/include/hwloc/autogen/config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
+if($opts{argobots}){
+    $I_list .= " -I$opts{argobots}/include";
+    $L_list .= " -L$opts{argobots}/lib -labt";
+}
 my $lt_opt;
 if($opts{V}==0){
     $lt_opt = "--quiet";
@@ -422,7 +423,7 @@ if($opts{V}==0){
 
 %objects=();
 my $tlist;
-open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig.\n";
+open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
 while(<In>){
     if(/^(\w+)\s*=\s*(.*)/){
         my ($a, $b) = ($1, $2);
@@ -461,7 +462,7 @@ while(<In>){
     }
 }
 close In;
-open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom.\n";
+open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom: $!\n";
 print "  --> [mymake/Makefile.custom]\n";
 print Out "export MODDIR=$moddir\n";
 print Out "PREFIX=$prefix\n";

@@ -3,7 +3,6 @@ use strict;
 
 our %opts;
 our @config_args;
-our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -51,20 +50,15 @@ foreach my $a (@ARGV){
         elsif($a=~/^--with-pm=(.*)/){
             $opts{pm}=$1;
         }
-        elsif($a=~/--(dis|en)able-.*tests/){
-            push @test_config_args, $a;
-        }
         elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
             $opts{"enable_$1"}=0;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--enable-fortran=(\w+)/){
             $opts{disable_fortran}=0;
             $opts{enable_fortran}=$1;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--with-atomic-primitives=(.*)/){
             $opts{openpa_primitives} = $1;
@@ -73,7 +67,7 @@ foreach my $a (@ARGV){
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-(ucx|libfabric)=(.*)/){
+        elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
             $opts{$1}=$2;
             push @config_args, $a;
         }
@@ -185,7 +179,7 @@ my %value_hash=(
 );
 my @files;
 foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
-    open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |.\n";
+    open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |: $!\n";
     while(<In>){
         chomp;
         push @files, $_;
@@ -194,7 +188,7 @@ foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
 }
 foreach my $f (@files){
     my ($in_block, $which, $cvar, $cat);
-    open In, "$f" or die "Can't open $f.\n";
+    open In, "$f" or die "Can't open $f: $!\n";
     while(<In>){
         if(/^===\s*BEGIN_MPI_T_CVAR_INFO_BLOCK\s*===/){
             $in_block=1;
@@ -287,7 +281,7 @@ foreach my $f (@files){
     close In;
 }
 
-open Out, ">src/include/mpir_cvars.h" or die "Can't write src/include/mpir_cvars.h.\n";
+open Out, ">src/include/mpir_cvars.h" or die "Can't write src/include/mpir_cvars.h: $!\n";
 print "  --> [src/include/mpir_cvars.h]\n";
 print Out "#ifndef MPIR_CVARS_H_INCLUDED\n";
 print Out "#define MPIR_CVARS_H_INCLUDED\n";
@@ -371,7 +365,7 @@ my $cvars_c = "src/util/mpir_cvars.c";
 if(-f "src/util/cvar/Makefile.mk"){
     $cvars_c = "src/util/cvar/mpir_cvars.c";
 }
-open Out, ">$cvars_c" or die "Can't write $cvars_c.\n";
+open Out, ">$cvars_c" or die "Can't write $cvars_c: $!\n";
 print "  --> [$cvars_c]\n";
 print Out "#include \"mpiimpl.h\"\n";
 print Out "\n";

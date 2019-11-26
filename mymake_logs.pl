@@ -3,7 +3,6 @@ use strict;
 
 our %opts;
 our @config_args;
-our @test_config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -49,20 +48,15 @@ foreach my $a (@ARGV){
         elsif($a=~/^--with-pm=(.*)/){
             $opts{pm}=$1;
         }
-        elsif($a=~/--(dis|en)able-.*tests/){
-            push @test_config_args, $a;
-        }
         elsif($a=~/--disable-(romio|cxx|fortran)/){
             $opts{"disable_$1"}=1;
             $opts{"enable_$1"}=0;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--enable-fortran=(\w+)/){
             $opts{disable_fortran}=0;
             $opts{enable_fortran}=$1;
             push @config_args, $a;
-            push @test_config_args, $a;
         }
         elsif($a=~/--with-atomic-primitives=(.*)/){
             $opts{openpa_primitives} = $1;
@@ -71,7 +65,7 @@ foreach my $a (@ARGV){
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-(ucx|libfabric)=(.*)/){
+        elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
             $opts{$1}=$2;
             push @config_args, $a;
         }
@@ -155,7 +149,7 @@ if(!$srcdir){
 my (@timer_states, %state_funcnames, %state_colors);
 my @files;
 foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
-    open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |.\n";
+    open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |: $!\n";
     while(<In>){
         chomp;
         push @files, $_;
@@ -164,7 +158,7 @@ foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
 }
 foreach my $f (@files){
     my $funcname;
-    open In, "$f" or die "Can't open $f.\n";
+    open In, "$f" or die "Can't open $f: $!\n";
     while(<In>){
         if(/^\w[^(]* \*?(\w+)\s*\(/){
             $funcname=$1;
@@ -198,7 +192,7 @@ foreach my $f (@files){
 
 my @timer_states = sort @timer_states;
 my $n = @timer_states;
-open Out, ">src/include/mpiallstates.h" or die "Can't write src/include/mpiallstates.h.\n";
+open Out, ">src/include/mpiallstates.h" or die "Can't write src/include/mpiallstates.h: $!\n";
 print "  --> [src/include/mpiallstates.h]\n";
 print Out "#ifndef MPIALLSTATES_H_INCLUDED\n";
 print Out "#define MPIALLSTATES_H_INCLUDED\n";
@@ -213,7 +207,7 @@ print Out "};\n";
 print Out "#endif /* MPIALLSTATES_H_INCLUDED */\n";
 close Out;
 
-open Out, ">src/util/logging/common/state_names.h" or die "Can't write src/util/logging/common/state_names.h.\n";
+open Out, ">src/util/logging/common/state_names.h" or die "Can't write src/util/logging/common/state_names.h: $!\n";
 print "  --> [src/util/logging/common/state_names.h]\n";
 print Out "#ifndef STATE_NAMES_H_INCLUDED\n";
 print Out "#define STATE_NAMES_H_INCLUDED\n";
