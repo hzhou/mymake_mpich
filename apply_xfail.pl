@@ -24,7 +24,7 @@ if(!-f $opt{conf}){
 }
 
 my @C=($opt{job}, $opt{compiler}, $opt{config}, $opt{netmod}, $opt{queue});
-open In, "$opt{conf}" or die "Can't open $opt{conf}.\n";
+open In, "$opt{conf}" or die "Can't open $opt{conf}: $!\n";
 while(<In>){
     if(/^\s*([^# ].*\S)\s*(sed .*)/){
         my $cmd = $2;

@@ -42,7 +42,9 @@ if($trigger_phrase=~/^test_script\s*[:=]\s*(\w+)/m && $h_script{$1}){
 my $t = $ENV{configOption}."\n".$trigger_phrase;
 print "parsing trigger phrase: \n   [$t]...\n";
 while($t=~/(--(enable|disable|with|without)-\S+)/g){
-    push @mpich_config, $1;
+    my ($a) = ($1);
+    $a=~s/\x24(\w+)/$ENV{$1}/g;
+    push @mpich_config, $a;
 }
 
 if($trigger_phrase=~/^\s*(compiler|skip_test|out_of_tree)\s*[:=]\s*([\w\-\.]+)/m){
@@ -63,7 +65,7 @@ if(!$ENV{skip_test}){
         push @testlist, $1;
     }
     if(@testlist){
-        open Out, ">test/mpi/testlist.custom" or die "Can't write test/mpi/testlist.custom.\n";
+        open Out, ">test/mpi/testlist.custom" or die "Can't write test/mpi/testlist.custom: $!\n";
         print "  --> [test/mpi/testlist.custom]\n";
         foreach my $l (@testlist){
             print Out "$l\n";
@@ -166,7 +168,7 @@ if($config=~/(ch3:\w+)/){
 
 
 if($config_hash{conflict}){
-    open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
+    open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml: $!\n";
     print "  --> [summary.junit.xml]\n";
     print Out "<testsuites>\n";
     print Out "<testsuite failures=\"0\" errors=\"0\" skipped=\"1\" tests=\"1\" name=\"skip\">\n";
@@ -214,7 +216,7 @@ if($ret){
 else{
     my @make_log;
     if($compiler=~/intel|icc/){
-        open In, "make.log" or die "Can't open make.log.\n";
+        open In, "make.log" or die "Can't open make.log: $!\n";
         while(<In>){
             if(/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/){
                 my ($t) = ($1);
@@ -224,7 +226,7 @@ else{
         close In;
     }
     elsif($compiler=~/pgi/){
-        open In, "make.log" or die "Can't open make.log.\n";
+        open In, "make.log" or die "Can't open make.log: $!\n";
         while(<In>){
             if(/^(PGC-W-\d+-.*)/){
                 my ($t) = ($1);
@@ -235,7 +237,7 @@ else{
     }
     elsif($compiler=~/sun/){
         my %got_hash;
-        open In, "make.log" or die "Can't open make.log.\n";
+        open In, "make.log" or die "Can't open make.log: $!\n";
         while(<In>){
             if(/^(".*",\s*line \d+:\s*warning:.*)/){
                 my ($t) = ($1);
@@ -258,7 +260,7 @@ else{
         if($ENV{outoftree} eq "true"){
             $f="build/make.log";
         }
-        open In, "$f" or die "Can't open $f.\n";
+        open In, "$f" or die "Can't open $f: $!\n";
         while(<In>){
             if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
                 my ($t) = ($1);
@@ -272,7 +274,7 @@ else{
         $n_fails = 10000;
     }
     my $n_tests = $n_fails+1;
-    open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml.\n";
+    open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml: $!\n";
     print "  --> [summary.junit.xml]\n";
     print Out "<testsuites>\n";
     print Out "<testsuite failures=\"$n_fails\" errors=\"0\" skipped=\"0\" tests=\"$n_tests\" name=\"warning\">\n";
