@@ -94,10 +94,6 @@ if($opts{F77}){
 if($opts{FC}){
     $ENV{FC}=$opts{FC};
 }
-
-if($opts{argobots}){
-    $I_list .= " -I$opts{argobots}/include";
-}
 if($opts{srcdir}){
     $srcdir = $opts{srcdir};
 }

@@ -115,10 +115,6 @@ if($opts{F77}){
 if($opts{FC}){
     $ENV{FC}=$opts{FC};
 }
-
-if($opts{argobots}){
-    $I_list .= " -I$opts{argobots}/include";
-}
 if($opts{srcdir}){
     $srcdir = $opts{srcdir};
 }
@@ -955,6 +951,10 @@ if($ENV{EXTRA_LIB}){
 my $lt_opt;
 if($opts{V}==0){
     $lt_opt = "--quiet";
+}
+
+if($opts{argobots}){
+    $I_list .= " -I$opts{argobots}/include";
 }
 
 %objects=();
