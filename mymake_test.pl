@@ -176,7 +176,7 @@ foreach my $t (@config_args){
     elsif($t=~/--(dis|en)able-(fortran|cxx|romio)/){
         $config_args .= " $t";
     }
-    elsif($t=~/--with-thread-package/){
+    elsif($t=~/--with-(thread-package|argobots)/){
         $config_args .= " $t";
     }
 }

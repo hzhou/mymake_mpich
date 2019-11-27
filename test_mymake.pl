@@ -47,7 +47,7 @@ while($t=~/(--(enable|disable|with|without)-\S+)/g){
     push @mpich_config, $a;
 }
 
-if($trigger_phrase=~/^\s*(compiler|skip_test|out_of_tree)\s*[:=]\s*([\w\-\.]+)/m){
+while($trigger_phrase=~/^\s*(compiler|skip_test|out_of_tree)\s*[:=]\s*([\w\-\.]+)/mg){
     my ($key, $val) = ($1, $2);
     if($val=~/(yes|1)/){
         $val = "true";
