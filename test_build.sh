@@ -265,7 +265,16 @@ export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
 
 which mpicc
 which mpirun
-mpicc examples/cpi.c -o examples/cpi
+case "$compiler" in
+    sun)
+        cpi_lib="-lm"
+        ;;
+    *)
+        cpi_lib=
+        ;;
+esac
+
+mpicc examples/cpi.c -o examples/cpi $cpi_lib
 mpirun -n 2 examples/cpi
 
 if test x$skip_test = xtrue ; then
