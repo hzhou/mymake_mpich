@@ -151,7 +151,7 @@ if test -n $compiler ; then
         fi
     else
         case $compiler in
-            gnu|gcc|gcc-4)
+            gnu|gcc|gcc-4|gcc-4.8)
                 CC=gcc
                 CXX=g++
                 F77=gfortran

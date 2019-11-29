@@ -200,7 +200,4 @@ if($ENV{skip_test} eq "custom"){
     system $cmd;
 }
 else{
-    my $cmd = "make testing";
-    print ": $cmd\n";
-    system $cmd;
 }
