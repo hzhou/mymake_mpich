@@ -1000,7 +1000,12 @@ while(<In>){
 close In;
 open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom: $!\n";
 print "  --> [mymake/Makefile.custom]\n";
-print Out "export MODDIR=$moddir\n";
+if($moddir eq "$pwd/mymake"){
+    print Out "export MODDIR=mymake\n";
+}
+else{
+    print Out "export MODDIR=$moddir\n";
+}
 print Out "PREFIX=$prefix\n";
 print Out "\n";
 if(@CONFIGS){
