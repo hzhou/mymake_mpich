@@ -956,7 +956,9 @@ if($opts{V}==0){
 if($opts{argobots}){
     $I_list .= " -I$opts{argobots}/include";
 }
-$I_list=~s/$pwd/./g;
+my $_P = `pwd`;
+chomp $_P;
+$I_list=~s/$_P/./g;
 
 %objects=();
 my $tlist;
