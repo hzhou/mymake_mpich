@@ -956,9 +956,7 @@ if($opts{V}==0){
 if($opts{argobots}){
     $I_list .= " -I$opts{argobots}/include";
 }
-if($moddir eq "$pwd/mymake"){
-    $I_list=~s/\x24(MODDIR)/mymake/g;
-}
+$I_list=~s/$pwd/./g;
 
 %objects=();
 my $tlist;
