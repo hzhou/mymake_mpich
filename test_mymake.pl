@@ -336,7 +336,7 @@ sub parse_warning {
     }
 
     if($o){
-        if($o->{file}=~/^\/var\/.*\/mymake\/(.*)/g){
+        if($o->{file}=~/^.*\/mymake\/(.*)/g){
             $o->{file}="~$1";
             if($o->{file}=~/^~(ucx|libfabric)/){
                 $o->{skip}="external module: $1";
