@@ -753,6 +753,13 @@ push @CONFIGS, "src/include/mpir_cvars.h";
 push @extra_make_rules, "src/include/mpir_cvars.h:";
 push @extra_make_rules, "\t\x24(DO_cvars)";
 push @extra_make_rules, "";
+if(-f "src/include/autogen.h.in"){
+    push @CONFIGS, "src/include/autogen.h";
+    push @extra_make_rules, "src/include/autogen.h: src/include/autogen.h.in";
+    push @extra_make_rules, "\tperl maint/gen_init.pl";
+    push @extra_make_rules, "";
+
+}
 
 my @t = ("cd src/glue/romio");
 push @t, "perl all_romio_symbols ../../mpi/romio/include/mpio.h.in";
