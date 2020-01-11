@@ -17,6 +17,7 @@ our @programs;
 our @ltlibs;
 our %special_targets;
 our @extra_make_rules;
+our %make_vars;
 
 my $pwd=`pwd`;
 chomp $pwd;
@@ -1020,6 +1021,8 @@ sub get_object {
         $t=~s/\$\(am__v_[\w]+\)//g;
         $t=~s/\$\((\w+)\)/get_object($1)/ge;
         $t=~s/\s+/ /g;
+
+        $make_vars{$key} = $t;
         return $t;
     }
     else{

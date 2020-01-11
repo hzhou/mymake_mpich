@@ -17,6 +17,7 @@ our @programs;
 our @ltlibs;
 our %special_targets;
 our @extra_make_rules;
+our %make_vars;
 
 my $pwd=`pwd`;
 chomp $pwd;
@@ -1644,7 +1645,7 @@ print Out "#include \"mpl_atomic.h\"\n";
 print Out "int main() { return sizeof(MPL_atomic_ptr_t); }\n";
 close Out;
 
-system "gcc -Imymake/mpl/include mymake/t.c -o mymake/t";
+system "$make_vars{CC} -Imymake/mpl/include mymake/t.c -o mymake/t";
 system "mymake/t";
 my $ret = $? >> 8;
 
@@ -1692,6 +1693,8 @@ sub get_object {
         $t=~s/\$\(am__v_[\w]+\)//g;
         $t=~s/\$\((\w+)\)/get_object($1)/ge;
         $t=~s/\s+/ /g;
+
+        $make_vars{$key} = $t;
         return $t;
     }
     else{
