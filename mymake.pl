@@ -1639,6 +1639,44 @@ system "ln -s mymake/Makefile.custom Makefile";
 $ENV{CFLAGS}=$opts{CFLAGS};
 system "make $moddir/mpl/include/mplconfig.h $moddir/openpa/src/opa_config.h";
 
+open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
+print Out "#include \"mpl_atomic.h\"\n";
+print Out "int main() { return sizeof(MPL_atomic_ptr_t); }\n";
+close Out;
+
+system "gcc -Imymake/mpl/include mymake/t.c -o mymake/t";
+system "mymake/t";
+my $ret = $? >> 8;
+
+my @mod_list;
+my $f = "src/include/mpichconf.h";
+my $f_ = $f;
+$f_=~s/[\.\/]/_/g;
+my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+push @mod_list, \@m;
+
+system "mv $m[0] $m[1]";
+my @lines;
+{
+    open In, "$m[1]" or die "Can't open $m[1].\n";
+    @lines=<In>;
+    close In;
+}
+my $flag_skip=0;
+open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+print "  --> [$m[2]]\n";
+foreach my $l (@lines){
+    if($l=~/^#define SIZEOF_MPL_ATOMIC_PTR_T 0/){
+        $l=~s/0/$ret/;
+    }
+    if($flag_skip){
+        next;
+    }
+    print Out $l;
+}
+close Out;
+system "cp -v $m[2] $m[0]";
+
 # ---- subroutines --------------------------------------------
 sub get_object {
     my ($key) = @_;

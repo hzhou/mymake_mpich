@@ -173,6 +173,9 @@ foreach my $t (@config_args){
     if($t=~/--(dis|en)able-.*tests/){
         $config_args .= " $t";
     }
+    elsif($t=~/--with-device=(.*)/){
+        $config_args .= " $t";
+    }
     elsif($t=~/--(dis|en)able-(fortran|cxx|romio)/){
         $config_args .= " $t";
     }
