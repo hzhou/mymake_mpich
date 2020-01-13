@@ -1647,7 +1647,7 @@ $print pthread_mutex_t MPL_emulation_lock;
 print Out "int main() { return sizeof(MPL_atomic_ptr_t); }\n";
 close Out;
 
-system "$make_vars{CC} -Imymake/mpl/include mymake/t.c mymake/mpl/.libs/libmpl.a -o mymake/t";
+system "$make_vars{CC} -Imymake/mpl/include mymake/t.c -o mymake/t";
 system "mymake/t";
 my $ret = $? >> 8;
 
