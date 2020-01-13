@@ -1643,7 +1643,7 @@ system "make $moddir/mpl/include/mplconfig.h $moddir/openpa/src/opa_config.h";
 open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
 print Out "#include \"mpl_atomic.h\"\n";
 print Out "#include <pthread.h>\n";
-$print pthread_mutex_t MPL_emulation_lock;
+print Out "pthread_mutex_t MPL_emulation_lock;\n";
 print Out "int main() { return sizeof(MPL_atomic_ptr_t); }\n";
 close Out;
 
