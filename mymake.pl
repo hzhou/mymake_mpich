@@ -833,13 +833,13 @@ push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 
 if(-f "maint/tuning/default/json_gen.sh"){
-    if(!-d "$moddir/jsonc"){
-        my $cmd = "cp -r modules/json-c $moddir/jsonc";
+    if(!-d "$moddir/json-c"){
+        my $cmd = "cp -r modules/json-c $moddir/json-c";
         print "$cmd\n";
         system $cmd;
     }
-    $I_list .= " -I$moddir/jsonc";
-    $L_list .= " $moddir/jsonc/libjson-c.la";
+    $I_list .= " -I$moddir/json-c";
+    $L_list .= " $moddir/json-c/libjson-c.la";
     system "bash ./maint/tuning/default/json_gen.sh";
 }
 

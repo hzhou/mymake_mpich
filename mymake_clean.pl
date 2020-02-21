@@ -173,8 +173,8 @@ if(-d "$moddir/libfabric"){
 if(-d "src/mpi/romio"){
     push @realclean_list, "src/mpi/romio/adio/include/romioconf.h";
 }
-if(-d "$moddir/jsonc"){
-    push @realclean_list, "$moddir/jsonc/json.h";
+if(-d "$moddir/json-c"){
+    push @realclean_list, "$moddir/json-c/json.h";
 }
 push @realclean_list, "src/pm/hydra/mymake/Makefile.orig";
 push @realclean_list, "src/mpi/errhan/defmsg.h";
