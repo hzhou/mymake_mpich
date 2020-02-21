@@ -832,6 +832,17 @@ push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 
+if(-f "maint/tuning/default/json_gen.sh"){
+    if(!-d "$moddir/jsonc"){
+        my $cmd = "cp -r modules/json-c $moddir/jsonc";
+        print "$cmd\n";
+        system $cmd;
+    }
+    $I_list .= " -I$moddir/jsonc";
+    $L_list .= " $moddir/jsonc/libjson-c.la";
+    system "bash ./maint/tuning/default/json_gen.sh";
+}
+
 if(!$opts{disable_romio}){
     system "rsync -r confdb/ src/mpi/romio/confdb/";
     system "cp maint/version.m4 src/mpi/romio/";
@@ -1040,7 +1051,7 @@ my $l = "AM_CPPFLAGS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("CPPFLAGS");
-$t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc)\/\S+\s*//g;
+$t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|json-c)\/\S+\s*//g;
 $t .= $I_list;
 my $l = "CPPFLAGS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
@@ -1262,7 +1273,7 @@ foreach my $p (@ltlibs){
     if($objects{$add}){
         my $t = get_object($add);
         if($add!~/mpi(fort|cxx)/){
-            $t=~s/\S+\/(mpl|openpa|romio|izem|hwloc)\/\S+\.la\s*//g;
+            $t=~s/\S+\/(mpl|openpa|romio|izem|hwloc|json-c)\/\S+\.la\s*//g;
             $t=~s/\@ucxlib\@\s*//g;
             $t=~s/\@ofilib\@\s*//g;
             $t.= $L_list;

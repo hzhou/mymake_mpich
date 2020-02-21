@@ -419,8 +419,9 @@ print Out "    static int initialized = FALSE;\n";
 print Out "    MPIR_T_cvar_value_t defaultval;\n";
 print Out "\n";
 print Out "    /* FIXME any MT issues here? */\n";
-print Out "    if (initialized)\n";
+print Out "    if (initialized) {\n";
 print Out "        return MPI_SUCCESS;\n";
+print Out "    }\n";
 print Out "    initialized = TRUE;\n";
 print Out "\n";
 foreach my $c (@cats){
