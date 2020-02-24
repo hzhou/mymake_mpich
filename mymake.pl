@@ -665,6 +665,10 @@ open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
 while(<In>){
     if(/^CFLAGS *= *(.*)/){
         $opts{CFLAGS}=$1;
+        open Out, ">mymake/CFLAGS" or die "Can't write mymake/CFLAGS: $!\n";
+        print "  --> [mymake/CFLAGS]\n";
+        print Out "$1\n";
+        close Out;
     }
 }
 close In;

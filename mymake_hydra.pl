@@ -172,6 +172,15 @@ elsif(-f "../../../maint/version.m4"){
 if(!$srcdir){
     die "srcdir not set\n";
 }
+if(-f "mymake/CFLAGS"){
+    open In, "mymake/CFLAGS" or die "Can't open mymake/CFLAGS: $!\n";
+    while(<In>){
+        if(/(.+)/){
+            $ENV{CFLAGS} = $1;
+        }
+    }
+    close In;
+}
 if($srcdir){
     my $dir="$srcdir/src/pm/hydra";
     chdir $dir or die "Can't chdir $dir\n";
