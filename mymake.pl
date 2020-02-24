@@ -832,7 +832,7 @@ push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 
-if(-f "maint/tuning/default/json_gen.sh"){
+if(-f "maint/tuning/coll/json_gen.sh"){
     if(!-d "$moddir/json-c"){
         my $cmd = "cp -r modules/json-c $moddir/json-c";
         print "$cmd\n";
@@ -840,7 +840,7 @@ if(-f "maint/tuning/default/json_gen.sh"){
     }
     $I_list .= " -I$moddir/json-c";
     $L_list .= " $moddir/json-c/libjson-c.la";
-    system "bash ./maint/tuning/default/json_gen.sh";
+    system "bash maint/tuning/coll/json_gen.sh";
 }
 
 if(!$opts{disable_romio}){
@@ -1051,7 +1051,8 @@ my $l = "AM_CPPFLAGS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("CPPFLAGS");
-$t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|json-c)\/\S+\s*//g;
+$t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc)\/\S+\s*//g;
+$t=~s/-I\S+\/json-c//g;
 $t .= $I_list;
 my $l = "CPPFLAGS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
