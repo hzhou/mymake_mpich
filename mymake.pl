@@ -247,9 +247,40 @@ if($opts{pm} eq "gforker"){
     push @extra_make_rules,  ".PHONY: gforker-install";
     push @extra_make_rules,  "gforker-install: mpiexec.gforker";
     my $bin = "\x24(PREFIX)/bin";
+    push @extra_make_rules,  "\tinstall -d $bin";
     push @extra_make_rules,  "\t/bin/sh ./libtool --mode=install --quiet install mpiexec.gforker $bin";
     push @extra_make_rules,  "\trm -f $bin/mpiexec  && ln -s $bin/mpiexec.gforker $bin/mpiexec";
     push @extra_make_rules,  "\trm -f $bin/mpirun  && ln -s $bin/mpiexec.gforker $bin/mpirun";
+    push @extra_make_rules, "";
+
+    push @extra_INCLUDES, "-Isrc/pm/util";
+    push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE_SIGACTION";
+}
+elsif($opts{pm} eq "remshell"){
+    push @extra_make_rules,  "libmpiexec_la_OBJECTS = \\";
+    foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface)){
+        push @extra_make_rules,  "    src/pm/util/$a.lo \\";
+    }
+    push @extra_make_rules,  "    src/pm/util/simple_pmiutil2.lo";
+    push @extra_make_rules, "";
+
+    my $objs = "\x24(libmpiexec_la_OBJECTS) \x24(MODDIR)/mpl/libmpl.la";
+    push @extra_make_rules,  "libmpiexec.la: $objs";
+    push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
+    push @extra_make_rules, "";
+
+    my $objs = "src/pm/remshell/mpiexec.o libmpiexec.la";
+    push @extra_make_rules,  "mpiexec.remshell: $objs";
+    push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
+    push @extra_make_rules, "";
+
+    push @extra_make_rules,  ".PHONY: remshell-install";
+    push @extra_make_rules,  "remshell-install: mpiexec.remshell";
+    my $bin = "\x24(PREFIX)/bin";
+    push @extra_make_rules,  "\tinstall -d $bin";
+    push @extra_make_rules,  "\t/bin/sh ./libtool --mode=install --quiet install mpiexec.remshell $bin";
+    push @extra_make_rules,  "\trm -f $bin/mpiexec  && ln -s $bin/mpiexec.remshell $bin/mpiexec";
+    push @extra_make_rules,  "\trm -f $bin/mpirun  && ln -s $bin/mpiexec.remshell $bin/mpirun";
     push @extra_make_rules, "";
 
     push @extra_INCLUDES, "-Isrc/pm/util";
@@ -272,6 +303,25 @@ else{
     }
     push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
     push @extra_make_rules, "";
+    if($opts{pm} eq "hydra2"){
+        my $mkfile="src/pm/hydra2/Makefile";
+        my $add="$moddir/mpl/libmpl.la $moddir/hwloc/hwloc/libhwloc_embedded.la";
+        push @extra_make_rules, ".PHONY: hydra2 hydra2-install";
+        push @extra_make_rules, "hydra2: $mkfile $add";
+        push @extra_make_rules, "\t(cd src/pm/hydra2 && \x24(MAKE) )";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "hydra2-install: $mkfile";
+        push @extra_make_rules, "\t(cd src/pm/hydra2 && \x24(MAKE) install )";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "$mkfile:";
+        my $config_args = "--prefix=\x24(PREFIX)";
+        if($opts{argobots}){
+            $config_args .= " --with-argobots=$opts{argobots}";
+        }
+        $config_args .= " --with-pm=hydra2";
+        push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
+        push @extra_make_rules, "";
+    }
 }
 
 if(!-d "$moddir/mpl"){
@@ -860,7 +910,6 @@ if(!$opts{disable_romio}){
     }
 
     $I_list .= " -Isrc/mpi/romio/include";
-    $L_list .= " src/mpi/romio/libromio.la";
     push @CONFIGS, "src/mpi/romio/adio/include/romioconf.h";
     my @t = ("cd src/mpi/romio");
     push @t, "\x24(DO_stage) Configure ROMIO";
@@ -1278,10 +1327,25 @@ foreach my $p (@ltlibs){
     if($objects{$add}){
         my $t = get_object($add);
         if($add!~/mpi(fort|cxx)/){
-            $t=~s/\S+\/(mpl|openpa|romio|izem|hwloc|json-c)\/\S+\.la\s*//g;
-            $t=~s/\@ucxlib\@\s*//g;
-            $t=~s/\@ofilib\@\s*//g;
-            $t.= $L_list;
+            if($t=~/libpromio/){
+                my @t = ("cd src/mpi/romio");
+                push @t, "\x24(MAKE)";
+                push @extra_make_rules, "src/mpi/romio/libpromio.la: src/mpi/romio/adio/include/romioconf.h";
+                push @extra_make_rules, "\t(".join(' && ', @t).")";
+                push @extra_make_rules, "";
+            }
+            if($add=~/_libmpi_la_/ && !$opts{have_weak}){
+                $t=~s/\S+\/(mpl|openpa|izem|hwloc|json-c)\/\S+\.la\s*//g;
+                $t=~s/\@ucxlib\@\s*//g;
+                $t=~s/\@ofilib\@\s*//g;
+                $t.= $L_list;
+            }
+            elsif($add=~/_libpmpi_la_/){
+                $t=~s/\S+\/(mpl|openpa|izem|hwloc|json-c)\/\S+\.la\s*//g;
+                $t=~s/\@ucxlib\@\s*//g;
+                $t=~s/\@ofilib\@\s*//g;
+                $t.= $L_list;
+            }
         }
         $t=~s/^\s+//;
         my @tlist = split /\s+/, $t;

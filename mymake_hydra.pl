@@ -6,6 +6,7 @@ our @config_args;
 our $srcdir;
 our $moddir;
 our $prefix;
+our $do_hydra2;
 our $I_list;
 our $L_list;
 our %objects;
@@ -181,8 +182,16 @@ if(-f "mymake/CFLAGS"){
     }
     close In;
 }
+if($opts{pm} eq "hydra2"){
+    print "Building hydra2...\n";
+    $do_hydra2 = 1;
+}
+
 if($srcdir){
     my $dir="$srcdir/src/pm/hydra";
+    if($do_hydra2){
+        $dir="$srcdir/src/pm/hydra2";
+    }
     chdir $dir or die "Can't chdir $dir\n";
 }
 if(!-d "mymake"){
@@ -204,53 +213,94 @@ if(!-f "mymake/Makefile.orig"){
     }
 
     my @mod_list;
-    my $f = "configure.ac";
-    my $f_ = $f;
-    $f_=~s/[\.\/]/_/g;
-    my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-    push @mod_list, \@m;
+    if($do_hydra2){
+        my $f = "configure.ac";
+        my $f_ = $f;
+        $f_=~s/[\.\/]/_/g;
+        my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+        push @mod_list, \@m;
 
-    system "mv $m[0] $m[1]";
-    my @lines;
-    {
-        open In, "$m[1]" or die "Can't open $m[1].\n";
-        @lines=<In>;
-        close In;
-    }
-    my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-    print "  --> [$m[2]]\n";
-    foreach my $l (@lines){
-        if($l=~/^\s*hwloc\)/){
+        system "mv $m[0] $m[1]";
+        my @lines;
+        {
+            open In, "$m[1]" or die "Can't open $m[1].\n";
+            @lines=<In>;
+            close In;
+        }
+        my $flag_skip=0;
+        open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+        print "  --> [$m[2]]\n";
+        foreach my $l (@lines){
+            if($l=~/^PAC_CHECK_PREFIX\(hwloc\)/){
+                $flag_skip=1;
+                next;
+            }
+            elsif($l=~/^(HWLOC_DO_AM_CONDITIONALS)/){
+                $flag_skip=0;
+                print Out $1, "have_hwloc=yes\n";
+                print Out $1, "hydra_use_embedded_hwloc=no\n";
+                next;
+            }
+            elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/){
+                $l = "$1: \x23 $2\n";
+            }
+            if($flag_skip){
+                next;
+            }
             print Out $l;
-            $flag_skip=1;
-            next;
         }
-        elsif($flag_skip && $l=~/AC_MSG_RESULT/){
-            $flag_skip=2;
-        }
-        elsif($flag_skip==2 && $l=~/^(\s*)if test.*\$have_hwloc.*then/){
-            print Out $1, "have_hwloc=yes\n";
-            print Out $1, "hydra_use_embedded_hwloc=no\n";
-            $flag_skip=0;
-        }
-        elsif($l=~/^(HWLOC_DO_AM_CONDITIONALS)/){
-            $l = "\x23 $1\n";
-        }
-        elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/){
-            $l = "$1: \x23 $2\n";
-        }
-        elsif($l=~/^(\s*)PAC_SUBDIR_HWLOC/){
-            $l = $1."AM_CONDITIONAL([HAVE_HWLOC], [true])\n";
-            $flag_skip=0;
-        }
-        if($flag_skip){
-            next;
-        }
-        print Out $l;
+        close Out;
+        system "cp -v $m[2] $m[0]";
     }
-    close Out;
-    system "cp -v $m[2] $m[0]";
+    else{
+        my $f = "configure.ac";
+        my $f_ = $f;
+        $f_=~s/[\.\/]/_/g;
+        my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+        push @mod_list, \@m;
+
+        system "mv $m[0] $m[1]";
+        my @lines;
+        {
+            open In, "$m[1]" or die "Can't open $m[1].\n";
+            @lines=<In>;
+            close In;
+        }
+        my $flag_skip=0;
+        open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+        print "  --> [$m[2]]\n";
+        foreach my $l (@lines){
+            if($l=~/^\s*hwloc\)/){
+                print Out $l;
+                $flag_skip=1;
+                next;
+            }
+            elsif($flag_skip && $l=~/AC_MSG_RESULT/){
+                $flag_skip=2;
+            }
+            elsif($flag_skip==2 && $l=~/^(\s*)if test.*\$have_hwloc.*then/){
+                print Out $1, "have_hwloc=yes\n";
+                print Out $1, "hydra_use_embedded_hwloc=no\n";
+                $flag_skip=0;
+            }
+            elsif($l=~/^(HWLOC_DO_AM_CONDITIONALS)/){
+                $l = "\x23 $1\n";
+            }
+            elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/){
+                $l = "$1: \x23 $2\n";
+            }
+            elsif($l=~/^(\s*)PAC_SUBDIR_HWLOC/){
+                $l = $1."AM_CONDITIONAL([HAVE_HWLOC], [true])\n";
+                $flag_skip=0;
+            }
+            if($flag_skip){
+                next;
+            }
+            print Out $l;
+        }
+        close Out;
+        system "cp -v $m[2] $m[0]";
+    }
     my $f = "Makefile.am";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
@@ -278,7 +328,12 @@ if(!-f "mymake/Makefile.orig"){
     }
     close Out;
     system "cp -v $m[2] $m[0]";
-    my $f = "tools/topo/hwloc/Makefile.mk";
+
+    my $hwloc_mk = "tools/topo/hwloc/Makefile.mk";
+    if($do_hydra2){
+        $hwloc_mk = "libhydra/topo/hwloc/Makefile.mk";
+    }
+    my $f = "$hwloc_mk";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
     my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
