@@ -1334,7 +1334,7 @@ foreach my $p (@ltlibs){
                 push @extra_make_rules, "\t(".join(' && ', @t).")";
                 push @extra_make_rules, "";
             }
-            if($add=~/_libmpi_la_/ && !$opts{have_weak}){
+            if($add=~/_libmpi_la_/ && $opts{have_weak}){
                 $t=~s/\S+\/(mpl|openpa|izem|hwloc|json-c)\/\S+\.la\s*//g;
                 $t=~s/\@ucxlib\@\s*//g;
                 $t=~s/\@ofilib\@\s*//g;
