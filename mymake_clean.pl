@@ -65,6 +65,10 @@ foreach my $a (@ARGV){
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
+        elsif($a=~/--enable-izem-queue/){
+            $opts{enable_izem}=1;
+            push @config_args, $a;
+        }
         elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
             $opts{$1}=$2;
             push @config_args, $a;

@@ -92,6 +92,10 @@ foreach my $a (@ARGV){
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
+        elsif($a=~/--enable-izem-queue/){
+            $opts{enable_izem}=1;
+            push @config_args, $a;
+        }
         elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
             $opts{$1}=$2;
             push @config_args, $a;
@@ -435,7 +439,7 @@ $dst_hash{"LN_S-$bin/mpirun"}="$bin/mpiexec.hydra";
 $I_list .= " -I$moddir/mpl/include";
 $L_list .= " $moddir/mpl/libmpl.la";
 push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
-my $config_args = "--disable-versioning --enable-embedded";
+my $config_args = "--disable-versioning --enable-embedded --enable-ticketlock";
 foreach my $t (@config_args){
     if($t=~/--enable-(g|strict)/){
         $config_args.=" $t";

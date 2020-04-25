@@ -91,6 +91,10 @@ foreach my $a (@ARGV){
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
+        elsif($a=~/--enable-izem-queue/){
+            $opts{enable_izem}=1;
+            push @config_args, $a;
+        }
         elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
             $opts{$1}=$2;
             push @config_args, $a;
@@ -322,6 +326,28 @@ else{
         push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
         push @extra_make_rules, "";
     }
+}
+if($opts{enable_izem}){
+    if(!-d "$moddir/izem"){
+        my $cmd = "cp -r src/izem $moddir/izem";
+        print "$cmd\n";
+        system $cmd;
+    }
+    $I_list .= " -I$moddir/izem/src/include";
+    $L_list .= " $moddir/izem/src/libzm.la";
+    push @CONFIGS, "$moddir/izem/src/include/zm_config.h";
+    my @t = ("cd $moddir/izem");
+    push @t, "\x24(DO_stage) Configure IZEM";
+    push @t, "sh autogen.sh";
+    push @t, "./configure --enable-embedded";
+    push @extra_make_rules, "$moddir/izem/src/include/zm_config.h: ";
+    push @extra_make_rules, "\t(".join(' && ', @t).")";
+    push @extra_make_rules, "";
+    my @t = ("cd $moddir/izem");
+    push @t, "\x24(MAKE)";
+    push @extra_make_rules, "$moddir/izem/src/libzm.la: $moddir/izem/src/include/zm_config.h";
+    push @extra_make_rules, "\t(".join(' && ', @t).")";
+    push @extra_make_rules, "";
 }
 
 if(!-d "$moddir/mpl"){
@@ -824,7 +850,7 @@ push @extra_make_rules, "";
 $I_list .= " -I$moddir/mpl/include";
 $L_list .= " $moddir/mpl/libmpl.la";
 push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
-my $config_args = "--disable-versioning --enable-embedded";
+my $config_args = "--disable-versioning --enable-embedded --enable-ticketlock";
 foreach my $t (@config_args){
     if($t=~/--enable-(g|strict)/){
         $config_args.=" $t";
@@ -883,6 +909,26 @@ push @extra_make_rules, "";
 my @t = ("cd $moddir/hwloc");
 push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc/include/hwloc/autogen/config.h";
+push @extra_make_rules, "\t(".join(' && ', @t).")";
+push @extra_make_rules, "";
+if(!-d "$moddir/yaksa"){
+    my $cmd = "cp -r modules/yaksa $moddir/yaksa";
+    print "$cmd\n";
+    system $cmd;
+}
+$I_list .= " -I$moddir/yaksa/src/frontend/include";
+$L_list .= " $moddir/yaksa/libyaksa.la";
+push @CONFIGS, "$moddir/yaksa/src/frontend/include/yaksa_config.h";
+my @t = ("cd $moddir/yaksa");
+push @t, "\x24(DO_stage) Configure yaksa";
+push @t, "sh autogen.sh";
+push @t, "./configure";
+push @extra_make_rules, "$moddir/yaksa/src/frontend/include/yaksa_config.h: ";
+push @extra_make_rules, "\t(".join(' && ', @t).")";
+push @extra_make_rules, "";
+my @t = ("cd $moddir/yaksa");
+push @t, "\x24(MAKE)";
+push @extra_make_rules, "$moddir/yaksa/libyaksa.la: $moddir/yaksa/src/frontend/include/yaksa_config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 
@@ -1104,7 +1150,7 @@ my $l = "AM_CPPFLAGS = $t";
 $l=~s/$moddir/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("CPPFLAGS");
-$t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc)\/\S+\s*//g;
+$t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa)\/\S+\s*//g;
 $t=~s/-I\S+\/json-c//g;
 $t .= $I_list;
 my $l = "CPPFLAGS = $t";
@@ -1335,13 +1381,13 @@ foreach my $p (@ltlibs){
                 push @extra_make_rules, "";
             }
             if($add=~/_libmpi_la_/ && $opts{have_weak}){
-                $t=~s/\S+\/(mpl|openpa|izem|hwloc|json-c)\/\S+\.la\s*//g;
+                $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c)\/\S+\.la\s*//g;
                 $t=~s/\@ucxlib\@\s*//g;
                 $t=~s/\@ofilib\@\s*//g;
                 $t.= $L_list;
             }
             elsif($add=~/_libpmpi_la_/){
-                $t=~s/\S+\/(mpl|openpa|izem|hwloc|json-c)\/\S+\.la\s*//g;
+                $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c)\/\S+\.la\s*//g;
                 $t=~s/\@ucxlib\@\s*//g;
                 $t=~s/\@ofilib\@\s*//g;
                 $t.= $L_list;
