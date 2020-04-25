@@ -850,7 +850,10 @@ push @extra_make_rules, "";
 $I_list .= " -I$moddir/mpl/include";
 $L_list .= " $moddir/mpl/libmpl.la";
 push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
-my $config_args = "--disable-versioning --enable-embedded --enable-ticketlock";
+my $config_args = "--disable-versioning --enable-embedded";
+if($opts{device}=~/ch4:/){
+    $config_args .= " --enable-ticketlock";
+}
 foreach my $t (@config_args){
     if($t=~/--enable-(g|strict)/){
         $config_args.=" $t";
