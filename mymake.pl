@@ -852,7 +852,7 @@ $L_list .= " $moddir/mpl/libmpl.la";
 push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
 my $config_args = "--disable-versioning --enable-embedded";
 if($opts{device}=~/ch4:/){
-    $config_args .= " --enable-ticketlock";
+    $config_args .= " --with-posix-mutex=ticketlock";
 }
 foreach my $t (@config_args){
     if($t=~/--enable-(g|strict)/){
