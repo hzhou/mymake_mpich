@@ -13,16 +13,15 @@ our %generic_index;
 
 my $pwd=`pwd`;
 chomp $pwd;
-
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
-if(@ARGV == 1 && $ARGV[0] eq "V=1"){
+if (@ARGV == 1 && $ARGV[0] eq "V=1") {
     $opts{V} = 1;
     @ARGV=();
 }
 my $need_save_args;
-if(!@ARGV && -f "mymake/args"){
+if (!@ARGV && -f "mymake/args") {
     my $t;
     {
         open In, "mymake/args" or die "Can't open mymake/args.\n";
@@ -34,100 +33,100 @@ if(!@ARGV && -f "mymake/args"){
     @ARGV = split /\s+/, $t;
     print "loading last ARGV: @ARGV\n";
 }
-elsif(@ARGV){
+elsif (@ARGV) {
     $need_save_args = 1;
 }
-foreach my $a (@ARGV){
-    if($a=~/^--(prefix)=(.*)/){
+foreach my $a (@ARGV) {
+    if ($a=~/^--(prefix)=(.*)/) {
         $opts{$1}=$2;
     }
-    elsif($a=~/^(\w+)=(.*)/){
+    elsif ($a=~/^(\w+)=(.*)/) {
         $opts{$1}=$2;
     }
-    elsif($a=~/^--/){
-        if($a=~/^--with-device=(.*)/){
+    elsif ($a=~/^--/) {
+        if ($a=~/^--with-device=(.*)/) {
             $opts{device}=$1;
             push @config_args, $a;
         }
-        elsif($a=~/^--with-pm=(.*)/){
+        elsif ($a=~/^--with-pm=(.*)/) {
             $opts{pm}=$1;
         }
-        elsif($a=~/--disable-(romio|cxx|fortran)/){
+        elsif ($a=~/--disable-(romio|cxx|fortran)/) {
             $opts{"disable_$1"}=1;
             $opts{"enable_$1"}=0;
             push @config_args, $a;
         }
-        elsif($a=~/--enable-fortran=(\w+)/){
+        elsif ($a=~/--enable-fortran=(\w+)/) {
             $opts{disable_fortran}=0;
             $opts{enable_fortran}=$1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-atomic-primitives=(.*)/){
+        elsif ($a=~/--with-atomic-primitives=(.*)/) {
             $opts{openpa_primitives} = $1;
         }
-        elsif($a=~/--enable-strict/){
+        elsif ($a=~/--enable-strict/) {
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
-        elsif($a=~/--enable-izem-queue/){
+        elsif ($a=~/--enable-izem-queue/) {
             $opts{enable_izem}=1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
+        elsif ($a=~/--with-(ucx|libfabric|argobots)=(.*)/) {
             $opts{$1}=$2;
             push @config_args, $a;
         }
-        else{
+        else {
             push @config_args, $a;
         }
     }
-    elsif($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/){
+    elsif ($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/) {
         $opts{do}=$1;
     }
 }
 
-if($opts{CC}){
+if ($opts{CC}) {
     $ENV{CC}=$opts{CC};
 }
-if($opts{CXX}){
+if ($opts{CXX}) {
     $ENV{CXX}=$opts{CXX};
 }
-if($opts{F77}){
+if ($opts{F77}) {
     $ENV{F77}=$opts{F77};
 }
-if($opts{FC}){
+if ($opts{FC}) {
     $ENV{FC}=$opts{FC};
 }
-if($opts{srcdir}){
+if ($opts{srcdir}) {
     $srcdir = $opts{srcdir};
 }
-if($opts{moddir}){
+if ($opts{moddir}) {
     $moddir = $opts{moddir};
 }
-if($opts{prefix}){
+if ($opts{prefix}) {
     $prefix = $opts{prefix};
 }
-if(!$prefix){
+if (!$prefix) {
     $prefix="$pwd/_inst";
     system "mkdir -p $prefix";
 }
 my $mod_tarball;
-if($ENV{MODTARBALL}){
+if ($ENV{MODTARBALL}) {
     $mod_tarball = $ENV{MODTARBALL};
 }
-elsif(-e "modules.tar.gz"){
+elsif (-e "modules.tar.gz") {
     $mod_tarball = "modules.tar.gz";
 }
-elsif(-e "mymake/modules.tar.gz"){
+elsif (-e "mymake/modules.tar.gz") {
     $mod_tarball = "mymake/modules.tar.gz";
 }
-if($ENV{MODDIR}){
+if ($ENV{MODDIR}) {
     $moddir = $ENV{MODDIR};
 }
-elsif(-d "mymake/hwloc"){
+elsif (-d "mymake/hwloc") {
     $moddir = "$pwd/mymake";
 }
-elsif(-e $mod_tarball){
+elsif (-e $mod_tarball) {
     $moddir = "$pwd/mymake";
     my $cmd = "mkdir -p $moddir";
     print "$cmd\n";
@@ -136,28 +135,28 @@ elsif(-e $mod_tarball){
     print "$cmd\n";
     system $cmd;
 }
-else{
+else {
     die "moddir not set\n";
 }
-if(-f "./maint/version.m4"){
+if (-f "./maint/version.m4") {
     $srcdir = ".";
 }
-elsif(-f "../maint/version.m4"){
+elsif (-f "../maint/version.m4") {
     $srcdir = "..";
 }
-elsif(-f "../../maint/version.m4"){
+elsif (-f "../../maint/version.m4") {
     $srcdir = "../..";
 }
-elsif(-f "../../../maint/version.m4"){
+elsif (-f "../../../maint/version.m4") {
     $srcdir = "../../..";
 }
-if(!$srcdir){
+if (!$srcdir) {
     die "srcdir not set\n";
 }
 my (@classnames, %generics);
 open In, "src/mpi/errhan/baseerrnames.txt" or die "Can't open src/mpi/errhan/baseerrnames.txt: $!\n";
 while(<In>){
-    if(/^(MPI\S+)\s*(\d+)\s*(.*)/){
+    if (/^(MPI\S+)\s*(\d+)\s*(.*)/) {
         my ($class, $id, $name) = ($1, $2, $3);
         $name=~s/#.*$//;
         $classnames[$id]=$name;
@@ -172,12 +171,12 @@ while(<In>){
     push @files, $_;
 }
 close In;
-foreach my $f (@files){
+foreach my $f (@files) {
     open In, "$f" or die "Can't open $f: $!\n";
     while(<In>){
-        if(/^(\*\*[^:]+):(.*)/){
+        if (/^(\*\*[^:]+):(.*)/) {
             my ($name, $repl) = ($1, $2);
-            while($repl=~/\s*\\\s*$/){
+            while ($repl=~/\s*\\\s*$/) {
                 $repl=$`;
                 $_=<In>;
                 chomp;
@@ -242,7 +241,7 @@ my %KnownErrRoutines = (
     'MPIR_ERRTEST_VALID_HANDLE' => '4:-1:0:1:3',
 );
 my @files;
-foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
+foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)) {
     open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |: $!\n";
     while(<In>){
         chomp;
@@ -250,27 +249,27 @@ foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)){
     }
     close In;
 }
-foreach my $f (@files){
+foreach my $f (@files) {
     open In, "$f" or die "Can't open $f: $!\n";
     while(<In>){
-        if(/\/\*\s+--BEGIN ERROR MACROS--/){
+        if (/\/\*\s+--BEGIN ERROR MACROS--/) {
             while(<In>){
-                if(/--END ERROR MACROS--/){
+                if (/--END ERROR MACROS--/) {
                     last;
                 }
             }
             next;
         }
-        if(/int\s+MPI[OUR]_Err_create_code/){
+        if (/int\s+MPI[OUR]_Err_create_code/) {
             next;
         }
-        if(/(MPI[OUR]_E\w+)\s*(\(.*)$/){
+        if (/(MPI[OUR]_E\w+)\s*(\(.*)$/) {
             my ($name, $args) = ($1, $2);
-            if(!$KnownErrRoutines{$name}){
+            if (!$KnownErrRoutines{$name}) {
                 next;
             }
             while(1){
-                if($args=~/^(\((?:[^()]++|(?-1))*+\))/){
+                if ($args=~/^(\((?:[^()]++|(?-1))*+\))/) {
                     $args=substr($1, 1, -1);
                     last;
                 }
@@ -282,10 +281,10 @@ foreach my $f (@files){
             my @arglist=arg_split($args);
             my $pat=$KnownErrRoutines{$name};
             my @idx=split /:/, $pat;
-            if($arglist[$idx[0]]=~/"(\*\*.*)"/){
+            if ($arglist[$idx[0]]=~/"(\*\*.*)"/) {
                 $generics{$1}++;
             }
-            if($arglist[$idx[0]+1]=~/"(\*\*.*)"/){
+            if ($arglist[$idx[0]+1]=~/"(\*\*.*)"/) {
                 $specifics{$1}++;
             }
         }
@@ -317,7 +316,7 @@ my $n = @classnames;
 print Out "#define MPIR_MAX_ERROR_CLASS_INDEX $n\n";
 print Out "static const char *classToMsg[] = {\n";
 my $i = -1;
-foreach my $name (@classnames){
+foreach my $name (@classnames) {
     $i++;
     print Out "    \"$errnames{$name}\", /* $i $name */\n";
 }
@@ -333,13 +332,13 @@ print Out "*/\n";
 my $n = @sorted_generics;
 print Out "static const int generic_msgs_len = $n;\n";
 my $_i = -1;
-foreach my $name (@sorted_generics){
+foreach my $name (@sorted_generics) {
     $_i++;
-    if(defined $errnames{$name}){
+    if (defined $errnames{$name}) {
         print Out "static const char short_gen$_i\[\] = \"$name\";\n";
         print Out "static const char long_gen$_i\[\] = \"$errnames{$name}\";\n";
     }
-    else{
+    else {
         warn "missing: $name\n";
         print Out "static const char short_gen$_i\[\] = \"$name\";\n";
         print Out "static const char long_gen$_i\[\]  = \"$name (missing description)\";\n";
@@ -349,7 +348,7 @@ foreach my $name (@sorted_generics){
 print Out "static const msgpair generic_err_msgs[] = {\n";
 for (my $i = 0; $i<$n; $i++) {
     my $sep=",";
-    if($i==$n-1){
+    if ($i==$n-1) {
         $sep="";
     }
     print Out "  { 0xacebad03, short_gen$i, long_gen$i, 0xcb0bfa11 }$sep\n";
@@ -361,13 +360,13 @@ print Out "#if MPICH_ERROR_MSG_LEVEL > MPICH_ERROR_MSG__GENERIC\n";
 my $n = @sorted_specifics;
 print Out "static const int specific_msgs_len = $n;\n";
 my $_i = -1;
-foreach my $name (@sorted_specifics){
+foreach my $name (@sorted_specifics) {
     $_i++;
-    if(defined $errnames{$name}){
+    if (defined $errnames{$name}) {
         print Out "static const char short_spc$_i\[\] = \"$name\";\n";
         print Out "static const char long_spc$_i\[\] = \"$errnames{$name}\";\n";
     }
-    else{
+    else {
         warn "missing: $name\n";
         print Out "static const char short_spc$_i\[\] = \"$name\";\n";
         print Out "static const char long_spc$_i\[\]  = \"$name (missing description)\";\n";
@@ -377,7 +376,7 @@ foreach my $name (@sorted_specifics){
 print Out "static const msgpair specific_err_msgs[] = {\n";
 for (my $i = 0; $i<$n; $i++) {
     my $sep=",";
-    if($i==$n-1){
+    if ($i==$n-1) {
         $sep="";
     }
     print Out "  { 0xacebad03, short_spc$i, long_spc$i, 0xcb0bfa11 }$sep\n";
@@ -387,7 +386,7 @@ print Out "#endif\n\n";
 
 print Out "#if MPICH_ERROR_MSG_LEVEL > MPICH_ERROR_MSG__CLASS\n";
 my $i = -1;
-foreach my $name (@sorted_generics){
+foreach my $name (@sorted_generics) {
     $i++;
     $generic_index{$name}=$i;
 }
@@ -395,13 +394,13 @@ my $n = @classnames;
 print Out "#define MPIR_MAX_ERROR_CLASS_INDEX $n\n";
 print Out "static int class_to_index[] = {\n";
 my $i = -1;
-foreach my $name (@classnames){
+foreach my $name (@classnames) {
     $i++;
     print Out "$generic_index{$name}";
-    if($i<$n-1){
+    if ($i<$n-1) {
         print Out ",";
     }
-    if($i % 10 == 9){
+    if ($i % 10 == 9) {
         print Out "\n";
     }
 }
@@ -413,15 +412,15 @@ close Out;
 sub arg_split {
     my ($t) = @_;
     my @strs;
-    while($t=~/(.*)("(?:[^\\]|\\")*")(.*)/){
+    while ($t=~/(.*)("(?:[^\\]|\\")*")(.*)/) {
         my $i=@strs;
         push @strs, $2;
         $t=$1."str:$i".$3;
     }
     $t=~s/(\((?:[^()]++|(?-1))*+\))/--/g;
     my @t = split /\s*,\s*/, $t;
-    foreach my $t (@t){
-        if($t =~/^str:(\d+)/){
+    foreach my $t (@t) {
+        if ($t =~/^str:(\d+)/) {
             $t=$strs[$1];
         }
     }

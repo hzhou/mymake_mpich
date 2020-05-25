@@ -116,26 +116,29 @@ sub add_trace {
     my $change_count = 0;
     foreach my $f (@files) {
         my (@lines, $count);
-        my ($got_function, $stage, $last_line);
+        my ($got_function, $stage, $last_line, $ret_type);
         open In, "$f" or die "Can't open $f: $!\n";
         while(<In>){
-            if (/^[^#\s{]/) {
-                undef $got_function;
-                undef $stage;
+            if (/^([^#\s].*)\s+(\w+)\s*\(.*\)\s*$/) {
+                ($ret_type, $got_function) = ($1, $2);
+                goto next_line;
             }
-
-            if (/^[^#\s].*\s+(\w+)\s*\(.*\)\s*$/) {
-                $got_function = $1;
+            elsif (/^([^#\s].*)\s+(\w+)\s*\(.*$/) {
+                ($ret_type, $got_function) = ($1, $2);
+                goto next_line;
             }
-            elsif (/^[^#\s].*\s+(\w+)\s*\(.*$/) {
-                $got_function = $1;
-            }
-
-            if (/^{/ && $got_function && filter_func($got_function)) {
+            elsif (/^{/ && $got_function && filter_func($got_function)) {
                 my $l = ["{\n"];
                 log_enter($got_function, $l);
                 push @lines, $l;
                 $stage = 1;
+                $count++;
+                goto skip_line;
+            }
+            elsif (/^}/ and $stage && $ret_type=~/void/ and $last_line !~/return/) {
+                my $l = [];
+                log_exit($got_function, $l, "    ", undef, 0);
+                push @lines, $l;
                 $count++;
             }
             elsif (/^(\s+)return.*;$/ && $stage) {
@@ -148,11 +151,17 @@ sub add_trace {
                 log_exit($got_function, $l, $sp, $_, $add_brace);
                 push @lines, $l;
                 $count += @$l -1;
-            }
-            else {
-                push @lines, $_;
+                goto skip_line;
             }
 
+            if (/^[^#\s]/) {
+                undef $got_function;
+                undef $stage;
+            }
+
+            next_line:
+            push @lines, $_;
+            skip_line:
             $last_line = $_;
         }
         close In;

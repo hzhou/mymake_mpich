@@ -3,11 +3,10 @@ use strict;
 
 my $pwd=`pwd`;
 chomp $pwd;
-
 my $pwd = `pwd`;
 chomp $pwd;
 
-if(!-f "$pwd/maint/extractcvars.in"){
+if (!-f "$pwd/maint/extractcvars.in") {
     die "File not found: $pwd/maint/extractcvars.in\n";
 }
 
@@ -26,7 +25,7 @@ print "  --> [mymake/extractcvars.pl]\n";
 open In, "maint/extractcvars.in" or die "Can't open maint/extractcvars.in: $!\n";
 while(<In>){
     s/\@abs_srcdir\@/$pwd\/maint/g;
-    print Out "$_\n";
+    print Out "$_";
 }
 close In;
 close Out;

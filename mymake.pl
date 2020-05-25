@@ -21,17 +21,16 @@ our %make_vars;
 
 my $pwd=`pwd`;
 chomp $pwd;
-
 my $mymake;
-if($0=~/^(\/.*)\//){
+if ($0=~/^(\/.*)\//) {
     $mymake = $1;
 }
-elsif($0=~/^(.*)\//){
+elsif ($0=~/^(.*)\//) {
     $mymake .= "$pwd/$1";
 }
 $mymake .="/mymake";
 
-if(-d "pm"){
+if (-d "pm") {
     system "perl $mymake\_hydra.pl @ARGV";
     exit(0);
 }
@@ -39,12 +38,12 @@ if(-d "pm"){
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
-if(@ARGV == 1 && $ARGV[0] eq "V=1"){
+if (@ARGV == 1 && $ARGV[0] eq "V=1") {
     $opts{V} = 1;
     @ARGV=();
 }
 my $need_save_args;
-if(!@ARGV && -f "mymake/args"){
+if (!@ARGV && -f "mymake/args") {
     my $t;
     {
         open In, "mymake/args" or die "Can't open mymake/args.\n";
@@ -56,100 +55,100 @@ if(!@ARGV && -f "mymake/args"){
     @ARGV = split /\s+/, $t;
     print "loading last ARGV: @ARGV\n";
 }
-elsif(@ARGV){
+elsif (@ARGV) {
     $need_save_args = 1;
 }
-foreach my $a (@ARGV){
-    if($a=~/^--(prefix)=(.*)/){
+foreach my $a (@ARGV) {
+    if ($a=~/^--(prefix)=(.*)/) {
         $opts{$1}=$2;
     }
-    elsif($a=~/^(\w+)=(.*)/){
+    elsif ($a=~/^(\w+)=(.*)/) {
         $opts{$1}=$2;
     }
-    elsif($a=~/^--/){
-        if($a=~/^--with-device=(.*)/){
+    elsif ($a=~/^--/) {
+        if ($a=~/^--with-device=(.*)/) {
             $opts{device}=$1;
             push @config_args, $a;
         }
-        elsif($a=~/^--with-pm=(.*)/){
+        elsif ($a=~/^--with-pm=(.*)/) {
             $opts{pm}=$1;
         }
-        elsif($a=~/--disable-(romio|cxx|fortran)/){
+        elsif ($a=~/--disable-(romio|cxx|fortran)/) {
             $opts{"disable_$1"}=1;
             $opts{"enable_$1"}=0;
             push @config_args, $a;
         }
-        elsif($a=~/--enable-fortran=(\w+)/){
+        elsif ($a=~/--enable-fortran=(\w+)/) {
             $opts{disable_fortran}=0;
             $opts{enable_fortran}=$1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-atomic-primitives=(.*)/){
+        elsif ($a=~/--with-atomic-primitives=(.*)/) {
             $opts{openpa_primitives} = $1;
         }
-        elsif($a=~/--enable-strict/){
+        elsif ($a=~/--enable-strict/) {
             $opts{enable_strict} = 1;
             push @config_args, $a;
         }
-        elsif($a=~/--enable-izem-queue/){
+        elsif ($a=~/--enable-izem-queue/) {
             $opts{enable_izem}=1;
             push @config_args, $a;
         }
-        elsif($a=~/--with-(ucx|libfabric|argobots)=(.*)/){
+        elsif ($a=~/--with-(ucx|libfabric|argobots)=(.*)/) {
             $opts{$1}=$2;
             push @config_args, $a;
         }
-        else{
+        else {
             push @config_args, $a;
         }
     }
-    elsif($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/){
+    elsif ($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/) {
         $opts{do}=$1;
     }
 }
 
-if($opts{CC}){
+if ($opts{CC}) {
     $ENV{CC}=$opts{CC};
 }
-if($opts{CXX}){
+if ($opts{CXX}) {
     $ENV{CXX}=$opts{CXX};
 }
-if($opts{F77}){
+if ($opts{F77}) {
     $ENV{F77}=$opts{F77};
 }
-if($opts{FC}){
+if ($opts{FC}) {
     $ENV{FC}=$opts{FC};
 }
-if($opts{srcdir}){
+if ($opts{srcdir}) {
     $srcdir = $opts{srcdir};
 }
-if($opts{moddir}){
+if ($opts{moddir}) {
     $moddir = $opts{moddir};
 }
-if($opts{prefix}){
+if ($opts{prefix}) {
     $prefix = $opts{prefix};
 }
-if(!$prefix){
+if (!$prefix) {
     $prefix="$pwd/_inst";
     system "mkdir -p $prefix";
 }
 my $mod_tarball;
-if($ENV{MODTARBALL}){
+if ($ENV{MODTARBALL}) {
     $mod_tarball = $ENV{MODTARBALL};
 }
-elsif(-e "modules.tar.gz"){
+elsif (-e "modules.tar.gz") {
     $mod_tarball = "modules.tar.gz";
 }
-elsif(-e "mymake/modules.tar.gz"){
+elsif (-e "mymake/modules.tar.gz") {
     $mod_tarball = "mymake/modules.tar.gz";
 }
-if($ENV{MODDIR}){
+if ($ENV{MODDIR}) {
     $moddir = $ENV{MODDIR};
 }
-elsif(-d "mymake/hwloc"){
+elsif (-d "mymake/hwloc") {
     $moddir = "$pwd/mymake";
 }
-elsif(-e $mod_tarball){
+elsif (-e $mod_tarball) {
     $moddir = "$pwd/mymake";
     my $cmd = "mkdir -p $moddir";
     print "$cmd\n";
@@ -158,42 +157,41 @@ elsif(-e $mod_tarball){
     print "$cmd\n";
     system $cmd;
 }
-else{
+else {
     die "moddir not set\n";
 }
-if(-f "./maint/version.m4"){
+if (-f "./maint/version.m4") {
     $srcdir = ".";
 }
-elsif(-f "../maint/version.m4"){
+elsif (-f "../maint/version.m4") {
     $srcdir = "..";
 }
-elsif(-f "../../maint/version.m4"){
+elsif (-f "../../maint/version.m4") {
     $srcdir = "../..";
 }
-elsif(-f "../../../maint/version.m4"){
+elsif (-f "../../../maint/version.m4") {
     $srcdir = "../../..";
 }
-if(!$srcdir){
+if (!$srcdir) {
     die "srcdir not set\n";
 }
 
-if($opts{do}){
+if ($opts{do}) {
     system "perl $mymake\_$opts{do}.pl";
     exit(0);
 }
-if($srcdir ne "."){
+if ($srcdir ne ".") {
     chdir $srcdir or die "can't chdir $srcdir\n";
 }
-if(!-d "mymake"){
+if (!-d "mymake") {
     mkdir "mymake" or die "can't mkdir mymake\n";
 }
 my $cvars_c = "src/util/mpir_cvars.c";
-if(-f "src/util/cvar/Makefile.mk"){
+if (-f "src/util/cvar/Makefile.mk") {
     $cvars_c = "src/util/cvar/mpir_cvars.c";
 }
-if(!-f $cvars_c){
+if (!-f $cvars_c) {
     system "touch $cvars_c";
-
 }
 push @extra_make_rules, "DO_stage = perl $mymake\_stage.pl";
 push @extra_make_rules, "DO_clean = perl $mymake\_clean.pl";
@@ -215,7 +213,7 @@ push @extra_make_rules, "errmsg:";
 push @extra_make_rules, "\t\x24(DO_errmsg)";
 push @extra_make_rules, "";
 
-if($need_save_args){
+if ($need_save_args) {
     my $t = join(' ', @ARGV);
     open Out, ">mymake/args" or die "Can't write mymake/args: $!\n";
     print Out $t, "\n";
@@ -226,13 +224,13 @@ if($need_save_args){
 print "srcdir: $srcdir\n";
 print "moddir: $moddir\n";
 print "prefix: $prefix\n";
-if($opts{device}){
+if ($opts{device}) {
     print "device: $opts{device}\n";
 }
 
-if($opts{pm} eq "gforker"){
+if ($opts{pm} eq "gforker") {
     push @extra_make_rules,  "libmpiexec_la_OBJECTS = \\";
-    foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface)){
+    foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface)) {
         push @extra_make_rules,  "    src/pm/util/$a.lo \\";
     }
     push @extra_make_rules,  "    src/pm/util/simple_pmiutil2.lo";
@@ -260,9 +258,9 @@ if($opts{pm} eq "gforker"){
     push @extra_INCLUDES, "-Isrc/pm/util";
     push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE_SIGACTION";
 }
-elsif($opts{pm} eq "remshell"){
+elsif ($opts{pm} eq "remshell") {
     push @extra_make_rules,  "libmpiexec_la_OBJECTS = \\";
-    foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface)){
+    foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface)) {
         push @extra_make_rules,  "    src/pm/util/$a.lo \\";
     }
     push @extra_make_rules,  "    src/pm/util/simple_pmiutil2.lo";
@@ -290,7 +288,7 @@ elsif($opts{pm} eq "remshell"){
     push @extra_INCLUDES, "-Isrc/pm/util";
     push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE_SIGACTION";
 }
-else{
+else {
     my $mkfile="src/pm/hydra/Makefile";
     my $add="$moddir/mpl/libmpl.la $moddir/hwloc/hwloc/libhwloc_embedded.la";
     push @extra_make_rules, ".PHONY: hydra hydra-install";
@@ -302,12 +300,12 @@ else{
     push @extra_make_rules, "";
     push @extra_make_rules, "$mkfile:";
     my $config_args = "--prefix=\x24(PREFIX)";
-    if($opts{argobots}){
+    if ($opts{argobots}) {
         $config_args .= " --with-argobots=$opts{argobots}";
     }
     push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
     push @extra_make_rules, "";
-    if($opts{pm} eq "hydra2"){
+    if ($opts{pm} eq "hydra2") {
         my $mkfile="src/pm/hydra2/Makefile";
         my $add="$moddir/mpl/libmpl.la $moddir/hwloc/hwloc/libhwloc_embedded.la";
         push @extra_make_rules, ".PHONY: hydra2 hydra2-install";
@@ -319,7 +317,7 @@ else{
         push @extra_make_rules, "";
         push @extra_make_rules, "$mkfile:";
         my $config_args = "--prefix=\x24(PREFIX)";
-        if($opts{argobots}){
+        if ($opts{argobots}) {
             $config_args .= " --with-argobots=$opts{argobots}";
         }
         $config_args .= " --with-pm=hydra2";
@@ -327,8 +325,8 @@ else{
         push @extra_make_rules, "";
     }
 }
-if($opts{enable_izem}){
-    if(!-d "$moddir/izem"){
+if ($opts{enable_izem}) {
+    if (!-d "$moddir/izem") {
         my $cmd = "cp -r src/izem $moddir/izem";
         print "$cmd\n";
         system $cmd;
@@ -350,7 +348,7 @@ if($opts{enable_izem}){
     push @extra_make_rules, "";
 }
 
-if(!-d "$moddir/mpl"){
+if (!-d "$moddir/mpl") {
     my $cmd = "cp -r src/mpl $moddir/mpl";
     print "$cmd\n";
     system $cmd;
@@ -358,7 +356,7 @@ if(!-d "$moddir/mpl"){
     print "$cmd\n";
     system $cmd;
 }
-if(!-d "$moddir/openpa"){
+if (!-d "$moddir/openpa") {
     my $cmd = "cp -r src/openpa $moddir/openpa";
     print "$cmd\n";
     system $cmd;
@@ -367,9 +365,9 @@ if(!-d "$moddir/openpa"){
     system $cmd;
 }
 
-if(!$opts{disable_cxx}){
+if (!$opts{disable_cxx}) {
     $opts{enable_cxx}=1;
-    if(!-f "configure"){
+    if (!-f "configure") {
         print ": buildiface - cxx\n";
         chdir "src/binding/cxx";
         system "perl buildiface -nosep -initfile=./cxx.vlist";
@@ -377,18 +375,18 @@ if(!$opts{disable_cxx}){
     }
     $dst_hash{"src/binding/cxx/mpicxx.h"}="$prefix/include";
 }
-else{
+else {
     system "touch src/binding/cxx/mpicxx.h.in";
 }
 
-if(!$opts{disable_fortran}){
-    if(!-f "configure"){
+if (!$opts{disable_fortran}) {
+    if (!-f "configure") {
         print ": buildiface - mpif_h\n";
         chdir "src/binding/fortran/mpif_h";
         system "perl buildiface >/dev/null";
         chdir $pwd;
     }
-    if(!-f "configure"){
+    if (!-f "configure") {
         print ": buildiface - use_mpi\n";
         chdir "src/binding/fortran/use_mpi";
         system "perl buildiface >/dev/null";
@@ -402,7 +400,7 @@ if(!$opts{disable_fortran}){
     push @extra_make_rules, "src/binding/fortran/use_mpi/mpifnoext.h: src/binding/fortran/mpif_h/mpif.h";
     push @extra_make_rules, "\tsed -e 's/^C/!/g' -e '/EXTERNAL/d' -e '/MPI_WTICK/d' \$< > \$@";
     push @extra_make_rules, "";
-    if(!-f "configure"){
+    if (!-f "configure") {
         print ": buildiface - use_mpi_f08\n";
         chdir "src/binding/fortran/use_mpi_f08";
         system "perl buildiface >/dev/null";
@@ -428,7 +426,7 @@ if(!$opts{disable_fortran}){
 
     $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$prefix/include";
 }
-else{
+else {
     system "touch src/binding/fortran/mpif_h/Makefile.mk";
     system "touch src/binding/fortran/use_mpi/Makefile.mk";
     system "touch src/binding/fortran/use_mpi_f08/Makefile.mk";
@@ -439,21 +437,19 @@ else{
     system "touch src/binding/fortran/use_mpi/mpi_base.f90.in";
     system "touch src/binding/fortran/use_mpi/mpi_constants.f90.in";
     system "touch src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.f90.in";
-
     system "touch src/binding/fortran/use_mpi_f08/mpi_c_interface_types.f90.in";
-
 }
 my $t = `uname -m`;
-if($t=~/x86_64/){
+if ($t=~/x86_64/) {
     $ENV{FORTRAN_MPI_OFFSET}="integer*8";
 }
-if(!-f "subsys_include.m4"){
+if (!-f "subsys_include.m4") {
     print "---------------------------\n";
     print "-     maint/gen_subcfg_m4\n";
     print "---------------------------\n";
     system "perl maint/gen_subcfg_m4";
 }
-if(!-f "configure"){
+if (!-f "configure") {
     system "rm -f mymake/Makefile.orig";
     print "---------------------------\n";
     print "-     Autoconf MPICH\n";
@@ -475,26 +471,26 @@ if(!-f "configure"){
     my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
-    foreach my $l (@lines){
-        if($l=~/AC_CONFIG_SUBDIRS/){
+    foreach my $l (@lines) {
+        if ($l=~/AC_CONFIG_SUBDIRS/) {
             next;
         }
-        elsif($l=~/^\s*HWLOC_/){
+        elsif ($l=~/^\s*HWLOC_/) {
             next;
         }
-        elsif($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/){
+        elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
             $l = "$1: \x23 $2\n";
         }
-        elsif($l=~/^(\s*PAC_SUBDIR_MPL)/){
+        elsif ($l=~/^(\s*PAC_SUBDIR_MPL)/) {
             $l = "$1([$moddir/mpl])";
         }
-        elsif($l=~/^(\s*PAC_SUBDIR_OPA)/){
+        elsif ($l=~/^(\s*PAC_SUBDIR_OPA)/) {
             $l = "$1([$moddir/openpa])";
         }
-        elsif($l=~/^(\s*PAC_SUBDIR_HWLOC)/){
+        elsif ($l=~/^(\s*PAC_SUBDIR_HWLOC)/) {
             $l = "$1([$moddir/hwloc])";
         }
-        if($flag_skip){
+        if ($flag_skip) {
             next;
         }
         print Out $l;
@@ -517,11 +513,11 @@ if(!-f "configure"){
     my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
-    foreach my $l (@lines){
-        if($l=~/ACLOCAL_AMFLAGS/){
+    foreach my $l (@lines) {
+        if ($l=~/ACLOCAL_AMFLAGS/) {
             $l ="ACLOCAL_AMFLAGS = -I confdb\n";
         }
-        if($flag_skip){
+        if ($flag_skip) {
             next;
         }
         print Out $l;
@@ -545,24 +541,24 @@ if(!-f "configure"){
     my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
-    foreach my $l (@lines){
-        if($l=~/AC_MSG_CHECKING.*OpenPA/){
+    foreach my $l (@lines) {
+        if ($l=~/AC_MSG_CHECKING.*OpenPA/) {
             $flag=1;
         }
-        elsif($flag and $l=~/AC_C_BIGENDIAN/){
+        elsif ($flag and $l=~/AC_C_BIGENDIAN/) {
             $flag=0;
         }
-        elsif($flag){
+        elsif ($flag) {
             next;
         }
-        if($flag_skip){
+        if ($flag_skip) {
             next;
         }
         print Out $l;
     }
     close Out;
     system "cp -v $m[2] $m[0]";
-    if($opts{device}=~/ucx/){
+    if ($opts{device}=~/ucx/) {
         my $flag;
         my $f = "src/mpid/ch4/netmod/ucx/subconfigure.m4";
         my $f_ = $f;
@@ -580,23 +576,23 @@ if(!-f "configure"){
         my $flag_skip=0;
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
-        foreach my $l (@lines){
-            if($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_UCX\]/){
+        foreach my $l (@lines) {
+            if ($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_UCX\]/) {
                 $flag = 1;
                 next;
             }
-            elsif($flag){
-                if($l=~/^\]\)/){
+            elsif ($flag) {
+                if ($l=~/^\]\)/) {
                     $flag = 0;
                     next;
                 }
-                elsif($l=~/AC_DEFINE\(HAVE_UCP_\w+_NB,1/){
+                elsif ($l=~/AC_DEFINE\(HAVE_UCP_\w+_NB,1/) {
                 }
-                else{
+                else {
                     next;
                 }
             }
-            if($flag_skip){
+            if ($flag_skip) {
                 next;
             }
             print Out $l;
@@ -604,7 +600,7 @@ if(!-f "configure"){
         close Out;
         system "cp -v $m[2] $m[0]";
     }
-    if($opts{device}=~/ofi/){
+    if ($opts{device}=~/ofi/) {
         my $flag;
         my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
         my $f_ = $f;
@@ -622,27 +618,27 @@ if(!-f "configure"){
         my $flag_skip=0;
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
-        foreach my $l (@lines){
-            if($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_OFI\]/){
+        foreach my $l (@lines) {
+            if ($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_OFI\]/) {
                 $flag = 1;
                 next;
             }
-            elsif($flag){
-                if($l=~/^\]\).*AM_COND_IF\(BUILD_CH4_NETMOD_OFI/){
+            elsif ($flag) {
+                if ($l=~/^\]\).*AM_COND_IF\(BUILD_CH4_NETMOD_OFI/) {
                     $flag = 0;
                     print Out "    AC_DEFINE([MPIDI_CH4_OFI_USE_SET_RUNTIME], [1], [Define to use runtime capability set])\n";
                     next;
                 }
-                elsif($l=~/AC_ARG_ENABLE/){
+                elsif ($l=~/AC_ARG_ENABLE/) {
                     $flag=2;
                 }
-                elsif($flag==2){
+                elsif ($flag==2) {
                 }
-                else{
+                else {
                     next;
                 }
             }
-            if($flag_skip){
+            if ($flag_skip) {
                 next;
             }
             print Out $l;
@@ -651,11 +647,11 @@ if(!-f "configure"){
         system "cp -v $m[2] $m[0]";
     }
     system "autoreconf -ivf";
-    foreach my $m (@mod_list){
+    foreach my $m (@mod_list) {
         system "cp $m->[1] $m->[0]";
     }
 }
-if(!-f "mymake/Makefile.orig"){
+if (!-f "mymake/Makefile.orig") {
     print "---------------------------\n";
     print "-     Configure MPICH\n";
     print "---------------------------\n";
@@ -680,33 +676,33 @@ if(!-f "mymake/Makefile.orig"){
     my $flag_skip=0;
     open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
-    foreach my $l (@lines){
-        if($l=~/^AR_FLAGS=/){
+    foreach my $l (@lines) {
+        if ($l=~/^AR_FLAGS=/) {
             $l = "AR_FLAGS=\"cr\"\n";
         }
-        elsif($l=~/^CC="(.*)"/){
+        elsif ($l=~/^CC="(.*)"/) {
             my ($CC) = ($1);
-            if($CC =~ /^sun(f77|f9.|fortran)/){
+            if ($CC =~ /^sun(f77|f9.|fortran)/) {
                 $need_patch{pic_flag}=" -KPIC";
                 $need_patch{wl}="-Qoption ld ";
                 $need_patch{link_static_flag}=" -Bstatic";
                 $need_patch{shared}="-G";
             }
-            else{
+            else {
                 %need_patch=();
             }
         }
-        elsif($l=~/^(pic_flag|wl|link_static_flag)=/){
-            if($need_patch{$1}){
+        elsif ($l=~/^(pic_flag|wl|link_static_flag)=/) {
+            if ($need_patch{$1}) {
                 $l = "$1='$need_patch{$1}'\n";
             }
         }
-        elsif($l=~/^(archive_cmds=|\s*\\\$CC\s+-shared )/){
-            if($need_patch{shared}){
+        elsif ($l=~/^(archive_cmds=|\s*\\\$CC\s+-shared )/) {
+            if ($need_patch{shared}) {
                 $l=~s/-shared /$need_patch{shared} /;
             }
         }
-        if($flag_skip){
+        if ($flag_skip) {
             next;
         }
         print Out $l;
@@ -718,28 +714,28 @@ if(!-f "mymake/Makefile.orig"){
 
 open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
 while(<In>){
-    if(/^#define\s+HAVE_.*WEAK.* 1/){
+    if (/^#define\s+HAVE_.*WEAK.* 1/) {
         $opts{have_weak}=1;
     }
 }
 close In;
 open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
 while(<In>){
-    if(/libmpi_so_version_m4.*\[([\d:]*)\]/){
+    if (/libmpi_so_version_m4.*\[([\d:]*)\]/) {
         $opts{so_version}=$1;
     }
 }
 close In;
 open In, "config.status" or die "Can't open config.status: $!\n";
 while(<In>){
-    if(/S\["WRAPPER_LIBS"\]="(.*)"/){
+    if (/S\["WRAPPER_LIBS"\]="(.*)"/) {
         $opts{WRAPPER_LIBS}=$1;
     }
 }
 close In;
 open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
 while(<In>){
-    if(/^CFLAGS *= *(.*)/){
+    if (/^CFLAGS *= *(.*)/) {
         $opts{CFLAGS}=$1;
         open Out, ">mymake/CFLAGS" or die "Can't write mymake/CFLAGS: $!\n";
         print "  --> [mymake/CFLAGS]\n";
@@ -749,12 +745,12 @@ while(<In>){
 }
 close In;
 
-if(!$opts{have_weak}){
+if (!$opts{have_weak}) {
     $special_targets{lib_libmpi_la}="\x24(LTCC) -DMPICH_MPI_FROM_PMPI";
 }
 
 my $bin="\x24(PREFIX)/bin";
-if(-f "src/env/mpicc.bash"){
+if (-f "src/env/mpicc.bash") {
     my @lines;
     {
         open In, "src/env/mpicc.bash" or die "Can't open src/env/mpicc.bash.\n";
@@ -763,14 +759,14 @@ if(-f "src/env/mpicc.bash"){
     }
     my %tmp=(PREFIX=>$prefix, EXEC_PREFIX=>"$prefix/bin", SYSCONFDIR=>"$prefix/etc", INCLUDEDIR=>"$prefix/include", LIBDIR=>"$prefix/lib");
     open Out, ">mymake/mpicc" or die "Can't write mymake/mpicc: $!\n";
-    foreach my $l (@lines){
+    foreach my $l (@lines) {
         $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         print Out $l;
     }
     close Out;
     $dst_hash{"mymake/mpicc"}=$bin;
 }
-if(-f "src/env/mpicxx.bash"){
+if (-f "src/env/mpicxx.bash") {
     my @lines;
     {
         open In, "src/env/mpicxx.bash" or die "Can't open src/env/mpicxx.bash.\n";
@@ -779,14 +775,14 @@ if(-f "src/env/mpicxx.bash"){
     }
     my %tmp=(PREFIX=>$prefix, EXEC_PREFIX=>"$prefix/bin", SYSCONFDIR=>"$prefix/etc", INCLUDEDIR=>"$prefix/include", LIBDIR=>"$prefix/lib");
     open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx: $!\n";
-    foreach my $l (@lines){
+    foreach my $l (@lines) {
         $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         print Out $l;
     }
     close Out;
     $dst_hash{"mymake/mpicxx"}=$bin;
 }
-if(-f "src/env/mpif77.bash"){
+if (-f "src/env/mpif77.bash") {
     my @lines;
     {
         open In, "src/env/mpif77.bash" or die "Can't open src/env/mpif77.bash.\n";
@@ -795,14 +791,14 @@ if(-f "src/env/mpif77.bash"){
     }
     my %tmp=(PREFIX=>$prefix, EXEC_PREFIX=>"$prefix/bin", SYSCONFDIR=>"$prefix/etc", INCLUDEDIR=>"$prefix/include", LIBDIR=>"$prefix/lib");
     open Out, ">mymake/mpif77" or die "Can't write mymake/mpif77: $!\n";
-    foreach my $l (@lines){
+    foreach my $l (@lines) {
         $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         print Out $l;
     }
     close Out;
     $dst_hash{"mymake/mpif77"}=$bin;
 }
-if(-f "src/env/mpifort.bash"){
+if (-f "src/env/mpifort.bash") {
     my @lines;
     {
         open In, "src/env/mpifort.bash" or die "Can't open src/env/mpifort.bash.\n";
@@ -811,7 +807,7 @@ if(-f "src/env/mpifort.bash"){
     }
     my %tmp=(PREFIX=>$prefix, EXEC_PREFIX=>"$prefix/bin", SYSCONFDIR=>"$prefix/etc", INCLUDEDIR=>"$prefix/include", LIBDIR=>"$prefix/lib");
     open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
-    foreach my $l (@lines){
+    foreach my $l (@lines) {
         $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         print Out $l;
     }
@@ -824,6 +820,56 @@ $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
 push @extra_make_rules, "examples/cpi: lib/libmpi.la";
 push @extra_make_rules, "\t\x24(CC) -o examples/cpi examples/cpi.c lib/.libs/libmpi.a $opts{WRAPPER_LIBS}";
 push @extra_make_rules, "";
+if ($opts{device} =~/ch4/) {
+    push @extra_make_rules, "send_OBJECTS = \\";
+    foreach my $a ("send", "isend", "rsend", "irsend", "ssend", "issend", "send_init", "rsend_init", "ssend_init", "bsend_init", "sendrecv", "sendrecv_rep", "bsendutil") {
+        push @extra_make_rules, "    src/mpi/pt2pt/$a.lo \\";
+    }
+    foreach my $a ("coll/helper_fn", "request/cancel", "init/init_async") {
+        push @extra_make_rules, "    src/mpi/$a.lo \\";
+    }
+    $extra_make_rules[-1] =~s/\s\\$//;
+    push @extra_make_rules, "";
+
+    my $dep = "src/mpid/ch4/src/ch4_send.h";
+    if ($opts{device}=~/ofi/) {
+        $dep .= " src/mpid/ch4/netmod/ofi/ofi_send.h";
+    }
+    push @extra_make_rules, "\x24(send_OBJECTS): $dep";
+    push @extra_make_rules, "";
+    push @extra_make_rules, "recv_OBJECTS = \\";
+    foreach my $a ("recv", "irecv", "mrecv", "imrecv", "recv_init", "sendrecv", "sendrecv_rep") {
+        push @extra_make_rules, "    src/mpi/pt2pt/$a.lo \\";
+    }
+    foreach my $a ("coll/helper_fn", "request/cancel", "request/mpir_request", "init/init_async") {
+        push @extra_make_rules, "    src/mpi/$a.lo \\";
+    }
+    $extra_make_rules[-1] =~s/\s\\$//;
+    push @extra_make_rules, "";
+
+    my $dep = "src/mpid/ch4/src/ch4_recv.h";
+    if ($opts{device}=~/ofi/) {
+        $dep .= " src/mpid/ch4/netmod/ofi/ofi_recv.h";
+    }
+    push @extra_make_rules, "\x24(recv_OBJECTS): $dep";
+    push @extra_make_rules, "";
+    push @extra_make_rules, "probe_OBJECTS = \\";
+    foreach my $a ("probe", "iprobe", "mprobe", "improbe") {
+        push @extra_make_rules, "    src/mpi/pt2pt/$a.lo \\";
+    }
+    foreach my $a ("coll/helper_fn") {
+        push @extra_make_rules, "    src/mpi/$a.lo \\";
+    }
+    $extra_make_rules[-1] =~s/\s\\$//;
+    push @extra_make_rules, "";
+
+    my $dep = "src/mpid/ch4/src/ch4_probe.h";
+    if ($opts{device}=~/ofi/) {
+        $dep .= " src/mpid/ch4/netmod/ofi/ofi_probe.h";
+    }
+    push @extra_make_rules, "\x24(probe_OBJECTS): $dep";
+    push @extra_make_rules, "";
+}
 
 push @extra_make_rules, "src/mpi/errhan/errutil.lo: src/mpi/errhan/defmsg.h";
 push @extra_make_rules, "src/mpi/errhan/defmsg.h:";
@@ -834,12 +880,11 @@ push @CONFIGS, "src/include/mpir_cvars.h";
 push @extra_make_rules, "src/include/mpir_cvars.h:";
 push @extra_make_rules, "\t\x24(DO_cvars)";
 push @extra_make_rules, "";
-if(-f "src/include/autogen.h.in"){
+if (-f "src/include/autogen.h.in") {
     push @CONFIGS, "src/include/autogen.h";
     push @extra_make_rules, "src/include/autogen.h: src/include/autogen.h.in";
     push @extra_make_rules, "\tperl maint/gen_init.pl";
     push @extra_make_rules, "";
-
 }
 
 my @t = ("cd src/glue/romio");
@@ -847,18 +892,39 @@ push @t, "perl all_romio_symbols ../../mpi/romio/include/mpio.h.in";
 push @extra_make_rules, "src/glue/romio/all_romio_symbols.c: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
+if (-d "src/openpa") {
+    $I_list .= " -I$moddir/openpa/src";
+    $L_list .= " $moddir/openpa/src/libopa.la";
+    push @CONFIGS, "$moddir/openpa/src/opa_config.h";
+    my @t = ("cd $moddir/openpa");
+    push @t, "\x24(DO_stage) Configure OpenPA";
+    push @t, "autoreconf -ivf";
+    push @t, "./configure --disable-versioning --enable-embedded";
+    if ($opts{openpa_primitives}) {
+        $t[-1] .= " --with-atomic-primitives=$opts{openpa_primitives}";
+    }
+    push @t, "cp $pwd/libtool .";
+    push @extra_make_rules, "$moddir/openpa/src/opa_config.h: ";
+    push @extra_make_rules, "\t(".join(' && ', @t).")";
+    push @extra_make_rules, "";
+    my @t = ("cd $moddir/openpa");
+    push @t, "\x24(MAKE)";
+    push @extra_make_rules, "$moddir/openpa/src/libopa.la: $moddir/openpa/src/opa_config.h";
+    push @extra_make_rules, "\t(".join(' && ', @t).")";
+    push @extra_make_rules, "";
+}
 $I_list .= " -I$moddir/mpl/include";
 $L_list .= " $moddir/mpl/libmpl.la";
 push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
 my $config_args = "--disable-versioning --enable-embedded";
-if($opts{device}=~/ch4:/){
+if ($opts{device}=~/ch4:/) {
     $config_args .= " --with-posix-mutex=ticketlock";
 }
-foreach my $t (@config_args){
-    if($t=~/--enable-(g|strict)/){
+foreach my $t (@config_args) {
+    if ($t=~/--enable-(g|strict)/) {
         $config_args.=" $t";
     }
-    elsif($t=~/--with-(thread-package|argobots|uti)/){
+    elsif ($t=~/--with-(thread-package|argobots|uti)/) {
         $config_args.=" $t";
     }
 }
@@ -875,26 +941,7 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/mpl/libmpl.la: $moddir/mpl/include/mplconfig.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-$I_list .= " -I$moddir/openpa/src";
-$L_list .= " $moddir/openpa/src/libopa.la";
-push @CONFIGS, "$moddir/openpa/src/opa_config.h";
-my @t = ("cd $moddir/openpa");
-push @t, "\x24(DO_stage) Configure OpenPA";
-push @t, "autoreconf -ivf";
-push @t, "./configure --disable-versioning --enable-embedded";
-if($opts{openpa_primitives}){
-    $t[-1] .= " --with-atomic-primitives=$opts{openpa_primitives}";
-}
-push @t, "cp $pwd/libtool .";
-push @extra_make_rules, "$moddir/openpa/src/opa_config.h: ";
-push @extra_make_rules, "\t(".join(' && ', @t).")";
-push @extra_make_rules, "";
-my @t = ("cd $moddir/openpa");
-push @t, "\x24(MAKE)";
-push @extra_make_rules, "$moddir/openpa/src/libopa.la: $moddir/openpa/src/opa_config.h";
-push @extra_make_rules, "\t(".join(' && ', @t).")";
-push @extra_make_rules, "";
-if(!-d "$moddir/hwloc"){
+if (!-d "$moddir/hwloc") {
     my $cmd = "cp -r src/hwloc $moddir/hwloc";
     print "$cmd\n";
     system $cmd;
@@ -914,7 +961,7 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc/include/hwloc/autogen/config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-if(!-d "$moddir/yaksa"){
+if (!-d "$moddir/yaksa") {
     my $cmd = "cp -r modules/yaksa $moddir/yaksa";
     print "$cmd\n";
     system $cmd;
@@ -935,8 +982,8 @@ push @extra_make_rules, "$moddir/yaksa/libyaksa.la: $moddir/yaksa/src/frontend/i
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 
-if(-f "maint/tuning/coll/json_gen.sh"){
-    if(!-d "$moddir/json-c"){
+if (-f "maint/tuning/coll/json_gen.sh") {
+    if (!-d "$moddir/json-c") {
         my $cmd = "cp -r modules/json-c $moddir/json-c";
         print "$cmd\n";
         system $cmd;
@@ -946,7 +993,7 @@ if(-f "maint/tuning/coll/json_gen.sh"){
     system "bash maint/tuning/coll/json_gen.sh";
 }
 
-if(!$opts{disable_romio}){
+if (!$opts{disable_romio}) {
     system "rsync -r confdb/ src/mpi/romio/confdb/";
     system "cp maint/version.m4 src/mpi/romio/";
     my @t_env;
@@ -954,7 +1001,7 @@ if(!$opts{disable_romio}){
     push @t_env, "master_top_srcdir=$pwd";
     push @t_env, "master_top_builddir=$pwd";
     push @t_env, "CPPFLAGS='-I$moddir/mpl/include'";
-    if($opts{argobots}){
+    if ($opts{argobots}) {
         $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
     }
 
@@ -977,31 +1024,31 @@ if(!$opts{disable_romio}){
     $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$prefix/include";
 }
 
-if($opts{device}=~/ch4:ucx/){
-    if(-e "$moddir/ucx/need_sed"){
+if ($opts{device}=~/ch4:ucx/) {
+    if (-e "$moddir/ucx/need_sed") {
         print "Patch $moddir/ucx ...\n";
         system "find $moddir/ucx -name '*.la' | xargs sed -i \"s,MODDIR,$moddir/ucx,g\"";
         system "find $moddir/ucx -name '*.la*' | xargs sed -i \"s,/MODPREFIX,$prefix,g\"";
         system "mkdir -p $prefix/lib/ucx";
-        foreach my $m ("ucm", "ucs", "uct", "ucp"){
+        foreach my $m ("ucm", "ucs", "uct", "ucp") {
             system "$moddir/ucx/libtool --mode=install --quiet install $moddir/ucx/src/$m/lib$m.la $prefix/lib";
         }
         my @tlist = glob("$moddir/ucx/modules/*.la");
-        foreach my $m (@tlist){
+        foreach my $m (@tlist) {
             system "$moddir/ucx/libtool --mode=install --quiet install $m $prefix/lib/ucx";
         }
         unlink "$moddir/ucx/need_sed";
     }
 
-    if($opts{ucx} eq "embedded"){
+    if ($opts{ucx} eq "embedded") {
         $I_list .= " -I$moddir/ucx/src";
         $L_list .= " $prefix/lib/libucp.la";
-        if(!-d "$moddir/ucx"){
+        if (!-d "$moddir/ucx") {
             my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $moddir/ucx";
             print "$cmd\n";
             system $cmd;
         }
-        if($ENV{compiler} =~ /pgi|sun/){
+        if ($ENV{compiler} =~ /pgi|sun/) {
             my @lines;
             open In, "$moddir/ucx/src/ucs/type/status.h" or die "Can't open $moddir/ucx/src/ucs/type/status.h: $!\n";
             while(<In>){
@@ -1029,17 +1076,17 @@ if($opts{device}=~/ch4:ucx/){
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
     }
-    else{
+    else {
         $I_list .= " -I$opts{ucx}/include";
         $L_list .= " -L$opts{ucx}/lib";
         $L_list .= " -lucp -lucs";
     }
 }
-if($opts{device}=~/ch4:ofi/){
-    if($opts{libfabric} eq "embedded"){
+if ($opts{device}=~/ch4:ofi/) {
+    if ($opts{libfabric} eq "embedded") {
         $I_list .= " -I$moddir/libfabric/include";
         $L_list .= " $moddir/libfabric/src/libfabric.la";
-        if(!-d "$moddir/libfabric"){
+        if (!-d "$moddir/libfabric") {
             my $cmd = "cp -r src/mpid/ch4/netmod/ofi/libfabric $moddir/libfabric";
             print "$cmd\n";
             system $cmd;
@@ -1058,23 +1105,23 @@ if($opts{device}=~/ch4:ofi/){
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
     }
-    else{
+    else {
         $I_list .= " -I$opts{libfabric}/include";
         $L_list .= " -L$opts{libfabric}/lib";
         $L_list .= " -lfabric";
     }
 }
 
-if($ENV{EXTRA_LIB}){
+if ($ENV{EXTRA_LIB}) {
     $L_list .= " $ENV{EXTRA_LIB}";
 }
 
 my $lt_opt;
-if($opts{V}==0){
+if ($opts{V}==0) {
     $lt_opt = "--quiet";
 }
 
-if($opts{argobots}){
+if ($opts{argobots}) {
     $I_list .= " -I$opts{argobots}/include";
 }
 my $_P = `pwd`;
@@ -1085,37 +1132,37 @@ $I_list=~s/$_P/./g;
 my $tlist;
 open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
 while(<In>){
-    if(/^(\w+)\s*=\s*(.*)/){
+    if (/^(\w+)\s*=\s*(.*)/) {
         my ($a, $b) = ($1, $2);
         $tlist=[];
         $objects{$a} = $tlist;
 
         my $done=1;
-        if($b=~/\\$/){
+        if ($b=~/\\$/) {
             $done = 0;
             $b=~s/\s*\\$//;
         }
 
-        if($b){
+        if ($b) {
             push @$tlist, split /\s+/, $b;
         }
-        if($done){
+        if ($done) {
             undef $tlist;
         }
     }
-    elsif($tlist){
-        if(/\s*(.*)/){
+    elsif ($tlist) {
+        if (/\s*(.*)/) {
             my ($b) = ($1);
             my $done=1;
-            if($b=~/\\$/){
+            if ($b=~/\\$/) {
                 $done = 0;
                 $b=~s/\s*\\$//;
             }
 
-            if($b){
+            if ($b) {
                 push @$tlist, split /\s+/, $b;
             }
-            if($done){
+            if ($done) {
                 undef $tlist;
             }
         }
@@ -1127,7 +1174,7 @@ print "  --> [mymake/Makefile.custom]\n";
 print Out "export MODDIR=$moddir\n";
 print Out "PREFIX=$prefix\n";
 print Out "\n";
-if(@CONFIGS){
+if (@CONFIGS) {
     my $l = "CONFIGS = @CONFIGS";
     $l=~s/$moddir/\x24(MODDIR)/g;
     print Out "$l\n";
@@ -1190,40 +1237,40 @@ print Out "LINK = $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
 print Out "LTCC = /bin/sh ./libtool --mode=compile $lt_opt \x24(COMPILE)\n";
 print Out "LTLD = /bin/sh ./libtool --mode=link $lt_opt \x24(LINK)\n";
 print Out "\n";
-if(!$opts{disable_cxx}){
+if (!$opts{disable_cxx}) {
     my $cxx = get_object("CXX");
     my $flags = get_object("CXXFLAGS");
     my $am_flags = get_object("AM_CXXFLAGS");
     print Out "CXXCOMPILE = $cxx \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) $flags $am_flags\n";
 
     my $cxxld = get_object("CXXLD");
-    if($cxxld){
+    if ($cxxld) {
         print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt --tag=CXX \x24(CXXCOMPILE)\n";
         print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CXX $cxxld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     }
-    else{
+    else {
         print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt \x24(CXXCOMPILE)\n";
         print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CC $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     }
     print Out "\n";
 }
-if(!$opts{disable_fortran}){
+if (!$opts{disable_fortran}) {
     my $fc = get_object("F77");
     my $flags = get_object("FFLAGS");
     my $am_flags = get_object("AM_FFLAGS");
     $flags.=" $am_flags";
-    if($flags=~/-I(\S+)/){
+    if ($flags=~/-I(\S+)/) {
         my ($modpath) = ($1);
-        if($fc =~/^(pgfortran|ifort)/){
+        if ($fc =~/^(pgfortran|ifort)/) {
             $flags.=" -module $modpath";
         }
-        elsif($fc =~/^sunf\d+/){
+        elsif ($fc =~/^sunf\d+/) {
             $flags.=" -moddir=$modpath";
         }
-        elsif($fc =~/^af\d+/){
+        elsif ($fc =~/^af\d+/) {
             $flags.=" -YMOD_OUT_DIR=$modpath";
         }
-        else{
+        else {
             $flags.=" -J$modpath";
         }
     }
@@ -1237,18 +1284,18 @@ if(!$opts{disable_fortran}){
     my $flags = get_object("FCFLAGS");
     my $am_flags = get_object("AM_FCFLAGS");
     $flags.=" $am_flags";
-    if($flags=~/-I(\S+)/){
+    if ($flags=~/-I(\S+)/) {
         my ($modpath) = ($1);
-        if($fc =~/^(pgfortran|ifort)/){
+        if ($fc =~/^(pgfortran|ifort)/) {
             $flags.=" -module $modpath";
         }
-        elsif($fc =~/^sunf\d+/){
+        elsif ($fc =~/^sunf\d+/) {
             $flags.=" -moddir=$modpath";
         }
-        elsif($fc =~/^af\d+/){
+        elsif ($fc =~/^af\d+/) {
             $flags.=" -YMOD_OUT_DIR=$modpath";
         }
-        else{
+        else {
             $flags.=" -J$modpath";
         }
     }
@@ -1261,42 +1308,42 @@ if(!$opts{disable_fortran}){
 }
 
 my $tlist = get_list("lib_LTLIBRARIES");
-foreach my $t (@$tlist){
+foreach my $t (@$tlist) {
     $dst_hash{$t} = "\x24(PREFIX)/lib";
 }
 my $tlist = get_list("bin_PROGRAMS");
-foreach my $t (@$tlist){
-    if($t=~/mpichversion/){
+foreach my $t (@$tlist) {
+    if ($t=~/mpichversion/) {
         next;
     }
     $dst_hash{$t} = "\x24(PREFIX)/bin";
 }
 my $tlist = get_list("PROGRAMS");
-foreach my $t (@$tlist){
-    if($t=~/mpichversion/){
+foreach my $t (@$tlist) {
+    if ($t=~/mpichversion/) {
         next;
     }
     push @programs, $t;
 }
 
 my $tlist = get_list("LTLIBRARIES");
-foreach my $t (@$tlist){
+foreach my $t (@$tlist) {
     push @ltlibs, $t;
 }
 
 print Out "all: @ltlibs @programs\n";
 print Out "\n";
 
-foreach my $p (@ltlibs){
+foreach my $p (@ltlibs) {
     my $ld = "LTLD";
-    if($p=~/libmpifort.la/){
+    if ($p=~/libmpifort.la/) {
         $ld = "F77LD";
     }
-    elsif($p=~/libmpicxx.la/){
+    elsif ($p=~/libmpicxx.la/) {
         $ld = "CXXLD";
     }
     my $cmd = "\x24($ld)";
-    if($opts{V}==0){
+    if ($opts{V}==0) {
         $cmd = "\@echo $ld \$\@ && $cmd";
     }
 
@@ -1307,45 +1354,45 @@ foreach my $p (@ltlibs){
     my $o= "${a}_OBJECTS";
     my $tlist = get_list($o);
     my @tlist = sort @$tlist;
-    if($special_targets{$a}){
-        foreach my $t (@tlist){
+    if ($special_targets{$a}) {
+        foreach my $t (@tlist) {
             $t=~s/([^\/]+)-(\w+)/$2.$1/;
         }
     }
-    else{
-        foreach my $t (@tlist){
+    else {
+        foreach my $t (@tlist) {
             $t=~s/[^\/]+-//;
         }
     }
 
     my @t;
-    foreach my $t (@tlist){
-        if($t=~/^-l\w+/){
+    foreach my $t (@tlist) {
+        if ($t=~/^-l\w+/) {
             $objs.=" $t";
         }
-        elsif($t=~/^-L\S+/){
+        elsif ($t=~/^-L\S+/) {
             $objs.=" $t";
         }
-        else{
+        else {
             push @t, $t;
         }
     }
 
-    if($o=~/mpifort.*_OBJECTS/){
+    if ($o=~/mpifort.*_OBJECTS/) {
         my @f08_wrappers_f;
-        foreach my $t (@t){
-            if($t=~/use_mpi_f08\/wrappers_f\//){
+        foreach my $t (@t) {
+            if ($t=~/use_mpi_f08\/wrappers_f\//) {
                 push @f08_wrappers_f, $t;
                 $t=undef;
             }
         }
 
-        if(@f08_wrappers_f){
+        if (@f08_wrappers_f) {
             push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
 
             print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
             my $last_item = pop @f08_wrappers_f;
-            foreach my $t (@f08_wrappers_f){
+            foreach my $t (@f08_wrappers_f) {
                 print Out "    $t \\\n";
             }
             print Out "    $last_item\n";
@@ -1356,8 +1403,8 @@ foreach my $p (@ltlibs){
 
     print Out "$o = \\\n";
     my $last_item = pop @t;
-    foreach my $t (@t){
-        if($t){
+    foreach my $t (@t) {
+        if ($t) {
             my $l = "    $t \\";
             $l=~s/$moddir/\x24(MODDIR)/g;
             print Out "$l\n";
@@ -1367,29 +1414,29 @@ foreach my $p (@ltlibs){
     $l=~s/$moddir/\x24(MODDIR)/g;
     print Out "$l\n";
 
-    if(@CONFIGS and "$o"=~/_OBJECTS$/){
+    if (@CONFIGS and "$o"=~/_OBJECTS$/) {
         print Out "\x24($o): \x24(CONFIGS)\n";
     }
     $deps .= " \x24($o)";
     my $add = $a."_LIBADD";
 
-    if($objects{$add}){
+    if ($objects{$add}) {
         my $t = get_object($add);
-        if($add!~/mpi(fort|cxx)/){
-            if($t=~/libpromio/){
+        if ($add!~/mpi(fort|cxx)/) {
+            if ($t=~/libpromio/) {
                 my @t = ("cd src/mpi/romio");
                 push @t, "\x24(MAKE)";
                 push @extra_make_rules, "src/mpi/romio/libpromio.la: src/mpi/romio/adio/include/romioconf.h";
                 push @extra_make_rules, "\t(".join(' && ', @t).")";
                 push @extra_make_rules, "";
             }
-            if($add=~/_libmpi_la_/ && $opts{have_weak}){
+            if ($add=~/_libmpi_la_/ && $opts{have_weak}) {
                 $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c)\/\S+\.la\s*//g;
                 $t=~s/\@ucxlib\@\s*//g;
                 $t=~s/\@ofilib\@\s*//g;
                 $t.= $L_list;
             }
-            elsif($add=~/_libpmpi_la_/){
+            elsif ($add=~/_libpmpi_la_/) {
                 $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c)\/\S+\.la\s*//g;
                 $t=~s/\@ucxlib\@\s*//g;
                 $t=~s/\@ofilib\@\s*//g;
@@ -1399,33 +1446,33 @@ foreach my $p (@ltlibs){
         $t=~s/^\s+//;
         my @tlist = split /\s+/, $t;
         my @t;
-        foreach my $t (@tlist){
-            if($t=~/^-l\w+/){
+        foreach my $t (@tlist) {
+            if ($t=~/^-l\w+/) {
                 $objs.=" $t";
             }
-            elsif($t=~/^-L\S+/){
+            elsif ($t=~/^-L\S+/) {
                 $objs.=" $t";
             }
-            else{
+            else {
                 push @t, $t;
             }
         }
 
-        if($add=~/mpifort.*_OBJECTS/){
+        if ($add=~/mpifort.*_OBJECTS/) {
             my @f08_wrappers_f;
-            foreach my $t (@t){
-                if($t=~/use_mpi_f08\/wrappers_f\//){
+            foreach my $t (@t) {
+                if ($t=~/use_mpi_f08\/wrappers_f\//) {
                     push @f08_wrappers_f, $t;
                     $t=undef;
                 }
             }
 
-            if(@f08_wrappers_f){
+            if (@f08_wrappers_f) {
                 push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
 
                 print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
                 my $last_item = pop @f08_wrappers_f;
-                foreach my $t (@f08_wrappers_f){
+                foreach my $t (@f08_wrappers_f) {
                     print Out "    $t \\\n";
                 }
                 print Out "    $last_item\n";
@@ -1436,8 +1483,8 @@ foreach my $p (@ltlibs){
 
         print Out "$add = \\\n";
         my $last_item = pop @t;
-        foreach my $t (@t){
-            if($t){
+        foreach my $t (@t) {
+            if ($t) {
                 my $l = "    $t \\";
                 $l=~s/$moddir/\x24(MODDIR)/g;
                 print Out "$l\n";
@@ -1447,7 +1494,7 @@ foreach my $p (@ltlibs){
         $l=~s/$moddir/\x24(MODDIR)/g;
         print Out "$l\n";
 
-        if(@CONFIGS and "$add"=~/_OBJECTS$/){
+        if (@CONFIGS and "$add"=~/_OBJECTS$/) {
             print Out "\x24($add): \x24(CONFIGS)\n";
         }
         $deps .= " \x24($add)";
@@ -1455,9 +1502,9 @@ foreach my $p (@ltlibs){
 
     $objs = "$deps $objs \x24(LIBS)";
 
-    if($dst_hash{$p}=~/\/lib$/){
+    if ($dst_hash{$p}=~/\/lib$/) {
         my $opt="-rpath $dst_hash{$p}";
-        if($opts{so_version}){
+        if ($opts{so_version}) {
             $opt.=" -version-info $opts{so_version}";
         }
         $objs = "$opt $objs";
@@ -1468,16 +1515,16 @@ foreach my $p (@ltlibs){
     print Out "\n";
 }
 
-foreach my $p (@programs){
+foreach my $p (@programs) {
     my $ld = "LTLD";
-    if($p=~/libmpifort.la/){
+    if ($p=~/libmpifort.la/) {
         $ld = "F77LD";
     }
-    elsif($p=~/libmpicxx.la/){
+    elsif ($p=~/libmpicxx.la/) {
         $ld = "CXXLD";
     }
     my $cmd = "\x24($ld)";
-    if($opts{V}==0){
+    if ($opts{V}==0) {
         $cmd = "\@echo $ld \$\@ && $cmd";
     }
 
@@ -1488,45 +1535,45 @@ foreach my $p (@programs){
     my $o= "${a}_OBJECTS";
     my $tlist = get_list($o);
     my @tlist = sort @$tlist;
-    if($special_targets{$a}){
-        foreach my $t (@tlist){
+    if ($special_targets{$a}) {
+        foreach my $t (@tlist) {
             $t=~s/([^\/]+)-(\w+)/$2.$1/;
         }
     }
-    else{
-        foreach my $t (@tlist){
+    else {
+        foreach my $t (@tlist) {
             $t=~s/[^\/]+-//;
         }
     }
 
     my @t;
-    foreach my $t (@tlist){
-        if($t=~/^-l\w+/){
+    foreach my $t (@tlist) {
+        if ($t=~/^-l\w+/) {
             $objs.=" $t";
         }
-        elsif($t=~/^-L\S+/){
+        elsif ($t=~/^-L\S+/) {
             $objs.=" $t";
         }
-        else{
+        else {
             push @t, $t;
         }
     }
 
-    if($o=~/mpifort.*_OBJECTS/){
+    if ($o=~/mpifort.*_OBJECTS/) {
         my @f08_wrappers_f;
-        foreach my $t (@t){
-            if($t=~/use_mpi_f08\/wrappers_f\//){
+        foreach my $t (@t) {
+            if ($t=~/use_mpi_f08\/wrappers_f\//) {
                 push @f08_wrappers_f, $t;
                 $t=undef;
             }
         }
 
-        if(@f08_wrappers_f){
+        if (@f08_wrappers_f) {
             push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
 
             print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
             my $last_item = pop @f08_wrappers_f;
-            foreach my $t (@f08_wrappers_f){
+            foreach my $t (@f08_wrappers_f) {
                 print Out "    $t \\\n";
             }
             print Out "    $last_item\n";
@@ -1537,8 +1584,8 @@ foreach my $p (@programs){
 
     print Out "$o = \\\n";
     my $last_item = pop @t;
-    foreach my $t (@t){
-        if($t){
+    foreach my $t (@t) {
+        if ($t) {
             my $l = "    $t \\";
             $l=~s/$moddir/\x24(MODDIR)/g;
             print Out "$l\n";
@@ -1548,44 +1595,44 @@ foreach my $p (@programs){
     $l=~s/$moddir/\x24(MODDIR)/g;
     print Out "$l\n";
 
-    if(@CONFIGS and "$o"=~/_OBJECTS$/){
+    if (@CONFIGS and "$o"=~/_OBJECTS$/) {
         print Out "\x24($o): \x24(CONFIGS)\n";
     }
     $deps .= " \x24($o)";
     my $add = $a."_LDADD";
 
-    if($objects{$add}){
+    if ($objects{$add}) {
         my $t = get_object($add);
         $t=~s/^\s+//;
         my @tlist = split /\s+/, $t;
         my @t;
-        foreach my $t (@tlist){
-            if($t=~/^-l\w+/){
+        foreach my $t (@tlist) {
+            if ($t=~/^-l\w+/) {
                 $objs.=" $t";
             }
-            elsif($t=~/^-L\S+/){
+            elsif ($t=~/^-L\S+/) {
                 $objs.=" $t";
             }
-            else{
+            else {
                 push @t, $t;
             }
         }
 
-        if($add=~/mpifort.*_OBJECTS/){
+        if ($add=~/mpifort.*_OBJECTS/) {
             my @f08_wrappers_f;
-            foreach my $t (@t){
-                if($t=~/use_mpi_f08\/wrappers_f\//){
+            foreach my $t (@t) {
+                if ($t=~/use_mpi_f08\/wrappers_f\//) {
                     push @f08_wrappers_f, $t;
                     $t=undef;
                 }
             }
 
-            if(@f08_wrappers_f){
+            if (@f08_wrappers_f) {
                 push @t, "\x24(F08_WRAPPERS_F_OBJECTS)";
 
                 print Out "F08_WRAPPERS_F_OBJECTS = \\\n";
                 my $last_item = pop @f08_wrappers_f;
-                foreach my $t (@f08_wrappers_f){
+                foreach my $t (@f08_wrappers_f) {
                     print Out "    $t \\\n";
                 }
                 print Out "    $last_item\n";
@@ -1596,8 +1643,8 @@ foreach my $p (@programs){
 
         print Out "$add = \\\n";
         my $last_item = pop @t;
-        foreach my $t (@t){
-            if($t){
+        foreach my $t (@t) {
+            if ($t) {
                 my $l = "    $t \\";
                 $l=~s/$moddir/\x24(MODDIR)/g;
                 print Out "$l\n";
@@ -1607,25 +1654,25 @@ foreach my $p (@programs){
         $l=~s/$moddir/\x24(MODDIR)/g;
         print Out "$l\n";
 
-        if(@CONFIGS and "$add"=~/_OBJECTS$/){
+        if (@CONFIGS and "$add"=~/_OBJECTS$/) {
             print Out "\x24($add): \x24(CONFIGS)\n";
         }
         $deps .= " \x24($add)";
     }
-    if($objects{"${a}_CFLAGS"}){
+    if ($objects{"${a}_CFLAGS"}) {
         $cmd.= ' '. get_object("${a}_CFLAGS");
         $cmd .= " \x24(CFLAGS)";
     }
-    if($objects{"${a}_LDFLAGS"}){
+    if ($objects{"${a}_LDFLAGS"}) {
         $cmd.= ' '. get_object("${a}_LDFLAGS");
         $cmd .= " \x24(LDFLAGS)";
     }
 
     $objs = "$deps $objs \x24(LIBS)";
 
-    if($dst_hash{$p}=~/\/lib$/){
+    if ($dst_hash{$p}=~/\/lib$/) {
         my $opt="-rpath $dst_hash{$p}";
-        if($opts{so_version}){
+        if ($opts{so_version}) {
             $opt.=" -version-info $opts{so_version}";
         }
         $objs = "$opt $objs";
@@ -1637,117 +1684,117 @@ foreach my $p (@programs){
 }
 
 print Out "\x23 --------------------\n";
-foreach my $l (@extra_make_rules){
+foreach my $l (@extra_make_rules) {
     $l=~s/$moddir/\x24(MODDIR)/g;
     print Out "$l\n";
 }
 print Out "\x23 --------------------\n";
 print Out "%.o: %.c\n";
-if($opts{V}==0){
+if ($opts{V}==0) {
     print Out "\t\@echo CC \$\@ && \x24(COMPILE) -c -o \$\@ \$<\n";
 }
-else{
+else {
     print Out "\t\x24(COMPILE) -c -o \$\@ \$<\n";
 }
 print Out "\n";
 print Out "%.lo: %.c\n";
-if($opts{V}==0){
+if ($opts{V}==0) {
     print Out "\t\@echo LTCC \$\@ && \x24(LTCC) -c -o \$\@ \$<\n";
 }
-else{
+else {
     print Out "\t\x24(LTCC) -c -o \$\@ \$<\n";
 }
 print Out "\n";
-if(!$opts{disable_cxx}){
+if (!$opts{disable_cxx}) {
     print Out "%.lo: %.cxx\n";
-    if($opts{V}==0){
+    if ($opts{V}==0) {
         print Out "\t\@echo LTCXX \$\@ && \x24(LTCXX) -c -o \$\@ \$<\n";
     }
-    else{
+    else {
         print Out "\t\x24(LTCXX) -c -o \$\@ \$<\n";
     }
     print Out "\n";
 }
-if(!$opts{disable_fortran}){
+if (!$opts{disable_fortran}) {
     print Out "%.lo: %.f\n";
-    if($opts{V}==0){
+    if ($opts{V}==0) {
         print Out "\t\@echo LTF77 \$\@ && \x24(LTF77) -c -o \$\@ \$<\n";
     }
-    else{
+    else {
         print Out "\t\x24(LTF77) -c -o \$\@ \$<\n";
     }
     print Out "\n";
     print Out "%.lo: %.f90\n";
-    if($opts{V}==0){
+    if ($opts{V}==0) {
         print Out "\t\@echo LTFC \$\@ && \x24(LTFC) -c -o \$\@ \$<\n";
     }
-    else{
+    else {
         print Out "\t\x24(LTFC) -c -o \$\@ \$<\n";
     }
     print Out "\n";
 }
-while (my ($k, $v) = each %special_targets){
+while (my ($k, $v) = each %special_targets) {
     print Out "%.$k.lo: %.c\n";
-    if($opts{V}==0){
+    if ($opts{V}==0) {
         print Out "\t\@echo LTCC \$\@ && $v -c -o \$\@ \$<\n";
     }
-    else{
+    else {
         print Out "\t$v -c -o \$\@ \$<\n";
     }
     print Out "\n";
 }
 print Out "%.i: %.c\n";
-if($opts{V}==0){
+if ($opts{V}==0) {
     print Out "\t\@echo CC -E \$\@ && \x24(COMPILE) -E -o \$\@ \$<\n";
 }
-else{
+else {
     print Out "\t\x24(COMPILE) -E -o \$\@ \$<\n";
 }
 print Out "\n";
 my $t1 = get_list("include_HEADERS");
 my $t2 = get_list("nodist_include_HEADERS");
 my $t3 = get_list("modinc_HEADERS");
-if(@$t1 or @$t2 or @$t3){
-    foreach my $t (@$t1, @$t2, @$t3){
+if (@$t1 or @$t2 or @$t3) {
+    foreach my $t (@$t1, @$t2, @$t3) {
         $t=~s/use_mpi_f08/use_mpi/;
         $dst_hash{$t} = "$prefix/include";
     }
 }
 
 my (%dirs, @install_list, @install_deps, @lns_list);
-while (my ($k, $v) = each %dst_hash){
-    if($k=~/^LN_S-(.*)/){
+while (my ($k, $v) = each %dst_hash) {
+    if ($k=~/^LN_S-(.*)/) {
         push @lns_list, "rm -f $1 && ln -s $v $1";
     }
-    elsif($v){
-        if(!$dirs{$v}){
+    elsif ($v) {
+        if (!$dirs{$v}) {
             $dirs{$v} = 1;
         }
-        if($v=~/\/lib$/){
+        if ($v=~/\/lib$/) {
             push @install_list, "/bin/sh ./libtool --mode=install $lt_opt install $k $v";
             push @install_deps, $k;
         }
-        elsif($v=~/\/bin$/){
+        elsif ($v=~/\/bin$/) {
             push @install_list, "/bin/sh ./libtool --mode=install $lt_opt install $k $v";
             push @install_deps, $k;
         }
-        elsif($v=~/\/include$/){
+        elsif ($v=~/\/include$/) {
             push @install_list, "cp $k $v";
         }
     }
 }
 
 my @install_list = sort @install_list;
-foreach my $d (keys %dirs){
+foreach my $d (keys %dirs) {
     unshift @install_list, "mkdir -p $d";
 }
 push @install_list, sort @lns_list;
 
-if(@install_list){
+if (@install_list) {
     print Out "\x23 --------------------\n";
     print Out ".PHONY: install\n";
     print Out "install: @install_deps\n";
-    foreach my $l (@install_list){
+    foreach my $l (@install_list) {
         print Out "\t$l\n";
     }
     print Out "\n";
@@ -1797,11 +1844,11 @@ my @lines;
 my $flag_skip=0;
 open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
 print "  --> [$m[2]]\n";
-foreach my $l (@lines){
-    if($l=~/^#define SIZEOF_MPL_ATOMIC_PTR_T 0/){
+foreach my $l (@lines) {
+    if ($l=~/^#define SIZEOF_MPL_ATOMIC_PTR_T 0/) {
         $l=~s/0/$ret/;
     }
-    if($flag_skip){
+    if ($flag_skip) {
         next;
     }
     print Out $l;
@@ -1813,12 +1860,12 @@ system "cp -v $m[2] $m[0]";
 sub get_object {
     my ($key) = @_;
     my $arr = $objects{$key};
-    if(defined $arr){
+    if (defined $arr) {
         my $t;
-        if(ref($arr) eq "ARRAY"){
+        if (ref($arr) eq "ARRAY") {
             $t = join(' ', @$arr);
         }
-        else{
+        else {
             $t = $arr;
         }
         $t=~s/\$\(am__v_[\w]+\)//g;
@@ -1828,7 +1875,7 @@ sub get_object {
         $make_vars{$key} = $t;
         return $t;
     }
-    else{
+    else {
         return "";
     }
 }
@@ -1837,12 +1884,12 @@ sub get_list {
     my ($key) = @_;
     my @t;
     my $tlist = $objects{$key};
-    foreach my $t (@{$objects{$key}}){
-        if($t=~/^\$\((\w+)\)$/){
+    foreach my $t (@{$objects{$key}}) {
+        if ($t=~/^\$\((\w+)\)$/) {
             my $L = get_list($1);
             push @t, @$L;
         }
-        else{
+        else {
             $t=~s/\$\((\w+)\)/get_object($1)/ge;
             push @t, $t;
         }
