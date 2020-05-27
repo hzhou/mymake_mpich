@@ -964,7 +964,7 @@ foreach my $t (@config_args) {
     if ($t=~/--enable-(g|strict)/) {
         $config_args.=" $t";
     }
-    elsif ($t=~/--with-(thread-package|argobots|uti)/) {
+    elsif ($t=~/--with-(mpl|thread-package|argobots|uti)/) {
         $config_args.=" $t";
     }
 }
@@ -1868,6 +1868,7 @@ system "mymake/t";
 my $ret = $? >> 8;
 
 my @mod_list;
+print "  Patching for sizeof_atomic...\n";
 my $f = "src/include/mpichconf.h";
 my $f_ = $f;
 $f_=~s/[\.\/]/_/g;
@@ -1898,13 +1899,14 @@ system "cp -v $m[2] $m[0]";
 my $lock_based_atomics;
 open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
 while(<In>){
-    if ($l=~/^#define MPL_USE_LOCK_BASED_PRIMITIVES/) {
+    if (/^#define MPL_USE_LOCK_BASED_PRIMITIVES/) {
         $lock_based_atomics = 1;
         last;
     }
 }
 close In;
 if ($lock_based_atomics) {
+    print "  Patching for lock_based_atomics...\n";
     my @mod_list;
     my $f = "src/include/mpichconf.h";
     my $f_ = $f;

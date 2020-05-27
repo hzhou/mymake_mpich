@@ -446,7 +446,7 @@ foreach my $t (@config_args) {
     if ($t=~/--enable-(g|strict)/) {
         $config_args.=" $t";
     }
-    elsif ($t=~/--with-(thread-package|argobots|uti)/) {
+    elsif ($t=~/--with-(mpl|thread-package|argobots|uti)/) {
         $config_args.=" $t";
     }
 }
