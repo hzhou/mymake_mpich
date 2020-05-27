@@ -1923,8 +1923,8 @@ if ($lock_based_atomics) {
     open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines) {
-        if ($l=~/^.. #undef MPL_USE_LOCK_BASED_PRIMITIVES/) {
-            $l = "#define MPL_USE_LOCK_BASED_PRIMITIVES 1\n";
+        if ($l=~/^.. #undef ENABLE_NO_LOCAL/) {
+            $l = "#define ENABLE_NO_LOCAL 1\n";
         }
         if ($flag_skip) {
             next;
