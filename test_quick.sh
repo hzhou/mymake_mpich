@@ -1,4 +1,3 @@
-
 export LD=ld.gold
 set -x
 printenv
@@ -287,6 +286,6 @@ else
     if test x$skip_test = xcustom ; then
         perl $mymake_dir/runtests.pl -tests=testlist.custom -junitfile=summary.junit.xml
     else
-        perl $mymake_dir/runtests.pl -tests=testlist,testlist.dtp -junitfile=summary.junit.xml
+        perl $mymake_dir/runtests.pl -tests=testlist,testlist.dtp,testlist.cvar -junitfile=summary.junit.xml
     fi
 fi

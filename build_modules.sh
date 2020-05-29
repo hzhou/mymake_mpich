@@ -1,4 +1,3 @@
-
 if test -z "$1" ; then
     do_hwloc=yes
     do_izem=yes

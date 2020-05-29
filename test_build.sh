@@ -1,4 +1,3 @@
-
 set -x
 printenv
 hostname

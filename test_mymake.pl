@@ -8,109 +8,106 @@ our @testmpi_config;
 our @testlist;
 
 
-
 my $mymake_dir = $ENV{mymake_dir};
-if(! $mymake_dir){
-    if($0=~/^(\/.*)\//){
+if (! $mymake_dir) {
+    if ($0=~/^(\/.*)\//) {
         $mymake_dir = $1;
     }
-    elsif($0=~/^(.*)\//){
+    elsif ($0=~/^(.*)\//) {
         my $pwd=`pwd`;
         chomp $pwd;
         $mymake_dir .= "$pwd/$1";
     }
     $ENV{mymake_dir}=$mymake_dir;
 }
-my $config = $ENV{config};
-print "parsing config: [$config]...\n";
-$config=~s/[\/-]/:/g;
-if($config=~/^(default|ch3:tcp)/){
-    $config = "ch3:nemesis";
-    push @mpich_config, "--with-device=$config";
-}
-elsif($config=~/^ch[34]/){
-    push @mpich_config, "--with-device=$config";
-}
-my $trigger_phrase = $ENV{ghprbCommentBody};
-$trigger_phrase=~s/\\r\\n/\n/g;
-$trigger_phrase=~s/\n\s*:/ /g;
-
-my %h_script = ("quick"=>"test_quick", "mpich"=>"test_build");
-if($trigger_phrase=~/^test_script\s*[:=]\s*(\w+)/m && $h_script{$1}){
-    $ENV{test_script}=$h_script{$1};
-}
-my $t = $ENV{configOption}."\n".$trigger_phrase;
-print "parsing trigger phrase: \n   [$t]...\n";
-while($t=~/(--(enable|disable|with|without)-\S+)/g){
-    my ($a) = ($1);
-    $a=~s/\x24(\w+)/$ENV{$1}/g;
-    push @mpich_config, $a;
-}
-
-while($trigger_phrase=~/^\s*(compiler|skip_test|out_of_tree)\s*[:=]\s*([\w\-\.]+)/mg){
-    my ($key, $val) = ($1, $2);
-    if($val=~/(yes|1)/){
-        $val = "true";
+if ($ENV{config}) {
+    my $config = $ENV{config};
+    print "parsing config: [$config]...\n";
+    $config=~s/[\/-]/:/g;
+    if ($config=~/^(default|ch3:tcp)/) {
+        $config = "ch3:nemesis";
+        push @mpich_config, "--with-device=$config";
     }
-    $ENV{$key}=$val;
-}
-
-while($trigger_phrase=~/^env:\s*(\w+)\s*=\s*(.*?)\s*$/mg){
-    $ENV{$1}=$2;
-}
-
-if(!$ENV{skip_test}){
-    while($trigger_phrase=~/^testlist:\s*(.+)/mg){
-        print "testlist [$1]\n";
-        push @testlist, $1;
+    elsif ($config=~/^ch[34]/) {
+        push @mpich_config, "--with-device=$config";
     }
-    if(@testlist){
-        open Out, ">test/mpi/testlist.custom" or die "Can't write test/mpi/testlist.custom: $!\n";
-        print "  --> [test/mpi/testlist.custom]\n";
-        foreach my $l (@testlist){
-            print Out "$l\n";
+}
+if ($ENV{ghprbCommentBody}) {
+    my $trigger_phrase = $ENV{ghprbCommentBody};
+    $trigger_phrase=~s/\\r\\n/\n/g;
+    $trigger_phrase=~s/\n\s*:/ /g;
+
+    my %h_script = ("quick"=>"test_quick", "mpich"=>"test_build");
+    if ($trigger_phrase=~/^test_script\s*[:=]\s*(\w+)/m && $h_script{$1}) {
+        $ENV{test_script}=$h_script{$1};
+    }
+    my $t = $ENV{configOption}."\n".$trigger_phrase;
+    print "parsing trigger phrase: \n   [$t]...\n";
+    while ($t=~/(--(enable|disable|with|without)-\S+)/g) {
+        my ($a) = ($1);
+        $a=~s/\x24(\w+)/$ENV{$1}/g;
+        push @mpich_config, $a;
+    }
+
+    while ($trigger_phrase=~/^\s*(compiler|skip_test|out_of_tree)\s*[:=]\s*([\w\-\.]+)/mg) {
+        my ($key, $val) = ($1, $2);
+        if ($val=~/(yes|1)/) {
+            $val = "true";
         }
-        close Out;
-        $ENV{skip_test}="custom";
+        $ENV{$key}=$val;
+    }
+
+    while ($trigger_phrase=~/^env:\s*(\w+)\s*=\s*(.*?)\s*$/mg) {
+        $ENV{$1}=$2;
+    }
+
+    if (!$ENV{skip_test}) {
+        while ($trigger_phrase=~/^testlist:\s*(.+)/mg) {
+            print "testlist [$1]\n";
+            push @testlist, $1;
+        }
     }
 }
 
-my $test_script = $ENV{test_script};
-if(!$test_script){
-    $test_script = "test_build";
+if ($ENV{param}) {
+    $ENV{test_script}="test_quick";
+    my @plist = split /\s+/, $ENV{param};
+    foreach my $t (@plist) {
+        if ($t=~/(--(enable|disable|with|without)-\S+)/g) {
+            push @mpich_config, $1;
+        }
+        elsif ($t=~/^(\w+)=(.+)/) {
+            $ENV{$1}=$2;
+        }
+        elsif ($t=~/^testlist:(.+)/g) {
+            push @testlist, $1;
+        }
+    }
 }
-
-if(!$ENV{compiler}){
-    $ENV{compiler}='gnu';
-}
-if($ENV{test_script} eq "test_quick"){
-}
-
-my @config_devices;
-if(@mpich_config){
-    foreach my $t (@mpich_config){
-        if($t=~/--with-device=(.*)/){
-            push @config_devices, $1;
+if (@mpich_config) {
+    foreach my $t (@mpich_config) {
+        if ($t=~/--with-device=(.*)/) {
+            $ENV{mpich_device} = $1;
         }
         my $k=$t;
         $k=~s/=.*$//;
         $k=~s/^--(disable|enable|with|without)-//;
-        if($config_hash{$k}){
+        if ($config_hash{$k}) {
             $t='';
             next;
         }
-        if($t=~/=(.+)/){
+        if ($t=~/=(.+)/) {
             $config_hash{$k}=$1;
         }
-        else{
+        else {
             $config_hash{$k}=1;
         }
-        if($t=~/--(disable|enable)-(.*-tests)/){
+        if ($t=~/--(disable|enable)-(.*-tests)/) {
             push @testmpi_config, $t;
             $t='';
             next;
         }
-        elsif($t=~/--disable-(romio|fortran|cxx)/){
+        elsif ($t=~/--disable-(romio|fortran|cxx)/) {
             push @testmpi_config, $t;
         }
     }
@@ -118,56 +115,63 @@ if(@mpich_config){
 
 push @testmpi_config, "--disable-perftest";
 
-if($config_hash{pmix} or $config_hash{device}=~/ucx/ or $config_hash{pmi}=~/pmi2/){
+if ($config_hash{pmix} or $config_hash{device}=~/ucx/ or $config_hash{pmi}=~/pmi2/) {
     push @testmpi_config, "--disable-spawn";
 }
 
-if($config_hash{device}!~/ch3:tcp/){
+if ($config_hash{device}!~/ch3:tcp/) {
     push @testmpi_config, "--disable-ft-tests";
 }
 
-if($config_hash{device}=~/ch3:sock/){
+if ($config_hash{device}=~/ch3:sock/) {
     push @testmpi_config, "--disable-comm-overlap-tests";
 }
 
-if($config_hash{pm} eq "gforker"){
-    if(!$config_hash{namepublisher}){
+if ($config_hash{pm} eq "gforker") {
+    if (!$config_hash{namepublisher}) {
         push @mpich_config, "--with-namepublisher=file";
     }
-    else{
+    else {
         $config_hash{conflict} = "Conflicting config option: --with-pm=gforker and --with-namepublisher=$config_hash{namepublisher}";
     }
 }
 
-if(@mpich_config){
+if (@mpich_config) {
     $ENV{mpich_config}= join(' ', @mpich_config);
 }
-if(@testmpi_config){
+if (@testmpi_config) {
     $ENV{testmpi_config} = join(' ', @testmpi_config);
 }
 
-if($config_hash{device}=~/^(ch\d:\w+)/){
+if ($config_hash{device}=~/^(ch\d:\w+)/) {
     $ENV{mpich_device}=$1;
 }
 
-if($config=~/(ch\d+:\w+)/){
-    my ($t) = ($1);
-    foreach my $dev (@config_devices){
-        if($dev !~ /$t/){
-            $config_hash{conflict} = "config: $config and option: --with-device=$dev are in conflict";
-        }
-    }
+my $test_script = $ENV{test_script};
+if (!$test_script) {
+    $test_script = "test_build";
 }
 
-if($config=~/(ch3:\w+)/){
-    my ($t) = ($1);
-    if($config_hash{pmix}){
-        $config_hash{conflict} = "config: $config and option: --with-pmix=$config_hash{pmix} are in conflict";
-    }
+if (!$ENV{compiler}) {
+    $ENV{compiler}='gnu';
 }
 
+if (!$ENV{mpich_device}) {
+    $ENV{mpich_device} = "ch4:ofi";
+    push @mpich_config, "--with-device=ch4:ofi";
+}
+if (@testlist) {
+    open Out, ">test/mpi/testlist.custom" or die "Can't write test/mpi/testlist.custom: $!\n";
+    print "  --> [test/mpi/testlist.custom]\n";
+    foreach my $l (@testlist) {
+        $l=~s/#/ /g;
+        print Out "$l\n";
+    }
+    close Out;
+    $ENV{skip_test}="custom";
+}
 
-if($config_hash{conflict}){
+if ($config_hash{conflict}) {
     open Out, ">summary.junit.xml" or die "Can't write summary.junit.xml: $!\n";
     print "  --> [summary.junit.xml]\n";
     print Out "<testsuites>\n";
@@ -181,12 +185,12 @@ if($config_hash{conflict}){
     exit 0;
 }
 
-if($ENV{N_MAKE_JOBS} > 0){
+if ($ENV{N_MAKE_JOBS} > 0) {
 }
-else{
+else {
     my $n = 16;
     my $cpu_count = `grep -c -P '^processor\\s+:' /proc/cpuinfo`;
-    if($cpu_count=~/^(\d+)/){
+    if ($cpu_count=~/^(\d+)/) {
         $n= $1;
     }
     $ENV{N_MAKE_JOBS}=$n;
@@ -210,59 +214,58 @@ print "Running $mymake_dir/$test_script.sh...\n";
 my $time_start=time();
 my $ret = system "bash -xe $mymake_dir/$test_script.sh";
 my $time_finish=time();
-if($ret){
+if ($ret) {
     $ret = $?>>8;
 }
-else{
+else {
     my @make_log;
-    if($compiler=~/intel|icc/){
+    if ($compiler=~/intel|icc/) {
         open In, "make.log" or die "Can't open make.log: $!\n";
         while(<In>){
-            if(/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/){
+            if (/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/) {
                 my ($t) = ($1);
                 push @make_log, $t;
             }
         }
         close In;
     }
-    elsif($compiler=~/pgi/){
+    elsif ($compiler=~/pgi/) {
         open In, "make.log" or die "Can't open make.log: $!\n";
         while(<In>){
-            if(/^(PGC-W-\d+-.*)/){
+            if (/^(PGC-W-\d+-.*)/) {
                 my ($t) = ($1);
                 push @make_log, $t;
             }
         }
         close In;
     }
-    elsif($compiler=~/sun/){
+    elsif ($compiler=~/sun/) {
         my %got_hash;
         open In, "make.log" or die "Can't open make.log: $!\n";
         while(<In>){
-            if(/^(".*",\s*line \d+:\s*warning:.*)/){
+            if (/^(".*",\s*line \d+:\s*warning:.*)/) {
                 my ($t) = ($1);
-                if($t=~/opa_gcc_intel_32_64_ops/){
-                    if(!$got_hash{opa_asm}){
+                if ($t=~/opa_gcc_intel_32_64_ops/) {
+                    if (!$got_hash{opa_asm}) {
                         push @make_log, $t;
                         $got_hash{opa_asm}=1;
                     }
                 }
-                else{
+                else {
                     push @make_log, $t;
-
                 }
             }
         }
         close In;
     }
-    else{
+    else {
         my $f="make.log";
-        if($ENV{outoftree} eq "true"){
+        if ($ENV{outoftree} eq "true") {
             $f="build/make.log";
         }
         open In, "$f" or die "Can't open $f: $!\n";
         while(<In>){
-            if(/^(\S+:\d+:\s*(error|warning):\s*.*)/){
+            if (/^(\S+:\d+:\s*(error|warning):\s*.*)/) {
                 my ($t) = ($1);
                 push @make_log, $t;
             }
@@ -270,7 +273,7 @@ else{
         close In;
     }
     my $n_fails = @make_log;
-    if($n_fails>=10000){
+    if ($n_fails>=10000) {
         $n_fails = 10000;
     }
     my $n_tests = $n_fails+1;
@@ -281,8 +284,8 @@ else{
     my $dur = $time_finish-$time_start;
     print Out "<testcase name=\"1 - build\" time=\"$dur\"></testcase>\n";
     my $i = 1;
-    foreach my $t (@make_log){
-        if($i>10000){
+    foreach my $t (@make_log) {
+        if ($i>10000) {
             last;
         }
         $i++;
@@ -290,18 +293,18 @@ else{
         $t=~s/</&lt;/g;
         $t=~s/>/&gt;/g;
         my $o = parse_warning($t);
-        if($o){
+        if ($o) {
             print Out "<testcase name=\"$o->{file}:$o->{line}\">\n";
         }
-        else{
+        else {
             print Out "<testcase name=\"$i\">\n";
         }
-        if($o->{skip}){
+        if ($o->{skip}) {
             print Out "<skipped type=\"TodoTestSkipped\" message=\"$o->{skip}\">\n";
             print Out "<![CDATA[$t]]>\n";
             print Out "</skipped>\n";
         }
-        else{
+        else {
             print Out "<failure message=\"$t\">\n";
             print Out "Build details are in make.log.\n";
             print Out "</failure>\n";
@@ -319,38 +322,38 @@ exit $ret;
 sub parse_warning {
     my ($t) = @_;
     my $o;
-    if($t=~/^(\S+):(\d+):/){
+    if ($t=~/^(\S+):(\d+):/) {
         $o = { file=>$1, line=>$2 };
     }
-    elsif($t=~/^(\S+)\((\d+)\):/){
+    elsif ($t=~/^(\S+)\((\d+)\):/) {
         $o = { file=>$1, line=>$2 };
     }
-    elsif($t=~/^PGC-.*\((.*):\s*(\d+)\)/){
+    elsif ($t=~/^PGC-.*\((.*):\s*(\d+)\)/) {
         $o = { file=>$1, line=>$2 };
     }
-    elsif($t=~/"(.*)", line (\d+): warning:/){
+    elsif ($t=~/"(.*)", line (\d+): warning:/) {
         $o = { file=>$1, line=>$2 };
     }
-    elsif($t=~/(\S+), line (\d+): warning:/){
+    elsif ($t=~/(\S+), line (\d+): warning:/) {
         $o = { file=>$1, line=>$2 };
     }
 
-    if($o){
-        if($o->{file}=~/^.*\/mymake\/(.*)/g){
+    if ($o) {
+        if ($o->{file}=~/^.*\/mymake\/(.*)/g) {
             $o->{file}="~$1";
-            if($o->{file}=~/^~(ucx|libfabric)/){
+            if ($o->{file}=~/^~(ucx|libfabric)/) {
                 $o->{skip}="external module: $1";
             }
         }
-        if($t=~/warning #177:/){
+        if ($t=~/warning #177:/) {
             $o->{skip}="icc: warning #177: unused label";
         }
-        elsif($compiler eq "gcc-4" and $t=~/\[(-Wmaybe-uninitialized)\]/){
+        elsif ($compiler eq "gcc-4" and $t=~/\[(-Wmaybe-uninitialized)\]/) {
             $o->{skip}="gcc-4: $1";
         }
         return $o;
     }
-    else{
+    else {
         return undef;
     }
 }
