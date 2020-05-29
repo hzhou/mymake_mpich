@@ -147,6 +147,11 @@ if ($config_hash{device}=~/^(ch\d:\w+)/) {
     $ENV{mpich_device}=$1;
 }
 
+if (!$ENV{mpich_device}) {
+    $ENV{mpich_device} = "ch4:ofi";
+    push @mpich_config, "--with-device=ch4:ofi";
+}
+
 my $test_script = $ENV{test_script};
 if (!$test_script) {
     $test_script = "test_build";
@@ -154,11 +159,6 @@ if (!$test_script) {
 
 if (!$ENV{compiler}) {
     $ENV{compiler}='gnu';
-}
-
-if (!$ENV{mpich_device}) {
-    $ENV{mpich_device} = "ch4:ofi";
-    push @mpich_config, "--with-device=ch4:ofi";
 }
 if (@testlist) {
     open Out, ">test/mpi/testlist.custom" or die "Can't write test/mpi/testlist.custom: $!\n";
