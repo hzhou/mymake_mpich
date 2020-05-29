@@ -1,8 +1,10 @@
 #!/usr/bin/perl
 use strict;
+use Cwd;
 
 our %opts;
 our @config_args;
+our @define_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -11,8 +13,7 @@ our %generics;
 our %specifics;
 our %generic_index;
 
-my $pwd=`pwd`;
-chomp $pwd;
+my $pwd=getcwd();
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
@@ -80,9 +81,6 @@ foreach my $a (@ARGV) {
             push @config_args, $a;
         }
     }
-    elsif ($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/) {
-        $opts{do}=$1;
-    }
 }
 
 if ($opts{CC}) {
@@ -106,9 +104,9 @@ if ($opts{moddir}) {
 if ($opts{prefix}) {
     $prefix = $opts{prefix};
 }
-if (!$prefix) {
-    $prefix="$pwd/_inst";
-    system "mkdir -p $prefix";
+if (!$opts{prefix}) {
+    $opts{prefix}="$pwd/_inst";
+    system "mkdir -p $opts{prefix}";
 }
 my $mod_tarball;
 if ($ENV{MODTARBALL}) {
@@ -121,17 +119,17 @@ elsif (-e "mymake/modules.tar.gz") {
     $mod_tarball = "mymake/modules.tar.gz";
 }
 if ($ENV{MODDIR}) {
-    $moddir = $ENV{MODDIR};
+    $opts{moddir} = $ENV{MODDIR};
 }
 elsif (-d "mymake/hwloc") {
-    $moddir = "$pwd/mymake";
+    $opts{moddir} = "$pwd/mymake";
 }
 elsif (-e $mod_tarball) {
-    $moddir = "$pwd/mymake";
-    my $cmd = "mkdir -p $moddir";
+    $opts{moddir} = "$pwd/mymake";
+    my $cmd = "mkdir -p $opts{moddir}";
     print "$cmd\n";
     system $cmd;
-    my $cmd = "tar -C $moddir -xf $mod_tarball";
+    my $cmd = "tar -C $opts{moddir} -xf $mod_tarball";
     print "$cmd\n";
     system $cmd;
 }

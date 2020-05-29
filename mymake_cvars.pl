@@ -1,10 +1,9 @@
 #!/usr/bin/perl
 use strict;
+use Cwd;
 
-my $pwd=`pwd`;
-chomp $pwd;
-my $pwd = `pwd`;
-chomp $pwd;
+my $pwd=getcwd();
+my $pwd = getcwd();
 
 if (!-f "$pwd/maint/extractcvars.in") {
     die "File not found: $pwd/maint/extractcvars.in\n";

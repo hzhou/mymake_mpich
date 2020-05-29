@@ -1,8 +1,10 @@
 #!/usr/bin/perl
 use strict;
+use Cwd;
 
 our %opts;
 our @config_args;
+our @define_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -20,21 +22,19 @@ our %special_targets;
 our @extra_make_rules;
 our %make_vars;
 
-my $pwd=`pwd`;
-chomp $pwd;
-my $mymake;
+my $pwd=getcwd();
 if ($0=~/^(\/.*)\//) {
-    $mymake = $1;
+    $opts{mymake} = $1;
 }
 elsif ($0=~/^(.*)\//) {
-    $mymake .= "$pwd/$1";
+    $opts{mymake} .= "$pwd/$1";
 }
-$mymake .="/mymake";
+$opts{mymake} .="/mymake";
 if (!-d "mymake") {
     mkdir "mymake" or die "can't mkdir mymake\n";
 }
-push @extra_make_rules, "DO_stage = perl $mymake\_stage.pl";
-push @extra_make_rules, "DO_clean = perl $mymake\_clean.pl";
+push @extra_make_rules, "DO_stage = perl $opts{mymake}_stage.pl";
+push @extra_make_rules, "DO_clean = perl $opts{mymake}_clean.pl";
 push @extra_make_rules, "";
 $opts{V}=0;
 $opts{ucx}="embedded";
@@ -103,9 +103,6 @@ foreach my $a (@ARGV) {
             push @config_args, $a;
         }
     }
-    elsif ($a=~/^(clean|errmsg|cvars|logs|hydra|testing)$/) {
-        $opts{do}=$1;
-    }
 }
 
 if ($opts{CC}) {
@@ -129,9 +126,9 @@ if ($opts{moddir}) {
 if ($opts{prefix}) {
     $prefix = $opts{prefix};
 }
-if (!$prefix) {
-    $prefix="$pwd/_inst";
-    system "mkdir -p $prefix";
+if (!$opts{prefix}) {
+    $opts{prefix}="$pwd/_inst";
+    system "mkdir -p $opts{prefix}";
 }
 my $mod_tarball;
 if ($ENV{MODTARBALL}) {
@@ -144,17 +141,17 @@ elsif (-e "mymake/modules.tar.gz") {
     $mod_tarball = "mymake/modules.tar.gz";
 }
 if ($ENV{MODDIR}) {
-    $moddir = $ENV{MODDIR};
+    $opts{moddir} = $ENV{MODDIR};
 }
 elsif (-d "mymake/hwloc") {
-    $moddir = "$pwd/mymake";
+    $opts{moddir} = "$pwd/mymake";
 }
 elsif (-e $mod_tarball) {
-    $moddir = "$pwd/mymake";
-    my $cmd = "mkdir -p $moddir";
+    $opts{moddir} = "$pwd/mymake";
+    my $cmd = "mkdir -p $opts{moddir}";
     print "$cmd\n";
     system $cmd;
-    my $cmd = "tar -C $moddir -xf $mod_tarball";
+    my $cmd = "tar -C $opts{moddir} -xf $mod_tarball";
     print "$cmd\n";
     system $cmd;
 }
@@ -435,9 +432,9 @@ my $bin="\x24(PREFIX)/bin";
 $dst_hash{"LN_S-$bin/mpiexec"}="$bin/mpiexec.hydra";
 $dst_hash{"LN_S-$bin/mpirun"}="$bin/mpiexec.hydra";
 
-$I_list .= " -I$moddir/mpl/include";
-$L_list .= " $moddir/mpl/libmpl.la";
-push @CONFIGS, "$moddir/mpl/include/mplconfig.h";
+$I_list .= " -I$opts{moddir}/mpl/include";
+$L_list .= " $opts{moddir}/mpl/libmpl.la";
+push @CONFIGS, "$opts{moddir}/mpl/include/mplconfig.h";
 my $config_args = "--disable-versioning --enable-embedded";
 if ($opts{device}=~/ch4:/) {
     $config_args .= " --with-posix-mutex=ticketlock";
@@ -450,37 +447,37 @@ foreach my $t (@config_args) {
         $config_args.=" $t";
     }
 }
-my @t = ("cd $moddir/mpl");
+my @t = ("cd $opts{moddir}/mpl");
 push @t, "\x24(DO_stage) Configure MPL";
 push @t, "autoreconf -ivf";
 push @t, "./configure $config_args";
 push @t, "cp $pwd/libtool .";
-push @extra_make_rules, "$moddir/mpl/include/mplconfig.h: ";
+push @extra_make_rules, "$opts{moddir}/mpl/include/mplconfig.h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-my @t = ("cd $moddir/mpl");
+my @t = ("cd $opts{moddir}/mpl");
 push @t, "\x24(MAKE)";
-push @extra_make_rules, "$moddir/mpl/libmpl.la: $moddir/mpl/include/mplconfig.h";
+push @extra_make_rules, "$opts{moddir}/mpl/libmpl.la: $opts{moddir}/mpl/include/mplconfig.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-if (!-d "$moddir/hwloc") {
-    my $cmd = "cp -r src/hwloc $moddir/hwloc";
+if (!-d "$opts{moddir}/hwloc") {
+    my $cmd = "cp -r src/hwloc $opts{moddir}/hwloc";
     print "$cmd\n";
     system $cmd;
 }
-$I_list .= " -I$moddir/hwloc/include";
-$L_list .= " $moddir/hwloc/hwloc/libhwloc_embedded.la";
-push @CONFIGS, "$moddir/hwloc/include/hwloc/autogen/config.h";
-my @t = ("cd $moddir/hwloc");
+$I_list .= " -I$opts{moddir}/hwloc/include";
+$L_list .= " $opts{moddir}/hwloc/hwloc/libhwloc_embedded.la";
+push @CONFIGS, "$opts{moddir}/hwloc/include/hwloc/autogen/config.h";
+my @t = ("cd $opts{moddir}/hwloc");
 push @t, "\x24(DO_stage) Configure HWLOC";
 push @t, "sh autogen.sh";
 push @t, "./configure --enable-embedded-mode --enable-visibility";
-push @extra_make_rules, "$moddir/hwloc/include/hwloc/autogen/config.h: ";
+push @extra_make_rules, "$opts{moddir}/hwloc/include/hwloc/autogen/config.h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-my @t = ("cd $moddir/hwloc");
+my @t = ("cd $opts{moddir}/hwloc");
 push @t, "\x24(MAKE)";
-push @extra_make_rules, "$moddir/hwloc/hwloc/libhwloc_embedded.la: $moddir/hwloc/include/hwloc/autogen/config.h";
+push @extra_make_rules, "$opts{moddir}/hwloc/hwloc/libhwloc_embedded.la: $opts{moddir}/hwloc/include/hwloc/autogen/config.h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if ($opts{argobots}) {
@@ -542,60 +539,60 @@ while(<In>){
 close In;
 open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom: $!\n";
 print "  --> [mymake/Makefile.custom]\n";
-print Out "export MODDIR=$moddir\n";
-print Out "PREFIX=$prefix\n";
+print Out "export MODDIR=$opts{moddir}\n";
+print Out "PREFIX=$opts{prefix}\n";
 print Out "\n";
 if (@CONFIGS) {
     my $l = "CONFIGS = @CONFIGS";
-    $l=~s/$moddir/\x24(MODDIR)/g;
+    $l=~s/$opts{moddir}/\x24(MODDIR)/g;
     print Out "$l\n";
     print Out "\n";
 }
 my $t = get_object("DEFS");
 $t .= " @extra_DEFS";
 my $l = "DEFS = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("DEFAULT_INCLUDES");
 my $l = "DEFAULT_INCLUDES = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("INCLUDES");
 $t .= " @extra_INCLUDES";
 my $l = "INCLUDES = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("AM_CPPFLAGS");
 $t=~s/\@HWLOC_\S+\@\s*//;
 $t=~s/\s*-I\S*mpl\/include//g;
 $t .= $I_list;
 my $l = "AM_CPPFLAGS = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("CPPFLAGS");
 my $l = "CPPFLAGS = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("AM_CFLAGS");
 $t=~s/\@HWLOC_\S+\@\s*//;
 my $l = "AM_CFLAGS = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("CFLAGS");
 my $l = "CFLAGS = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("AM_LDFLAGS");
 my $l = "AM_LDFLAGS = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("LDFLAGS");
 my $l = "LDFLAGS = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("LIBS");
 my $l = "LIBS = $t";
-$l=~s/$moddir/\x24(MODDIR)/g;
+$l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 print Out "\n";
 
@@ -748,12 +745,12 @@ foreach my $p (@ltlibs) {
     foreach my $t (@t) {
         if ($t) {
             my $l = "    $t \\";
-            $l=~s/$moddir/\x24(MODDIR)/g;
+            $l=~s/$opts{moddir}/\x24(MODDIR)/g;
             print Out "$l\n";
         }
     }
     my $l = "    $last_item";
-    $l=~s/$moddir/\x24(MODDIR)/g;
+    $l=~s/$opts{moddir}/\x24(MODDIR)/g;
     print Out "$l\n";
 
     if (@CONFIGS and "$o"=~/_OBJECTS$/) {
@@ -789,12 +786,12 @@ foreach my $p (@ltlibs) {
         foreach my $t (@t) {
             if ($t) {
                 my $l = "    $t \\";
-                $l=~s/$moddir/\x24(MODDIR)/g;
+                $l=~s/$opts{moddir}/\x24(MODDIR)/g;
                 print Out "$l\n";
             }
         }
         my $l = "    $last_item";
-        $l=~s/$moddir/\x24(MODDIR)/g;
+        $l=~s/$opts{moddir}/\x24(MODDIR)/g;
         print Out "$l\n";
 
         if (@CONFIGS and "$add"=~/_OBJECTS$/) {
@@ -868,12 +865,12 @@ foreach my $p (@programs) {
     foreach my $t (@t) {
         if ($t) {
             my $l = "    $t \\";
-            $l=~s/$moddir/\x24(MODDIR)/g;
+            $l=~s/$opts{moddir}/\x24(MODDIR)/g;
             print Out "$l\n";
         }
     }
     my $l = "    $last_item";
-    $l=~s/$moddir/\x24(MODDIR)/g;
+    $l=~s/$opts{moddir}/\x24(MODDIR)/g;
     print Out "$l\n";
 
     if (@CONFIGS and "$o"=~/_OBJECTS$/) {
@@ -909,12 +906,12 @@ foreach my $p (@programs) {
         foreach my $t (@t) {
             if ($t) {
                 my $l = "    $t \\";
-                $l=~s/$moddir/\x24(MODDIR)/g;
+                $l=~s/$opts{moddir}/\x24(MODDIR)/g;
                 print Out "$l\n";
             }
         }
         my $l = "    $last_item";
-        $l=~s/$moddir/\x24(MODDIR)/g;
+        $l=~s/$opts{moddir}/\x24(MODDIR)/g;
         print Out "$l\n";
 
         if (@CONFIGS and "$add"=~/_OBJECTS$/) {
@@ -948,7 +945,7 @@ foreach my $p (@programs) {
 
 print Out "\x23 --------------------\n";
 foreach my $l (@extra_make_rules) {
-    $l=~s/$moddir/\x24(MODDIR)/g;
+    $l=~s/$opts{moddir}/\x24(MODDIR)/g;
     print Out "$l\n";
 }
 print Out "\x23 --------------------\n";
@@ -1020,7 +1017,7 @@ my $t3 = get_list("modinc_HEADERS");
 if (@$t1 or @$t2 or @$t3) {
     foreach my $t (@$t1, @$t2, @$t3) {
         $t=~s/use_mpi_f08/use_mpi/;
-        $dst_hash{$t} = "$prefix/include";
+        $dst_hash{$t} = "$opts{prefix}/include";
     }
 }
 
