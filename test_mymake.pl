@@ -2,9 +2,9 @@
 use strict;
 
 our $compiler;
-our %config_hash;
 our @mpich_config;
 our @testmpi_config;
+our %config_hash;
 our @testlist;
 
 
@@ -86,9 +86,6 @@ if ($ENV{param}) {
 }
 if (@mpich_config) {
     foreach my $t (@mpich_config) {
-        if ($t=~/--with-device=(.*)/) {
-            $ENV{mpich_device} = $1;
-        }
         my $k=$t;
         $k=~s/=.*$//;
         $k=~s/^--(disable|enable|with|without)-//;
@@ -113,6 +110,14 @@ if (@mpich_config) {
     }
 }
 
+if ($config_hash{device}=~/^(ch\d:\w+)/) {
+    $ENV{mpich_device}=$1;
+}
+
+if (!$ENV{mpich_device}) {
+    $ENV{mpich_device} = "ch4:ofi";
+    push @mpich_config, "--with-device=ch4:ofi";
+}
 push @testmpi_config, "--disable-perftest";
 
 if ($config_hash{pmix} or $config_hash{device}=~/ucx/ or $config_hash{pmi}=~/pmi2/) {
@@ -141,15 +146,6 @@ if (@mpich_config) {
 }
 if (@testmpi_config) {
     $ENV{testmpi_config} = join(' ', @testmpi_config);
-}
-
-if ($config_hash{device}=~/^(ch\d:\w+)/) {
-    $ENV{mpich_device}=$1;
-}
-
-if (!$ENV{mpich_device}) {
-    $ENV{mpich_device} = "ch4:ofi";
-    push @mpich_config, "--with-device=ch4:ofi";
 }
 
 my $test_script = $ENV{test_script};
