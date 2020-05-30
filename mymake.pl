@@ -4,7 +4,6 @@ use Cwd;
 
 our %opts;
 our @config_args;
-our @define_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -19,6 +18,7 @@ our @programs;
 our @ltlibs;
 our %special_targets;
 our @extra_make_rules;
+our %config_defines;
 our %make_vars;
 
 my $pwd=getcwd();
@@ -43,9 +43,22 @@ foreach my $a (@ARGV) {
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
-if (@ARGV == 1 && $ARGV[0] eq "V=1") {
-    $opts{V} = 1;
-    @ARGV=();
+my $cnt_else = 0;
+foreach my $a (@ARGV) {
+    if ($a=~/V=1/) {
+        $opts{V} = 1;
+    }
+    elsif ($a=~/--(with-posix-mutex)=(.*)/) {
+        $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
+    }
+    else {
+        $cnt_else++;
+    }
+}
+
+print "[filter_ARGV] $cnt_else ARGS\n";
+if (!$cnt_else) {
+    @ARGV = ();
 }
 my $need_save_args;
 if (!@ARGV && -f "mymake/args") {
@@ -102,6 +115,9 @@ foreach my $a (@ARGV) {
         elsif ($a=~/--with-(ucx|libfabric|argobots)=(.*)/) {
             $opts{$1}=$2;
             push @config_args, $a;
+        }
+        elsif ($a=~/--(with-posix-mutex)=(.*)/) {
+            $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
         }
         else {
             push @config_args, $a;
@@ -960,9 +976,6 @@ $I_list .= " -I$opts{moddir}/mpl/include";
 $L_list .= " $opts{moddir}/mpl/libmpl.la";
 push @CONFIGS, "$opts{moddir}/mpl/include/mplconfig.h";
 my $config_args = "--disable-versioning --enable-embedded";
-if ($opts{device}=~/ch4:/) {
-    $config_args .= " --with-posix-mutex=ticketlock";
-}
 foreach my $t (@config_args) {
     if ($t=~/--enable-(g|strict)/) {
         $config_args.=" $t";
@@ -1871,35 +1884,7 @@ system "$make_vars{CC} -Imymake/mpl/include mymake/t.c -o mymake/t";
 system "mymake/t";
 my $ret = $? >> 8;
 
-my @mod_list;
-print "  Patching for sizeof_atomic...\n";
-my $f = "src/include/mpichconf.h";
-my $f_ = $f;
-$f_=~s/[\.\/]/_/g;
-my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-push @mod_list, \@m;
-
-system "mv $m[0] $m[1]";
-my @lines;
-{
-    open In, "$m[1]" or die "Can't open $m[1].\n";
-    @lines=<In>;
-    close In;
-}
-my $flag_skip=0;
-open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-print "  --> [$m[2]]\n";
-foreach my $l (@lines) {
-    if ($l=~/^#define SIZEOF_MPL_ATOMIC_PTR_T 0/) {
-        $l=~s/0/$ret/;
-    }
-    if ($flag_skip) {
-        next;
-    }
-    print Out $l;
-}
-close Out;
-system "cp -v $m[2] $m[0]";
+$config_defines{SIZEOF_MPL_ATOMIC_PTR_T} = $ret;
 my $lock_based_atomics;
 open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
 while(<In>){
@@ -1910,35 +1895,68 @@ while(<In>){
 }
 close In;
 if ($lock_based_atomics) {
-    print "  Patching for lock_based_atomics...\n";
-    my @mod_list;
-    my $f = "src/include/mpichconf.h";
-    my $f_ = $f;
-    $f_=~s/[\.\/]/_/g;
-    my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-    push @mod_list, \@m;
+    $config_defines{ENABLE_NO_LOCAL} = 1;
+}
+if ($opts{device}=~/ch4:/ && !$config_defines{MPL_POSIX_MUTEX_NAME}) {
+    $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_TICKETLOCK";
+}
+if (%config_defines) {
+    my (@lines, $cnt);
+    open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
+    while(<In>){
+        if (/^\/\* #undef (\w+)/ && $config_defines{$1}) {
+            print "  -- define $1 $config_defines{$1}\n";
+            push @lines, "#ifndef $1\n";
+            push @lines, "#define $1 $config_defines{$1}\n";
+            push @lines, "#endif\n";
+            $cnt++;
+        }
+        elsif (/^#define (\w+) (.*)/ && $config_defines{$1}) {
+            print "  -- define $1 $config_defines{$1}\n";
+            push @lines, "#define $1 $config_defines{$1}\n";
+            $cnt++;
+        }
+        else {
+            push @lines, $_;
+        }
+    }
+    close In;
 
-    system "mv $m[0] $m[1]";
-    my @lines;
-    {
-        open In, "$m[1]" or die "Can't open $m[1].\n";
-        @lines=<In>;
-        close In;
-    }
-    my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-    print "  --> [$m[2]]\n";
-    foreach my $l (@lines) {
-        if ($l=~/^.. #undef ENABLE_NO_LOCAL/) {
-            $l = "#define ENABLE_NO_LOCAL 1\n";
+    if ($cnt>0) {
+        open Out, ">mymake/mpl/include/mplconfig.h" or die "Can't write mymake/mpl/include/mplconfig.h: $!\n";
+        foreach my $l (@lines) {
+            print Out $l;
         }
-        if ($flag_skip) {
-            next;
-        }
-        print Out $l;
+        close Out;
     }
-    close Out;
-    system "cp -v $m[2] $m[0]";
+    my (@lines, $cnt);
+    open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
+    while(<In>){
+        if (/^\/\* #undef (\w+)/ && $config_defines{$1}) {
+            print "  -- define $1 $config_defines{$1}\n";
+            push @lines, "#ifndef $1\n";
+            push @lines, "#define $1 $config_defines{$1}\n";
+            push @lines, "#endif\n";
+            $cnt++;
+        }
+        elsif (/^#define (\w+) (.*)/ && $config_defines{$1}) {
+            print "  -- define $1 $config_defines{$1}\n";
+            push @lines, "#define $1 $config_defines{$1}\n";
+            $cnt++;
+        }
+        else {
+            push @lines, $_;
+        }
+    }
+    close In;
+
+    if ($cnt>0) {
+        open Out, ">src/include/mpichconf.h" or die "Can't write src/include/mpichconf.h: $!\n";
+        foreach my $l (@lines) {
+            print Out $l;
+        }
+        close Out;
+    }
 }
 
 # ---- subroutines --------------------------------------------

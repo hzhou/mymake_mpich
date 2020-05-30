@@ -4,7 +4,6 @@ use Cwd;
 
 our %opts;
 our @config_args;
-our @define_args;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -39,9 +38,22 @@ push @extra_make_rules, "";
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
-if (@ARGV == 1 && $ARGV[0] eq "V=1") {
-    $opts{V} = 1;
-    @ARGV=();
+my $cnt_else = 0;
+foreach my $a (@ARGV) {
+    if ($a=~/V=1/) {
+        $opts{V} = 1;
+    }
+    elsif ($a=~/--(with-posix-mutex)=(.*)/) {
+        $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
+    }
+    else {
+        $cnt_else++;
+    }
+}
+
+print "[filter_ARGV] $cnt_else ARGS\n";
+if (!$cnt_else) {
+    @ARGV = ();
 }
 my $need_save_args;
 if (!@ARGV && -f "mymake/args") {
@@ -98,6 +110,9 @@ foreach my $a (@ARGV) {
         elsif ($a=~/--with-(ucx|libfabric|argobots)=(.*)/) {
             $opts{$1}=$2;
             push @config_args, $a;
+        }
+        elsif ($a=~/--(with-posix-mutex)=(.*)/) {
+            $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
         }
         else {
             push @config_args, $a;
@@ -436,9 +451,6 @@ $I_list .= " -I$opts{moddir}/mpl/include";
 $L_list .= " $opts{moddir}/mpl/libmpl.la";
 push @CONFIGS, "$opts{moddir}/mpl/include/mplconfig.h";
 my $config_args = "--disable-versioning --enable-embedded";
-if ($opts{device}=~/ch4:/) {
-    $config_args .= " --with-posix-mutex=ticketlock";
-}
 foreach my $t (@config_args) {
     if ($t=~/--enable-(g|strict)/) {
         $config_args.=" $t";

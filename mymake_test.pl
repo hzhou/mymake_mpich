@@ -7,8 +7,9 @@ our %opts;
 my $pwd=getcwd();
 open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
 while(<In>){
-    if /^(\w+): (.*)/;
+    if (/^(\w+): (.*)/) {
         $opts{$1} = $2;
+    }
 }
 close In;
 my $dir = "test/mpi";
