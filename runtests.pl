@@ -568,7 +568,7 @@ sub RunMPIProgram {
 sub LoadTests {
     my ($dir, $alltests) = @_;
     my $srcdir = $config{srcdir};
-    my @include_list=split /\s+/, $config{tests};
+    my @include_list=split /[, ]+/, $config{tests};
     my %loaded_listfile;
     while(my $f=shift @include_list){
         if (-d $f) {
