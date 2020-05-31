@@ -221,6 +221,7 @@ else {
     if (!$compiler) {
         $compiler="gnu";
     }
+    my $dur = $time_finish - $time_start;
     system "perl $mymake_dir/report_make_log.pl $f $compiler $dur";
 }
 
