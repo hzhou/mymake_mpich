@@ -150,16 +150,10 @@ foreach my $d (@dirs) {
     if ($d ne ".") {
         $make.=" -C $d";
     }
-    if ($config{j}) {
-        $make.=" -j $config{j}";
-    }
 
     my $t = join ' ', @prog_list;
-    `$make clean 2>&1`;
-    if ($config{verbose}) {
-        print "    $make $t...\n";
-    }
-    `$make $t 2>&1`;
+    my $cmd = "$make clean && $make $t";
+    system($cmd)==0 or die "Failed [$cmd]\n";
 }
 
 print "Running tests...\n";
