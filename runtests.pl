@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 use strict;
+use Cwd;
 use IO::Select;
 use Socket;
 use Time::HiRes qw(gettimeofday);
@@ -59,8 +60,7 @@ our $verbose;
     "exclude-dir" => "exclude_dir",
 );
 
-$cwd = `pwd`;
-chomp $cwd;
+$cwd = getcwd();
 $config{tests} = "testlist";
 $config{srcdir} = ".";
 
@@ -89,7 +89,7 @@ $config{clean_programs} = 1;
 $config{MPIMajorVersion} = "unknown";
 $config{MPIMinorVersion} = "unknown";
 $config{exclude_pattern} = 'type=MPI_(?!INT |DOUBLE )';
-if(!$ENV{DTP_NUM_OBJS}){
+if (!$ENV{DTP_NUM_OBJS}) {
     $ENV{DTP_NUM_OBJS} = 5;
 }
 $config{j} = probe_max_cores() -1;
@@ -99,31 +99,31 @@ load_environment();
 load_commandline();
 post_config();
 print "dump_config --->\n";
-foreach my $k (sort keys %config){
+foreach my $k (sort keys %config) {
     print "    $k: $config{$k}\n";
 }
 print "\n";
 
 my $test = {prog=>"date", np=>1, resultTest=>"TestStatusZero"};
-if(RunMPIProgram($test)){
+if (RunMPIProgram($test)) {
     print "$test->{found_error}\n";
     die "Can't run mpiexec [$config{mpiexec}]!\n";
 }
-else{
+else {
     print "Looking good.\n";
 }
 
-if(!@alltests){
-    LoadTests(".");
+if (!@alltests) {
+    LoadTests(".", \@alltests);
     my $n_tests = @alltests;
     print "$n_tests tests loaded\n";
     my $n_skip;
-    foreach my $t (@alltests){
-        if($t->{skip}){
+    foreach my $t (@alltests) {
+        if ($t->{skip}) {
             $n_skip++;
         }
     }
-    if($n_skip){
+    if ($n_skip) {
         print "$n_skip tests skipped\n";
     }
 }
@@ -132,9 +132,9 @@ print "Building test programs...\n";
 my @dirs;
 my %dirs;
 my %dir_test_count;
-foreach my $test (@alltests){
+foreach my $test (@$alltests) {
     my $d = $test->{dir};
-    if(!$dirs{$d}){
+    if (!$dirs{$d}) {
         push @dirs, $d;
         $dirs{$d} = {};
     }
@@ -142,21 +142,21 @@ foreach my $test (@alltests){
     $dir_test_count{$d}++;
 }
 
-foreach my $d (@dirs){
+foreach my $d (@dirs) {
     my @prog_list = sort keys %{$dirs{$d}};
     my $n = @prog_list;
     print "  $d $n programs - $dir_test_count{$d} tests\n";
     my $make="make";
-    if($d ne "."){
+    if ($d ne ".") {
         $make.=" -C $d";
     }
-    if($config{j}){
+    if ($config{j}) {
         $make.=" -j $config{j}";
     }
 
     my $t = join ' ', @prog_list;
     `$make clean 2>&1`;
-    if($config{verbose}){
+    if ($config{verbose}) {
         print "    $make $t...\n";
     }
     `$make $t 2>&1`;
@@ -165,26 +165,26 @@ foreach my $d (@dirs){
 print "Running tests...\n";
 my $time_start=time;
 my $time_last=time;
-if($config{j}<=1){
+if ($config{j}<=1) {
     my $i = -1;
-    foreach my $test (@alltests){
+    foreach my $test (@alltests) {
         $i++;
         RunMPIProgram($test);
         my $time_now = time;
-        if($time_now-$time_last>10){
+        if ($time_now-$time_last>10) {
             $time_last = $time_now;
             my $t = $time_now-$time_start;
-            if($t>=3600){
+            if ($t>=3600) {
                 $t=sprintf "%02d:%02d:%02d", $t/3600, $t/60%60, $t%60;
             }
-            else{
+            else {
                 $t=sprintf "   %02d:%02d", $t/60, $t%60;
             }
             printf "  [$t] test #%5d: $test->{dir} - $test->{line}\n", $test->{id};
         }
     }
 }
-else{
+else {
     print "  maximum jobs: $config{j}\n";
     my $N_j = $config{j};
     my @worker_load;
@@ -196,14 +196,14 @@ else{
         select(((select($child), $|=1))[0]);
         select(((select($parent), $|=1))[0]);
         my $pid = fork();
-        if($pid){
+        if ($pid) {
             close $parent;
             push @worker_load, 0;
             push @worker_pid, $pid;
             push @worker_socket, $child;
             $io_select->add($child);
         }
-        else{
+        else {
             close $child;
             run_worker($parent, $parent);
             exit;
@@ -215,19 +215,19 @@ else{
     my $total_load = 0;
     while(1){
         my $ran_test = 0;
-        if($total_load < $N_j){
+        if ($total_load < $N_j) {
             while($i_test < $n and ($alltests[$i_test]->{skip} or $alltests[$i_test]->{ran})){
                 $i_test++;
             }
             for (my $j = $i_test; $j<$n; $j++) {
                 my $test=$alltests[$j];
-                if($test->{skip} or $test->{ran}){
+                if ($test->{skip} or $test->{ran}) {
                     next;
                 }
                 my $np = $test->{np};
-                if($total_load+$np <= $N_j || $total_load==0){
+                if ($total_load+$np <= $N_j || $total_load==0) {
                     for (my $k = 0; $k<$N_j; $k++) {
-                        if(!$worker_load[$k]){
+                        if (!$worker_load[$k]) {
                             $worker_load[$k] = "$j - $np";
                             my $h = $worker_socket[$k];
                             print $h "run $j\n";
@@ -241,37 +241,37 @@ else{
             }
         }
         L1:
-        if(!$ran_test){
+        if (!$ran_test) {
             my @ready = $io_select->can_read(1);
-            foreach my $h (@ready){
+            foreach my $h (@ready) {
                 for (my $i = 0; $i<$N_j; $i++) {
-                    if($h==$worker_socket[$i]){
-                        if($worker_load[$i]=~/(\d+) - (\d+)/){
+                    if ($h==$worker_socket[$i]) {
+                        if ($worker_load[$i]=~/(\d+) - (\d+)/) {
                             my ($j, $np) = ($1, $2);
                             my $test = $alltests[$j];
                             my $expect_output;
                             while(<$h>){
-                                if(/^(found_error|runtime):\s*(.*)/){
+                                if (/^(found_error|runtime):\s*(.*)/) {
                                     $test->{$1}=$2;
                                 }
-                                elsif(/^output:/){
+                                elsif (/^output:/) {
                                     $expect_output = 1;
                                 }
-                                elsif(/^--$/){
+                                elsif (/^--$/) {
                                     last;
                                 }
-                                elsif($expect_output){
+                                elsif ($expect_output) {
                                     $test->{output}.=$_;
                                 }
                             }
                             my $time_now = time;
-                            if($time_now-$time_last>10){
+                            if ($time_now-$time_last>10) {
                                 $time_last = $time_now;
                                 my $t = $time_now-$time_start;
-                                if($t>=3600){
+                                if ($t>=3600) {
                                     $t=sprintf "%02d:%02d:%02d", $t/3600, $t/60%60, $t%60;
                                 }
-                                else{
+                                else {
                                     $t=sprintf "   %02d:%02d", $t/60, $t%60;
                                 }
                                 printf "  [$t] test #%5d: $test->{dir} - $test->{line}\n", $test->{id};
@@ -284,45 +284,45 @@ else{
                 }
             }
         }
-        if($i_test>=$n && $total_load==0){
+        if ($i_test>=$n && $total_load==0) {
             last;
         }
     }
 }
-if($config{xmlfile}){
+if ($config{xmlfile}) {
     dump_xml(\@alltests, $config{xmlfile});
 }
-if($config{tapfile}){
+if ($config{tapfile}) {
     dump_tap(\@alltests, $config{tapfile});
 }
-if($config{junitfile}){
+if ($config{junitfile}) {
     dump_junit(\@alltests, $config{junitfile});
 }
 my $n = @alltests;
 my $err_count = 0;
 print "\n---- SUMMARY ----\n";
-foreach my $test (@alltests){
-    if($test->{found_error}){
+foreach my $test (@alltests) {
+    if ($test->{found_error}) {
         my $output = $test->{output};
         $output =~s/^\W+//;
-        if(length($output)>20){
+        if (length($output)>20) {
             $output = substr($output, 0, 20) ."...";
         }
         print "Failed: $test->{prog}: [$test->{found_error}] - $output\n";
         $err_count++;
     }
 }
-if($err_count){
+if ($err_count) {
     print "$err_count tests failed out of $n\n";
 }
-else{
+else {
     print " All $n tests passed!\n";
 }
 
 # ---- subroutines --------------------------------------------
 sub probe_max_cores {
     my $cpu_count = `grep -c -P '^processor\\s+:' /proc/cpuinfo`;
-    if($cpu_count=~/^(\d+)/){
+    if ($cpu_count=~/^(\d+)/) {
         return $1;
     }
     return 0;
@@ -334,10 +334,10 @@ sub load_config {
         $config_dir = $1;
     }
     my $f = "$config_dir/runtests.config";
-    if(-f $f){
-        open In, "$f" or die "Can't open $f.\n";
+    if (-f $f) {
+        open In, "$f" or die "Can't open $f: $!\n";
         while(<In>){
-            if(/^\s*(\w+)\s*=\s*(.+)/){
+            if (/^\s*(\w+)\s*=\s*(.+)/) {
                 $config{$1} = $2;
             }
         }
@@ -346,64 +346,64 @@ sub load_config {
 }
 
 sub load_environment {
-    while (my ($k, $v) = each %env_vars){
-        if(defined $ENV{$k}){
+    while (my ($k, $v) = each %env_vars) {
+        if (defined $ENV{$k}) {
             $config{$v} = $ENV{$k};
         }
     }
 }
 
 sub load_commandline {
-    foreach my $a (@ARGV){
-        if($a=~/^--?help/){
+    foreach my $a (@ARGV) {
+        if ($a=~/^--?help/) {
             print STDERR "runtests [-tests=testfile] [-np=nprocesses] [-maxnp=max-nprocesses] [-srcdir=location-of-tests] [-ppn=max-proc-per-node] [-ppnarg=string] [-timelimitarg=string] [-mpiversion=major.minor] [-xmlfile=filename ] [-tapfile=filename ] [-junitfile=filename ] [-noxmlclose] [-verbose] [-showprogress] [-batch] [-dir=execute_in_dir] [-help]\n";
             exit(1);
         }
-        elsif($a=~/^--?dir=(.*)/){
+        elsif ($a=~/^--?dir=(.*)/) {
             chdir $1 or die "Can't chdir $1\n";
         }
-        elsif($a=~/^--?run=(.*)/){
+        elsif ($a=~/^--?run=(.*)/) {
             my $test = parse_testline($1);
             $test->{dir} = ".";
             $test->{line} = $1;
             push @alltests, $test;
         }
-        elsif($a =~/^--?([\w\-]+)=(.*)/){
+        elsif ($a =~/^--?([\w\-]+)=(.*)/) {
             my ($k, $v) = ($1, $2);
-            if($cmdline_vars{$k}){
+            if ($cmdline_vars{$k}) {
                 $config{$cmdline_vars{$k}} = $v;
             }
-            else{
+            else {
                 warn "Unrecognized command line option [$a]\n";
             }
         }
-        elsif($a =~/^--?([\w\-]+)$/){
+        elsif ($a =~/^--?([\w\-]+)$/) {
             my $k = $1;
-            if($cmdline_vars{$k}){
+            if ($cmdline_vars{$k}) {
                 $config{$cmdline_vars{$k}} = 1;
             }
-            else{
+            else {
                 warn "Unrecognized command line option [$a]\n";
             }
         }
-        else{
+        else {
             die "Unrecognized command line argument [$a]\n";
         }
     }
 }
 
 sub post_config {
-    if($config{mpiversion}=~/(\d+)\.(\d+)/){
+    if ($config{mpiversion}=~/(\d+)\.(\d+)/) {
         $config{MPIMajorVersion} = $1;
         $config{MPIMinorVersion} = $2;
     }
 
-    if($config{tests}!~/\s/){
+    if ($config{tests}!~/\s/) {
         $config{tests}=~s/,/ /g;
     }
 
-    foreach my $k ("run_strict", "run_mpix", "run_xfail", "run_batch"){
-        if($config{$k} && $config{$k} =~/^(no|false)$/i){
+    foreach my $k ("run_strict", "run_mpix", "run_xfail", "run_batch") {
+        if ($config{$k} && $config{$k} =~/^(no|false)$/i) {
             $config{$k} = undef;
         }
     }
@@ -413,26 +413,26 @@ sub post_config {
 
 sub RunMPIProgram {
     my ($test) = @_;
-    if($test->{prog} =~ /^osu_.+/){
-        if(!$ENV{OSU}){
+    if ($test->{prog} =~ /^osu_.+/) {
+        if (!$ENV{OSU}) {
             $test->{found_error} = "Need set environment OSU to run osu micro benchmarks";
             goto done;
         }
         my $OSU=$ENV{OSU};
 
-        if(-e "$OSU/pt2pt/$test->{prog}"){
+        if (-e "$OSU/pt2pt/$test->{prog}") {
             $test->{dir}="$OSU/pt2pt";
         }
-        if(-e "$OSU/collective/$test->{prog}"){
+        if (-e "$OSU/collective/$test->{prog}") {
             $test->{dir}="$OSU/collective";
         }
-        if(-e "$OSU/one-sided/$test->{prog}"){
+        if (-e "$OSU/one-sided/$test->{prog}") {
             $test->{dir}="$OSU/one-sided";
         }
-        if(-e "$OSU/startup/$test->{prog}"){
+        if (-e "$OSU/startup/$test->{prog}") {
             $test->{dir}="$OSU/startup";
         }
-        if(! $test->{dir}){
+        if (! $test->{dir}) {
             $test->{found_error} = "$test->{prog} not found";
             goto done;
         }
@@ -440,31 +440,31 @@ sub RunMPIProgram {
         $test->{resultTest} = "TestStatusZero";
     }
 
-    if($test->{dir} && ! -e "$test->{dir}/$test->{prog}"){
+    if ($test->{dir} && ! -e "$test->{dir}/$test->{prog}") {
         BuildMPIProgram($test);
     }
-    if($test->{found_error}){
+    if ($test->{found_error}) {
         return;
     }
     my $cmd = get_test_cmd($test);
-    if($verbose){
+    if ($config{verbose}) {
         print "\n---- TEST $test->{id} ----\n";
         print "  [$test->{dir}] $cmd\n";
     }
     my %saveEnv;
-    if($test->{env}){
+    if ($test->{env}) {
         %saveEnv = %ENV;
-        if($verbose){
+        if ($config{verbose}) {
             print "  ENV: $test->{env}\n";
         }
-        foreach my $val (split /\s+/, $test->{env}){
-            if($val =~ /([^=]+)=(.*)/){
+        foreach my $val (split /\s+/, $test->{env}) {
+            if ($val =~ /([^=]+)=(.*)/) {
                 $ENV{$1} = $2;
             }
         }
     }
     my $t1 = gettimeofday();
-    if($test->{dir} ne "."){
+    if ($test->{dir} ne ".") {
         $cmd = "cd $test->{dir} && $cmd";
     }
     open( my $MPIOUT, "$cmd 2>&1 |" ) || die "Could not run $test->{prog}\n";
@@ -472,23 +472,23 @@ sub RunMPIProgram {
     my ($hydra_err);
     while(<$MPIOUT>){
         push @output, $_;
-        if($verbose){
+        if ($config{verbose}) {
             print $_;
         }
-        if(/FORTRAN STOP/){
+        if (/FORTRAN STOP/) {
             next;
         }
-        elsif(/^\s*(No Errors|Test Passed)/i){
+        elsif (/^\s*(No Errors|Test Passed)/i) {
             $found_noerror += 1;
             next;
         }
-        elsif(/(requesting checkpoint|checkpoint completed)\s*$/){
+        elsif (/(requesting checkpoint|checkpoint completed)\s*$/) {
             next;
         }
-        elsif(/application called MPI_Abort/){
+        elsif (/application called MPI_Abort/) {
             $hydra_err++;
         }
-        else{
+        else {
             $err_count++;
         }
     }
@@ -496,67 +496,67 @@ sub RunMPIProgram {
     $test->{output} = join('', @output);
     my $t2 = gettimeofday();
     $test->{runtime} = $t2-$t1;
-    if($test->{env}){
+    if ($test->{env}) {
         %ENV = %saveEnv;
     }
 
-    if(!$test->{resultTest}){
-        if(!$found_noerror){
+    if (!$test->{resultTest}) {
+        if (!$found_noerror) {
             $test->{found_error} = "Expect \"No Errors\"";
         }
-        elsif($err_count>0){
+        elsif ($err_count>0) {
             $test->{found_error} = "Encounter unexpected output ($err_count counts)";
         }
-        if(!$rc or $?){
+        if (!$rc or $?) {
             my $sig=$? &0x7f;
             my $status = $?>>8;
-            if($sig){
+            if ($sig) {
                 $test->{found_error}="Program exited with signal $sig";
             }
-            elsif($status){
+            elsif ($status) {
                 $test->{found_error}="Program exited with status $status";
             }
-            else{
+            else {
                 $test->{found_error}="Program exited with non-zero return code";
             }
         }
     }
-    elsif($test->{resultTest} eq "TestStatusZero"){
-        if(!$rc){
+    elsif ($test->{resultTest} eq "TestStatusZero") {
+        if (!$rc) {
             $test->{found_error}="Expect zero return status";
         }
     }
-    elsif($test->{resultTest} eq "TestStatus"){
-        if($err_count>0 && !$found_noerror){
+    elsif ($test->{resultTest} eq "TestStatus") {
+        if ($err_count>0 && !$found_noerror) {
             $test->{found_error} = "Unexpected output";
         }
-        if($rc){
+        if ($rc) {
             $test->{found_error} = "Expect Non-Zero return status";
         }
     }
-    elsif($test->{resultTest} eq "TestErrFatal"){
-        if($rc){
+    elsif ($test->{resultTest} eq "TestErrFatal") {
+        if ($rc) {
             $test->{found_error} = "Expect Non-Zero return status";
         }
     }
-    elsif($test->{resultTest} eq "TestStatusNoErrors"){
-        if(!$found_noerror){
+    elsif ($test->{resultTest} eq "TestStatusNoErrors") {
+        if (!$found_noerror) {
             $test->{found_error} = "Expect \"No Errors\"";
         }
-        elsif($err_count>0){
+        elsif ($err_count>0) {
             $test->{found_error} = "Encounter unexpected output ($err_count counts)";
         }
-        elsif($rc){
+        elsif ($rc) {
             $test->{found_error} = "Expect Non-Zero return status";
         }
     }
 
     done:
-    if($verbose){
-        if($test->{found_error}){
+    if ($config{verbose}) {
+        if ($test->{found_error}) {
             print "Failed: [$test->{line}] - $test->{found_error}\n";
         }
-        else{
+        else {
             print "Success: [$test->{line}]\n";
         }
     }
@@ -566,28 +566,28 @@ sub RunMPIProgram {
 }
 
 sub LoadTests {
-    my ($dir) = @_;
+    my ($dir, $alltests) = @_;
     my $srcdir = $config{srcdir};
     my @include_list=split /\s+/, $config{tests};
     my %loaded_listfile;
     while(my $f=shift @include_list){
-        if(-d $f){
-            LoadTests($f);
+        if (-d $f) {
+            LoadTests($f, $alltests);
             next;
         }
 
         my $listfile;
-        if(-e "$dir/$f"){
+        if (-e "$dir/$f") {
             $listfile = "$dir/$f";
         }
-        elsif(-e "$srcdir/$dir/$f"){
+        elsif (-e "$srcdir/$dir/$f") {
             $listfile = "$srcdir/$dir/$f";
         }
 
-        if(!$listfile){
+        if (!$listfile) {
             next;
         }
-        elsif($loaded_listfile{$f}){
+        elsif ($loaded_listfile{$f}) {
             next;
         }
         $loaded_listfile{$f} = 1;
@@ -595,76 +595,76 @@ sub LoadTests {
         print "Loading $listfile...\n";
 
         my %macros;
-        open In, "$listfile" or die "Can't open $listfile.\n";
+        open In, "$listfile" or die "Can't open $listfile: $!\n";
         while(<In>){
             s/#.*//g;
             s/\r?\n//;
             s/^\s*//;
-            if(/^\s*$/){
+            if (/^\s*$/) {
                 next;
             }
 
-            if(/\$\(\w/){
+            if (/\$\(\w/) {
                 $_ = expand_macro($_, \%macros);
             }
-            if(/^set:\s*(\w+)\s*=\s*(.*)/){
+            if (/^set:\s*(\w+)\s*=\s*(.*)/) {
                 $macros{$1} = $2;
                 next;
             }
 
             my $test;
-            if(/^!(\S+):(\S+)/){
+            if (/^!(\S+):(\S+)/) {
                 system "cd $1 && make $2";
                 next;
             }
-            elsif(/^include\s+(\S+)/){
+            elsif (/^include\s+(\S+)/) {
                 push @include_list, $1;
                 next;
             }
-            elsif(/^(\S+)/ and -d "$dir/$1"){
+            elsif (/^(\S+)/ and -d "$dir/$1") {
                 my $d = $1;
-                if($config{include_dir} && !($d=~/$config{include_dir}/)){
+                if ($config{include_dir} && !($d=~/$config{include_dir}/)) {
                     next;
                 }
-                if($config{exclude_dir} && ($d=~/$config{exclude_dir}/)){
+                if ($config{exclude_dir} && ($d=~/$config{exclude_dir}/)) {
                     next;
                 }
                 push @include_list, "$dir/$d";
                 next;
             }
-            elsif($config{run_xfail_only} or $config{include_pattern} or $config{exclude_pattern}){
-                if($config{run_xfail_only}){
-                    if(!/xfail=/){
+            elsif ($config{run_xfail_only} or $config{include_pattern} or $config{exclude_pattern}) {
+                if ($config{run_xfail_only}) {
+                    if (!/xfail=/) {
                         next;
                     }
-                    else{
+                    else {
                         s/xfail=\S*//;
                     }
                 }
-                if($config{include_pattern}){
-                    if(!(/$config{include_pattern}/)){
+                if ($config{include_pattern}) {
+                    if (!(/$config{include_pattern}/)) {
                         next;
                     }
                 }
-                if($config{exclude_pattern}){
-                    if(/$config{exclude_pattern}/){
+                if ($config{exclude_pattern}) {
+                    if (/$config{exclude_pattern}/) {
                         next;
                     }
                 }
                 $test = parse_testline($_);
             }
-            else{
+            else {
                 $test = parse_testline($_);
             }
-            if($test->{dir}){
+            if ($test->{dir}) {
                 $test->{dir} = "$dir/$test->{dir}";
             }
-            else{
+            else {
                 $test->{dir} = $dir;
             }
             $test->{line} = $_;
-            push @alltests, $test;
-            $test->{id}=@alltests;
+            push @$alltests, $test;
+            $test->{id} = $#$alltests + 1;
         }
         close In;
     }
@@ -673,7 +673,7 @@ sub LoadTests {
 sub run_worker {
     my ($IN, $OUT) = @_;
     while(<$IN>){
-        if(/run\s+(\d+)/){
+        if (/run\s+(\d+)/) {
             my $test = $alltests[$1];
             RunMPIProgram($test);
             print $OUT "found_error: $test->{found_error}\n";
@@ -690,24 +690,24 @@ sub dump_xml {
     my $date = `date "+%Y-%m-%d-%H-%M"`;
     $date =~ s/\r?\n//;
 
-    open Out, ">$xmlfile" or die "Can't write $xmlfile.\n";
+    open Out, ">$xmlfile" or die "Can't write $xmlfile: $!\n";
     print "  --> [$xmlfile]\n";
     print Out "<?xml version='1.0' ?>\n";
     print Out "<?xml-stylesheet href=\"TestResults.xsl\" type=\"text/xsl\" ?>\n";
     print Out "<MPITESTRESULTS>\n";
     print Out "<DATE>$date<\/DATE>\n";
     print Out "<MPISOURCE>$config{MPI_SOURCE}<\/MPISOURCE>\n";
-    foreach my $test (@$alltests){
+    foreach my $test (@$alltests) {
         print Out "<MPITEST>\n";
         print Out "<NAME>$test->{prog}<\/NAME>\n";
         print Out "<NP>$test->{np}<\/NP>\n";
         print Out "<WORKDIR>$test->{dir}<\/WORKDIR>\n";
-        if($test->{skip}){
+        if ($test->{skip}) {
         }
-        elsif(!$test->{found_error}){
+        elsif (!$test->{found_error}) {
             print Out "<STATUS>pass<\/STATUS>\n";
         }
-        else{
+        else {
             my $xout = $test->{output};
             $xout =~ s/</\*AMP\*lt;/g;
             $xout =~ s/>/\*AMP\*gt;/g;
@@ -719,7 +719,7 @@ sub dump_xml {
         print Out "<TIME>$test->{runtime}<\/TIME>\n";
         print Out "</MPITEST>\n";
     }
-    if(!$config{noxmlclose}){
+    if (!$config{noxmlclose}) {
         print Out "</MPITESTRESULTS>\n";
     }
     close Out;
@@ -728,19 +728,19 @@ sub dump_xml {
 sub dump_tap {
     my ($alltests, $tapfile) = @_;
     my $n = @$alltests;
-    open Out, ">$tapfile" or die "Can't write $tapfile.\n";
+    open Out, ">$tapfile" or die "Can't write $tapfile: $!\n";
     print "  --> [$tapfile]\n";
     print Out "1..$n\n";
     my $i = -1;
-    foreach my $test (@$alltests){
+    foreach my $test (@$alltests) {
         $i++;
-        if($test->{skip}){
+        if ($test->{skip}) {
             print Out "ok $i - $test->{dir}/$test->{prog} $test->{np}  \x23 SKIP $test->{skip}\n";
         }
-        elsif(!$test->{found_error}){
+        elsif (!$test->{found_error}) {
             print Out "ok $i - $test->{dir}/$test->{prog} $test->{np} \x23 time=$test->{runtime}\n";
         }
-        else{
+        else {
             print Out "not ok $i - $test->{dir}/$test->{prog} $test->{np}$test->{xfail} \x23 time=$test->{runtime}\n";
             print Out "  ---\n";
             print Out "  Directory: $test->{dir}\n";
@@ -752,7 +752,7 @@ sub dump_tap {
             print Out "  Error: $test->{found_error}\n";
             print Out "  ...\n";
             print Out "\x23\x23 Test output (expected 'No Errors'):\n";
-            foreach my $line (split m/\r?\n/, $test->{output}){
+            foreach my $line (split m/\r?\n/, $test->{output}) {
                 chomp $line;
                 print Out "\x23\x23 $line\n";
             }
@@ -768,16 +768,16 @@ sub dump_junit {
 
     my $n = @$alltests;
     my ($err_count, $skip_count);
-    foreach my $test (@$alltests){
-        if($test->{skip}){
+    foreach my $test (@$alltests) {
+        if ($test->{skip}) {
             $skip_count ++;
         }
-        elsif($test->{found_error}){
+        elsif ($test->{found_error}) {
             $err_count ++;
         }
     }
 
-    open Out, ">$junitfile" or die "Can't write $junitfile.\n";
+    open Out, ">$junitfile" or die "Can't write $junitfile: $!\n";
     print "  --> [$junitfile]\n";
     print Out "<testsuites>\n";
     print Out "  <testsuite failures=\"$err_count\"\n";
@@ -787,22 +787,22 @@ sub dump_junit {
     print Out "             date=\"$date\"\n";
     print Out "             name=\"summary_junit_xml\">\n";
     my $i = -1;
-    foreach my $test (@$alltests){
+    foreach my $test (@$alltests) {
         $i++;
         my $name_short = "$i - $test->{dir}/$test->{prog} $test->{np}";
         my $name="$name_short $test->{arg} $test->{env}";
-        if($test->{skip}){
+        if ($test->{skip}) {
             print Out "    <testcase name=\"$name\">\n";
             print Out "      <skipped type=\"TodoTestSkipped\"\n";
             print Out "             message=\"$test->{skip}\"><![CDATA[ok $name_short \x23 SKIP $test->{skip}]]></skipped>\n";
             print Out "    </testcase>\n";
         }
-        elsif(!$test->{found_error}){
+        elsif (!$test->{found_error}) {
             print Out "    <testcase name=\"$name\" time=\"$test->{runtime}\"></testcase>\n";
         }
-        else{
+        else {
             my $testtag = "failure";
-            if($test->{xfail}){
+            if ($test->{xfail}) {
                 $testtag = "skipped";
             }
             print Out "    <testcase name=\"$name\" time=\"$test->{runtime}\">\n";
@@ -819,7 +819,7 @@ sub dump_junit {
             print Out "  Error: $test->{found_error}\n";
             print Out "  ...\n";
             print Out "\x23\x23 Test output (expected 'No Errors'):\n";
-            foreach my $line (split m/\r?\n/, $test->{output}){
+            foreach my $line (split m/\r?\n/, $test->{output}) {
                 chomp $line;
                 print Out "\x23\x23 $line\n";
             }
@@ -842,61 +842,61 @@ sub parse_testline {
     my $programname = shift @args;
     my $np = shift @args;
 
-    if($programname=~/^(\S+)\/(\S+)$/){
+    if ($programname=~/^(\S+)\/(\S+)$/) {
         $test{dir}=$1;
         $programname = $2;
     }
 
-    if(!$np){
+    if (!$np) {
         $np = $config{np_default};
     }
-    if($config{np_max}>0 && $np > $config{np_max}){
+    if ($config{np_max}>0 && $np > $config{np_max}) {
         $np = $config{np_max};
     }
     $test{prog} = $programname;
     $test{np} = $np;
 
-    foreach my $a (@args){
-        if($a =~ /([^=]+)=(.*)/){
+    foreach my $a (@args) {
+        if ($a =~ /([^=]+)=(.*)/) {
             my ($key, $value) = ($1, $2);
-            if($key eq "env"){
-                if($value=~/([^=]+)=(.*)/){
+            if ($key eq "env") {
+                if ($value=~/([^=]+)=(.*)/) {
                     $test{env} .= " $value";
                 }
-                else{
+                else {
                     warn "Environment value not in a=b form: $line";
                 }
             }
-            elsif($key=~/^(resultTest|init|timeLimit|arg|env|mpiexecarg|xfail|mpiversion|strict|mpix)$/){
-                if(exists $test{$key}){
+            elsif ($key=~/^(resultTest|init|timeLimit|arg|env|mpiexecarg|xfail|mpiversion|strict|mpix|mem)$/) {
+                if (exists $test{$key}) {
                     $test{$key}.=" $value";
                 }
-                else{
+                else {
                     $test{$key}=$value;
                 }
             }
-            else{
+            else {
                 print STDERR "Unrecognized key $key in test line: $line\n";
             }
         }
-        elsif($a eq "skip_id"){
+        elsif ($a eq "skip_id") {
             $test{skip_id} = 1;
         }
     }
-    if(exists $test{xfail} && $test{xfail} eq ""){
+    if (exists $test{xfail} && $test{xfail} eq "") {
         print STDERR "\"xfail=\" requires an argument\n";
     }
 
-    if(filter_mpiversion($test{mpiversion})){
+    if (filter_mpiversion($test{mpiversion})) {
         $test{skip} = "requires MPI version $test{mpiversion}";
     }
-    elsif(filter_strict($test{strict})){
+    elsif (filter_strict($test{strict})) {
         $test{skip} = "non-strict test, strict MPI mode requested";
     }
-    elsif(filter_xfail($test{xfail})){
+    elsif (filter_xfail($test{xfail})) {
         $test{skip} = "xfail tests disabled: xfail=$test{xfail}";
     }
-    elsif(filter_mpix($test{mpix})){
+    elsif (filter_mpix($test{mpix})) {
         $test{skip} = "tests MPIX extensions, MPIX testing disabled";
     }
     return \%test;
@@ -907,12 +907,12 @@ sub BuildMPIProgram {
     my $prog = $test->{prog};
     my $dir = $test->{dir};
     my $cmd = "make -C $dir $prog";
-    if($verbose){
+    if ($config{verbose}) {
         print "  $cmd ...\n";
     }
     my $output = `$cmd 2>&1`;
-    if(! -x "$dir/$prog"){
-        if($config{verbose}){
+    if (! -x "$dir/$prog") {
+        if ($config{verbose}) {
             print "Failed to build $prog; $output\n";
         }
         $test->{output} = $output;
@@ -923,9 +923,9 @@ sub BuildMPIProgram {
 sub get_test_cmd {
     my ($test) = @_;
     my $cmd = "$config{mpiexec} $config{np_arg} $test->{np}";
-    if($config{ppn_arg} && $config{ppn_max}>0){
+    if ($config{ppn_arg} && $config{ppn_max}>0) {
         my $nn = $config{ppn_max};
-        if($nn > $test->{np}){
+        if ($nn > $test->{np}) {
             $nn = $test->{np};
         }
         my $arg = $config{ppn_arg};
@@ -933,27 +933,27 @@ sub get_test_cmd {
         $cmd .= " $arg";
     }
     my $timeout = $config{timeout_default};
-    if(defined($test->{timeLimit}) && $test->{timeLimit} =~ /^\d+$/){
+    if (defined($test->{timeLimit}) && $test->{timeLimit} =~ /^\d+$/) {
         $timeout = $test->{timeLimit};
     }
-    if($timeout){
+    if ($timeout) {
         $timeout *= $config{timeout_multiplier};
         $test->{timeout} = $timeout;
         $test->{env}.=" MPIEXEC_TIMEOUT=$timeout";
     }
-    if($test->{mpiexecarg}){
+    if ($test->{mpiexecarg}) {
         $cmd.=" $test->{mpiexecarg}";
     }
-    if($config{program_wrapper}){
+    if ($config{program_wrapper}) {
         $cmd.=" $config{program_wrapper}";
     }
-    if(-x "$test->{dir}/$test->{prog}"){
+    if (-x "$test->{dir}/$test->{prog}") {
         $cmd.=" ./$test->{prog}";
     }
-    else{
+    else {
         $cmd.=" $test->{prog}";
     }
-    if($test->{arg}){
+    if ($test->{arg}) {
         $cmd.=" $test->{arg}";
     }
     return $cmd;
@@ -964,37 +964,37 @@ sub expand_macro {
     my @paren_stack;
     my $segs=[];
     while(1){
-        if($line=~/\G$/sgc){
+        if ($line=~/\G$/sgc) {
             last;
         }
-        elsif($line=~/\G\$\(/sgc){
+        elsif ($line=~/\G\$\(/sgc) {
             push @paren_stack, $segs;
             $segs=[];
             push @paren_stack, "\$\(";
         }
-        elsif(!@paren_stack){
-            if($line=~/\G([^\$]|\$(?![\(\.]))+/sgc){
+        elsif (!@paren_stack) {
+            if ($line=~/\G([^\$]|\$(?![\(\.]))+/sgc) {
                 push @$segs, $&;
             }
         }
-        else{
-            if($line=~/\G\(/sgc){
+        else {
+            if ($line=~/\G\(/sgc) {
                 push @paren_stack, $segs;
                 $segs=[];
                 push @paren_stack, "(";
             }
-            elsif($line=~/\G\)/sgc){
+            elsif ($line=~/\G\)/sgc) {
                 my $t=join('', @$segs);
                 my $open=pop @paren_stack;
                 $segs=pop @paren_stack;
-                if($open eq "(" or $t!~/^\w/){
+                if ($open eq "(" or $t!~/^\w/) {
                     push @$segs, "$open$t)";
                 }
-                else{
+                else {
                     push @$segs, get_macro($t, $macros);
                 }
             }
-            elsif($line=~/\G([^\$\(\)]|\$(?![\(\.]))+/sgc){
+            elsif ($line=~/\G([^\$\(\)]|\$(?![\(\.]))+/sgc) {
                 push @$segs, $&;
             }
         }
@@ -1012,18 +1012,18 @@ sub expand_macro {
 
 sub filter_mpiversion {
     my ($version_required) = @_;
-    if(!$version_required){
+    if (!$version_required) {
         return 0;
     }
-    if($config{MPIMajorVersion} eq "unknown" or $config{MPIMinorVersion} eq "unknown"){
+    if ($config{MPIMajorVersion} eq "unknown" or $config{MPIMinorVersion} eq "unknown") {
         return 0;
     }
 
     my ($major, $minor) = split /\./, $version_required;
-    if($major > $config{MPIMajorVersion}){
+    if ($major > $config{MPIMajorVersion}) {
         return 1;
     }
-    if($major == $config{MPIMajorVersion} && $minor > $config{MPIMinorVersion}){
+    if ($major == $config{MPIMajorVersion} && $minor > $config{MPIMinorVersion}) {
         return 1;
     }
     return 0;
@@ -1031,7 +1031,7 @@ sub filter_mpiversion {
 
 sub filter_strict {
     my ($strict_ok) = @_;
-    if(lc($strict_ok) eq "false" && $config{run_strict}){
+    if (lc($strict_ok) eq "false" && $config{run_strict}) {
         return 1;
     }
     return 0;
@@ -1039,10 +1039,10 @@ sub filter_strict {
 
 sub filter_xfail {
     my ($xfail) = @_;
-    if($config{run_strict}){
+    if ($config{run_strict}) {
         return 0;
     }
-    if($xfail && !$config{run_xfail}){
+    if ($xfail && !$config{run_xfail}) {
         return 1;
     }
     return 0;
@@ -1058,18 +1058,18 @@ sub filter_mpix {
 
 sub get_macro {
     my ($s, $macros) = @_;
-    if($s=~/^(\w+):(.*)/){
+    if ($s=~/^(\w+):(.*)/) {
         my $p=$2;
         my $t=get_macro_word($1, $macros);
         my @plist=split /,\s*/, $p;
         my $i=1;
-        foreach my $pp (@plist){
+        foreach my $pp (@plist) {
             $t=~s/\$$i/$pp/g;
             $i++;
         }
         return $t;
     }
-    elsif($s=~/^(\w+)/){
+    elsif ($s=~/^(\w+)/) {
         return get_macro_word($1, $macros);
     }
 }

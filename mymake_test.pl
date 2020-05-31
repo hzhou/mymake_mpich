@@ -35,7 +35,7 @@ my $cmd = "autoreconf -ivf";
 print ": $cmd\n";
 system $cmd;
 my $config_args = "";
-foreach my $t (@config_args) {
+foreach my $t (split /\s+/, $opts{config_args}) {
     if ($t=~/--(dis|en)able-.*tests/) {
         $config_args .= " $t";
     }

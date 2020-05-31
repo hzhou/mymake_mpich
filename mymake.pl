@@ -257,6 +257,7 @@ if ($need_save_args) {
     system "rm -f mymake/Makefile.orig";
     system "rm -f $opts{moddir}/mpl/include/mplconfig.h $opts{moddir}/openpa/src/opa_config.h";
 
+    $opts{config_args} = join(' ', @config_args);
     open Out, ">mymake/opts" or die "Can't write mymake/opts: $!\n";
     foreach my $k (sort keys %opts) {
         print Out "$k: $opts{$k}\n";
@@ -1396,11 +1397,17 @@ foreach my $t (@$tlist) {
     if ($t=~/mpichversion/) {
         next;
     }
+    elsif ($t=~/mpivars/) {
+        next;
+    }
     $dst_hash{$t} = "\x24(PREFIX)/bin";
 }
 my $tlist = get_list("PROGRAMS");
 foreach my $t (@$tlist) {
     if ($t=~/mpichversion/) {
+        next;
+    }
+    elsif ($t=~/mpivars/) {
         next;
     }
     push @programs, $t;
