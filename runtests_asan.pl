@@ -81,8 +81,10 @@ LoadTests($config{root}, \@alltests);
 print "Building test programs...\n";
 build_alltests(\@alltests);
 
+print "Running all tests...\n";
 foreach my $test (@alltests) {
-    if (-e "$test->{dir}/$test->{prog}") {
+    my $prog = "$test->{dir}/$test->{prog}";
+    if (-e $prog) {
         my $cmd = get_test_cmd($test);
         if ($test->{dir} ne ".") {
             $cmd = "cd $test->{dir} && $cmd";
@@ -104,6 +106,9 @@ foreach my $test (@alltests) {
         if ($test->{env}) {
             %ENV = %saveEnv;
         }
+    }
+    else {
+        warn $prog doesn't exit!;
     }
 }
 
