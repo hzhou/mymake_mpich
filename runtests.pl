@@ -153,6 +153,7 @@ foreach my $d (@dirs) {
 
     my $t = join ' ', @prog_list;
     my $cmd = "$make clean && $make $t";
+    system($cmd);
 }
 
 print "Running tests...\n";

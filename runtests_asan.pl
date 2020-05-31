@@ -244,6 +244,7 @@ sub build_alltests {
 
         my $t = join ' ', @prog_list;
         my $cmd = "$make clean && $make $t";
+        system($cmd);
     }
 }
 
