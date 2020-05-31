@@ -21,19 +21,19 @@ if (!-d "mymake") {
 
 my $cmd = "rsync -r $srcdir/confdb/ confdb/";
 print ": $cmd\n";
-system $cmd;
+system($cmd) == 0 or die "    Command failed.\n";
 my $cmd = "rsync -r $srcdir/confdb/ dtpools/confdb/";
 print ": $cmd\n";
-system $cmd;
+system($cmd) == 0 or die "    Command failed.\n";
 my $cmd = "cp $srcdir/maint/version.m4 .";
 print ": $cmd\n";
-system $cmd;
+system($cmd) == 0 or die "    Command failed.\n";
 my $cmd = "sh autogen.sh";
 print ": $cmd\n";
-system $cmd;
+system($cmd) == 0 or die "    Command failed.\n";
 my $cmd = "autoreconf -ivf";
 print ": $cmd\n";
-system $cmd;
+system($cmd) == 0 or die "    Command failed.\n";
 my $config_args = "";
 foreach my $t (split /\s+/, $opts{config_args}) {
     if ($t=~/--(dis|en)able-.*tests/) {
@@ -51,14 +51,14 @@ foreach my $t (split /\s+/, $opts{config_args}) {
 }
 my $cmd = "./configure $config_args";
 print ": $cmd\n";
-system $cmd;
+system($cmd) == 0 or die "    Command failed.\n";
 
 my $cmd = "cp Makefile mymake/Makefile.orig";
 print ": $cmd\n";
-system $cmd;
+system($cmd) == 0 or die "    Command failed.\n";
 my $cmd = "cp Makefile mymake/Makefile.orig";
 print ": $cmd\n";
-system $cmd;
+system($cmd) == 0 or die "    Command failed.\n";
 if ($ENV{skip_test} eq "custom") {
     my $dir=".";
     if ($0=~/(.*)\//) {
@@ -66,7 +66,7 @@ if ($ENV{skip_test} eq "custom") {
     }
     my $cmd = "perl $dir/runtests.pl -tests=testlist.custom -junitfile=summary.junit.xml";
     print ": $cmd\n";
-    system $cmd;
+    system($cmd) == 0 or die "    Command failed.\n";
 }
 else {
 }
