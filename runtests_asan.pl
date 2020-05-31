@@ -244,7 +244,6 @@ sub build_alltests {
 
         my $t = join ' ', @prog_list;
         my $cmd = "$make clean && $make $t";
-        system($cmd)==0 or die "Failed [$cmd]\n";
     }
 }
 
