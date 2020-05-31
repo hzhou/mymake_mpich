@@ -19,6 +19,8 @@ if (!-d "mymake") {
     mkdir "mymake" or die "Can't mkdir mymake\n";
 }
 
+system "which mpicc";
+
 my $cmd = "rsync -r $srcdir/confdb/ confdb/";
 print ": $cmd\n";
 system($cmd) == 0 or die "    Command failed.\n";
