@@ -53,9 +53,10 @@ our %config;
     "include-dir" => "include_dir",
     "exclude-dir" => "exclude_dir",
 );
-$config{root} = ".";
 $config{mpiexec} = "mpirun";
 $config{np_arg} = "-n";
+$config{root} = ".";
+$config{tests} = "testlist,testlist.dtp,testlist.cvar";
 
 foreach my $a (@ARGV) {
     if ($a=~/^--?dir=(.*)/) {
@@ -64,13 +65,15 @@ foreach my $a (@ARGV) {
     elsif ($a=~/^--?root=(.*)/) {
         $config{root} = $1;
     }
+    elsif ($a=~/^--?tests=(.*)/) {
+        $config{tests} = $1;
+    }
 }
 $config{srcdir} = getcwd();
 if ($config{srcdir}=~/(.*)\/test\/mpi/ and -e "$1/_inst/bin/mpirun") {
     $ENV{PATH} = "$1/_inst/bin:$ENV{PATH}";
     $ENV{LD_LIBRARY_PATH} = "$1/_inst/lib:$ENV{LD_LIBRARY_PATH}";
 }
-$config{tests} = "testlist";
 
 my @alltests;
 LoadTests($config{root}, \@alltests);
