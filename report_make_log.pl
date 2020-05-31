@@ -56,7 +56,6 @@ sub dump_report {
     print "  --> [summary.junit.xml]\n";
     print Out "<testsuites>\n";
     print Out "<testsuite failures=\"$n_fails\" errors=\"0\" skipped=\"0\" tests=\"$n_tests\" name=\"warning\">\n";
-    my $dur = $time_finish-$time_start;
     print Out "<testcase name=\"1 - build\" time=\"$dur\"></testcase>\n";
     my $i = 1;
     foreach my $t (@$warning_list) {
