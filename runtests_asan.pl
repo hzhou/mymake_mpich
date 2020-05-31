@@ -108,7 +108,7 @@ foreach my $test (@alltests) {
         }
     }
     else {
-        warn $prog doesn't exit!;
+        warn "[$prog] doesn't exist!\n";
     }
 }
 
