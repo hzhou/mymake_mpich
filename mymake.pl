@@ -4,6 +4,8 @@ use Cwd;
 
 our %opts;
 our @config_args;
+our %hash_defines;
+our %hash_undefs;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -40,6 +42,11 @@ foreach my $a (@ARGV) {
         exit(0);
     }
 }
+$hash_defines{"disable-ch4-ofi-ipv6"} = "MPIDI_CH4_OFI_SKIP_IPV6";
+$hash_defines{"enable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
+$hash_defines{"enable-legacy-ofi"} = "MPIDI_ENABLE_LEGACY_OFI";
+
+$hash_undefs{"disable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
@@ -50,6 +57,14 @@ foreach my $a (@ARGV) {
     }
     elsif ($a=~/--(with-posix-mutex)=(.*)/) {
         $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
+    }
+    elsif ($a=~/--((disable|enable)-.*)/ && ($hash_defines{$1} || $hash_undefs{$1})) {
+        if ($hash_defines{$1}) {
+            $config_defines{$hash_defines{$1}} = 1;
+        }
+        else {
+            $config_defines{$hash_undefs{$1}} = undef;
+        }
     }
     else {
         $cnt_else++;
@@ -118,6 +133,14 @@ foreach my $a (@ARGV) {
         }
         elsif ($a=~/--(with-posix-mutex)=(.*)/) {
             $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
+        }
+        elsif ($a=~/--((disable|enable)-.*)/ && ($hash_defines{$1} || $hash_undefs{$1})) {
+            if ($hash_defines{$1}) {
+                $config_defines{$hash_defines{$1}} = 1;
+            }
+            else {
+                $config_defines{$hash_undefs{$1}} = undef;
+            }
         }
         else {
             push @config_args, $a;
@@ -1904,16 +1927,26 @@ if (%config_defines) {
     my (@lines, $cnt);
     open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
     while(<In>){
-        if (/^\/\* #undef (\w+)/ && $config_defines{$1}) {
-            print "  -- define $1 $config_defines{$1}\n";
-            push @lines, "#ifndef $1\n";
-            push @lines, "#define $1 $config_defines{$1}\n";
-            push @lines, "#endif\n";
+        if (/^\/\* #undef (\w+)/ && exists $config_defines{$1}) {
+            if (defined $config_defines{$1}) {
+                print "  -- define $1 $config_defines{$1}\n";
+                push @lines, "#define $1 $config_defines{$1}\n";
+            }
+            else {
+                print "  -- undef $1\n";
+                push @lines, "\x2f* #undef $1 */\n";
+            }
             $cnt++;
         }
-        elsif (/^#define (\w+) (.*)/ && $config_defines{$1}) {
-            print "  -- define $1 $config_defines{$1}\n";
-            push @lines, "#define $1 $config_defines{$1}\n";
+        elsif (/^#define (\w+) (.*)/ && exists $config_defines{$1}) {
+            if (defined $config_defines{$1}) {
+                print "  -- define $1 $config_defines{$1}\n";
+                push @lines, "#define $1 $config_defines{$1}\n";
+            }
+            else {
+                print "  -- undef $1\n";
+                push @lines, "\x2f* #undef $1 */\n";
+            }
             $cnt++;
         }
         else {
@@ -1932,16 +1965,26 @@ if (%config_defines) {
     my (@lines, $cnt);
     open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
     while(<In>){
-        if (/^\/\* #undef (\w+)/ && $config_defines{$1}) {
-            print "  -- define $1 $config_defines{$1}\n";
-            push @lines, "#ifndef $1\n";
-            push @lines, "#define $1 $config_defines{$1}\n";
-            push @lines, "#endif\n";
+        if (/^\/\* #undef (\w+)/ && exists $config_defines{$1}) {
+            if (defined $config_defines{$1}) {
+                print "  -- define $1 $config_defines{$1}\n";
+                push @lines, "#define $1 $config_defines{$1}\n";
+            }
+            else {
+                print "  -- undef $1\n";
+                push @lines, "\x2f* #undef $1 */\n";
+            }
             $cnt++;
         }
-        elsif (/^#define (\w+) (.*)/ && $config_defines{$1}) {
-            print "  -- define $1 $config_defines{$1}\n";
-            push @lines, "#define $1 $config_defines{$1}\n";
+        elsif (/^#define (\w+) (.*)/ && exists $config_defines{$1}) {
+            if (defined $config_defines{$1}) {
+                print "  -- define $1 $config_defines{$1}\n";
+                push @lines, "#define $1 $config_defines{$1}\n";
+            }
+            else {
+                print "  -- undef $1\n";
+                push @lines, "\x2f* #undef $1 */\n";
+            }
             $cnt++;
         }
         else {

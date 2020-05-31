@@ -4,6 +4,8 @@ use Cwd;
 
 our %opts;
 our @config_args;
+our %hash_defines;
+our %hash_undefs;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -35,6 +37,11 @@ if (!-d "mymake") {
 push @extra_make_rules, "DO_stage = perl $opts{mymake}_stage.pl";
 push @extra_make_rules, "DO_clean = perl $opts{mymake}_clean.pl";
 push @extra_make_rules, "";
+$hash_defines{"disable-ch4-ofi-ipv6"} = "MPIDI_CH4_OFI_SKIP_IPV6";
+$hash_defines{"enable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
+$hash_defines{"enable-legacy-ofi"} = "MPIDI_ENABLE_LEGACY_OFI";
+
+$hash_undefs{"disable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
@@ -45,6 +52,14 @@ foreach my $a (@ARGV) {
     }
     elsif ($a=~/--(with-posix-mutex)=(.*)/) {
         $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
+    }
+    elsif ($a=~/--((disable|enable)-.*)/ && ($hash_defines{$1} || $hash_undefs{$1})) {
+        if ($hash_defines{$1}) {
+            $config_defines{$hash_defines{$1}} = 1;
+        }
+        else {
+            $config_defines{$hash_undefs{$1}} = undef;
+        }
     }
     else {
         $cnt_else++;
@@ -113,6 +128,14 @@ foreach my $a (@ARGV) {
         }
         elsif ($a=~/--(with-posix-mutex)=(.*)/) {
             $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
+        }
+        elsif ($a=~/--((disable|enable)-.*)/ && ($hash_defines{$1} || $hash_undefs{$1})) {
+            if ($hash_defines{$1}) {
+                $config_defines{$hash_defines{$1}} = 1;
+            }
+            else {
+                $config_defines{$hash_undefs{$1}} = undef;
+            }
         }
         else {
             push @config_args, $a;
