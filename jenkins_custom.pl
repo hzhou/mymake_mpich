@@ -121,8 +121,8 @@ sub add_testlist {
     $spec=~s/.*\///;
     if ($spec) {
         push @{$dir_hash{$dir}}, $spec;
-        $do_custom_testlist = 1;
     }
+    $do_custom_testlist = 1;
 }
 
 sub dump_testlist {
