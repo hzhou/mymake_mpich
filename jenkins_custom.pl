@@ -96,7 +96,7 @@ foreach my $k (sort keys %custom_env) {
     print Out "$k=$custom_env{$k}\n";
 }
 if (@config_args) {
-    print Out "config_args: @config_args\n";
+    print Out "config_args=\"@config_args\"\n";
 }
 close Out;
 
