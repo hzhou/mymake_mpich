@@ -92,14 +92,14 @@ open Out, ">custom_import.sh" or die "Can't write custom_import.sh: $!\n";
 print "  --> [custom_import.sh]\n";
 foreach my $k (keys %options) {
     if ($opt_name{$k}) {
-        print Out "$opt_name{$k}=$options{$k}\n";
+        print Out "export $opt_name{$k}=$options{$k}\n";
     }
 }
 foreach my $k (sort keys %custom_env) {
-    print Out "$k=$custom_env{$k}\n";
+    print Out "export $k=$custom_env{$k}\n";
 }
 if (@config_args) {
-    print Out "config_args=\"@config_args\"\n";
+    print Out "export config_args=\"@config_args\"\n";
 }
 close Out;
 
