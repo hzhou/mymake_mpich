@@ -11,7 +11,7 @@ while(<In>){
         my @t;
         push @t, $_;
         while(<In>){
-            s/^Unexpected.*://;
+            s/^Unexpected[^:]*://;
             if (/^\s*$/) {
                 last;
             }
