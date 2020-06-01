@@ -11,10 +11,10 @@ while(<In>){
         my @t;
         push @t, $_;
         while(<In>){
+            s/^Unexpected.*://;
             if (/^\s*$/) {
                 last;
             }
-            s/^Unexpected.*://;
             push @t, $_;
         }
         push @make_log, \@t;
