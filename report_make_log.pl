@@ -79,7 +79,7 @@ sub dump_report {
         }
         $i++;
         if (ref($t) eq "ARRAY") {
-            my $o = parse_LeakSanitizer($t);
+            my $o = parse_sanitizer($t);
             if ($o) {
                 print Out "<testcase name=\"$o->{name}\">\n";
             }
@@ -120,6 +120,26 @@ sub dump_report {
     print Out "</testsuite>\n";
     print Out "</testsuites>\n";
     close Out;
+}
+
+sub parse_sanitizer {
+    my ($t) = @_;
+    my $o = {};
+    foreach my $l (@$t) {
+        if ($l=~/^Unexpected output in (\w+): (Direct leak of.*)/) {
+            $l = "$2\n";
+            $o->{name}=$1;
+            $o->{msg}=$2;
+            $o->{msg}=~s/ allocated from://;
+            last;
+        }
+        elsif ($l=~/^Direct leak of.*/) {
+            $o->{name}="cpi";
+            $o->{msg}=$l;
+            $o->{msg}=~s/ allocated from://;
+        }
+    }
+    return $o;
 }
 
 sub parse_warning {
