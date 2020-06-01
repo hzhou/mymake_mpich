@@ -69,11 +69,14 @@ elsif ($ENV{param}) {
     foreach my $t (@tlist) {
         if ($t =~ /^env:(\w+)=(.*)/) {
             $custom_env{$1} = $2;
-        } elsif ($t=~/testlist[:=](.+)$/) {
+        }
+        elsif ($t=~/testlist[:=](.+)$/) {
             add_testlist($1);
-        } elsif ($t=~/(--(with|without|enable|disable)-\S+)/) {
+        }
+        elsif ($t=~/(--(with|without|enable|disable)-\S+)/) {
             push @config_args, $1;
-        } elsif ($t =~/^(\w+)[:=](\S+)/) {
+        }
+        elsif ($t =~/^(\w+)[:=](\S+)/) {
             if ($1 eq "HOSTS") {
                 $custom_env{HYDRA_HOST_FILE}="$ENV{PMRS}/hosts.$2";
             }
