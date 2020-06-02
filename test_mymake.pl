@@ -32,6 +32,9 @@ if ($ENV{config}) {
         push @mpich_config, "--with-device=$config";
     }
 }
+if ($ENV{configOption}) {
+    push @mpich_config, split(/\s+/, $ENV{configOption});
+}
 if ($ENV{ghprbCommentBody}) {
     my $trigger_phrase = $ENV{ghprbCommentBody};
     $trigger_phrase=~s/\\r\\n/\n/g;
