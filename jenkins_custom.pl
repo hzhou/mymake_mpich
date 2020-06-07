@@ -1,12 +1,42 @@
 #!/usr/bin/perl
 use strict;
 
+our %direct_config;
 our %dir_hash = ("test/mpi" => []);
 our $do_custom_testlist;
 our @config_args;
 our %custom_env;
+our %jenkins_options;
+our @mymake_args;
 
-my %options;
+%direct_config = (
+    strict => "--enable-strict",
+    fast   => "--enable-fast=all",
+    nofast => "--disable-fast",
+    noshared=>"--disable-shared",
+    debug  => "--enable-g=all",
+    noweak => "--disable-weak-symbols",
+    strictnoweak=>"--enable-strict --disable-weak-symbols",
+    nofortran=>"--disable-fortran",
+    nocxx  => "--disable-cxx",
+    multithread=>"--enable-threads=multiple",
+    singlethread=>"--enable-threads=single --with-thread-package=none",
+    debuginfo => "--enable-debuginfo",
+    noerrorchecking=>"--disable-error-checking",
+    "no-inline" => "--enable-ch4-netmod-inline=no --enable-ch4-shm-inline=no",
+    "direct-nm" => "--enable-ch4-direct=netmod",
+    "direct-auto"=>"--enable-ch4-direct=auto",
+);
+my %cmdline_options;
+foreach my $a (@ARGV) {
+    if ($a=~/-(\w+)=(.*)/) {
+        $cmdline_options{$1}=$2;
+    }
+    else {
+        $cmdline_options{$1}=1;
+    }
+}
+
 
 my %jenkins_env = (
     GIT_BRANCH => "-b",
@@ -33,7 +63,7 @@ my %opt_name = (
 );
 foreach my $k (keys %jenkins_env) {
     if ($ENV{$k}) {
-        $options{$jenkins_env{$k}} = $ENV{$k};
+        $jenkins_options{$jenkins_env{$k}} = $ENV{$k};
     }
 }
 
@@ -59,7 +89,10 @@ if ($ENV{ghprbCommentBody}) {
             $custom_env{HYDRA_HOST_FILE}="$ENV{PMRS}/hosts.$2";
         }
         elsif ($opt_list{$1}) {
-            $options{$opt_list{$1}} = $2;
+            $jenkins_options{$opt_list{$1}} = $2;
+            if ($1 eq "config") {
+                set_config($2);
+            }
         }
     }
 }
@@ -81,22 +114,37 @@ elsif ($ENV{param}) {
                 $custom_env{HYDRA_HOST_FILE}="$ENV{PMRS}/hosts.$2";
             }
             elsif ($opt_list{$1}) {
-                $options{$opt_list{$1}} = $2;
+                $jenkins_options{$opt_list{$1}} = $2;
+                if ($1 eq "config") {
+                    set_config($2);
+                }
             }
         }
     }
     dump_testlist();
 }
 
+if ($cmdline_options{mymake}) {
+    my $netmod = $jenkins_options{"-m"};
+    my $compiler = $jenkins_options{"-c"};
+    my $label = $jenkins_options{"-q"};
+    set_netmod($netmod);
+    set_compiler($compiler);
+    set_label($label);
+}
+
 open Out, ">custom_import.sh" or die "Can't write custom_import.sh: $!\n";
 print "  --> [custom_import.sh]\n";
-foreach my $k (keys %options) {
+foreach my $k (keys %jenkins_options) {
     if ($opt_name{$k}) {
-        print Out "export $opt_name{$k}=$options{$k}\n";
+        print Out "export $opt_name{$k}=$jenkins_options{$k}\n";
     }
 }
 foreach my $k (sort keys %custom_env) {
     print Out "export $k=$custom_env{$k}\n";
+}
+if (@mymake_args) {
+    print Out "export mymake_args=\"@mymake_args\"\n";
 }
 if (@config_args) {
     print Out "export config_args=\"@config_args\"\n";
@@ -148,5 +196,38 @@ sub dump_testlist {
         }
         $custom_env{TESTLIST}="testlist.custom";
     }
+}
+
+sub set_config {
+    my ($config) = @_;
+    if ($direct_config{$config}) {
+        push @mymake_args, $direct_config{$config};
+    }
+    elsif ($config eq "am-only") {
+        push @mymake_args, "--with-ch4-netmod-ucx-args=am-only";
+        push @mymake_args, "--enable-legacy-ofi";
+    }
+}
+
+sub set_netmod {
+    my ($netmod) = @_;
+    $netmod=~s/-/:/;
+    if (!$netmod) {
+        push @mymake_args, "ch3:nemesis:tcp";
+    }
+    elsif ($netmod=~/ch3:(tcp|ofi|mxm|portals4)/) {
+        push @mymake_args, "ch3:nemesis:$1";
+    }
+    else {
+        push @mymake_args, "--with-device=$netmod";
+    }
+}
+
+sub set_compiler {
+    my ($compiler) = @_;
+}
+
+sub set_label {
+    my ($label) = @_;
 }
 
