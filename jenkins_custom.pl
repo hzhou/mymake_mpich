@@ -38,32 +38,19 @@ foreach my $a (@ARGV) {
 }
 
 
-my %jenkins_env = (
-    GIT_BRANCH => "-b",
-    WORKSPACE => "-h",
-    label => "-q",
-);
-
 my %opt_list = (
-    compiler => "-c",
-    jenkins_configure => "-o",
-    config => "-o",
-    label => "-q",
-    queue => "-q",
-    netmod => "-m",
-    device => "-m",
-    pm => "-r",
+    compiler => "compiler",
+    jenkins_configure => "config",
+    config => "config",
+    label => "label",
+    queue => "label",
+    netmod => "netmod",
+    device => "netmod",
 );
-
-my %opt_name = (
-    "-c" => "compiler",
-    "-o" => "config",
-    "-q" => "label",
-    "-m" => "netmod",
-);
-foreach my $k (keys %jenkins_env) {
+my @jenkins_env = qw(GIT_BRANCH WORKSPACE label);
+foreach my $k (@jenkins_env) {
     if ($ENV{$k}) {
-        $jenkins_options{$jenkins_env{$k}} = $ENV{$k};
+        $jenkins_options{$k} = $ENV{$k};
     }
 }
 
@@ -88,11 +75,12 @@ if ($ENV{ghprbCommentBody}) {
         if ($1 eq "HOSTS") {
             $custom_env{HYDRA_HOST_FILE}="$ENV{PMRS}/hosts.$2";
         }
+        elsif ($1 eq "config") {
+            $jenkins_options{config} = $2;
+            set_config($2);
+        }
         elsif ($opt_list{$1}) {
             $jenkins_options{$opt_list{$1}} = $2;
-            if ($1 eq "config") {
-                set_config($2);
-            }
         }
     }
 }
@@ -124,21 +112,17 @@ elsif ($ENV{param}) {
     dump_testlist();
 }
 
-if ($cmdline_options{mymake}) {
-    my $netmod = $jenkins_options{"-m"};
-    my $compiler = $jenkins_options{"-c"};
-    my $label = $jenkins_options{"-q"};
-    set_netmod($netmod);
-    set_compiler($compiler);
-    set_label($label);
-}
+my $netmod = $jenkins_options{"-m"};
+my $compiler = $jenkins_options{"-c"};
+my $label = $jenkins_options{"-q"};
+set_netmod($netmod);
+set_compiler($compiler);
+set_label($label);
 
 open Out, ">custom_import.sh" or die "Can't write custom_import.sh: $!\n";
 print "  --> [custom_import.sh]\n";
 foreach my $k (keys %jenkins_options) {
-    if ($opt_name{$k}) {
-        print Out "export $opt_name{$k}=$jenkins_options{$k}\n";
-    }
+    print Out "export $k=$jenkins_options{$k}\n";
 }
 foreach my $k (sort keys %custom_env) {
     print Out "export $k=$custom_env{$k}\n";
@@ -213,10 +197,10 @@ sub set_netmod {
     my ($netmod) = @_;
     $netmod=~s/-/:/;
     if (!$netmod) {
-        push @mymake_args, "ch3:nemesis:tcp";
+        push @mymake_args, "--with-device=ch3:nemesis:tcp";
     }
     elsif ($netmod=~/ch3:(tcp|ofi|mxm|portals4)/) {
-        push @mymake_args, "ch3:nemesis:$1";
+        push @mymake_args, "--with-device=ch3:nemesis:$1";
     }
     else {
         push @mymake_args, "--with-device=$netmod";
@@ -225,6 +209,9 @@ sub set_netmod {
 
 sub set_compiler {
     my ($compiler) = @_;
+    if (!$compiler) {
+        $jenkins_options{compiler}="gcc";
+    }
 }
 
 sub set_label {
