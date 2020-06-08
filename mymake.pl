@@ -756,7 +756,7 @@ if (!-f "configure") {
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines) {
-            if ($l=~/AM_CONDITIONAL.*BUILD_SHM_IPC_XPMEM.*X\$build_ch4_shm_ipc_xpmem/) {
+            if ($l=~/AM_CONDITIONAL.*BUILD_SHM_IPC_XPMEM.*build_ch4_shm_ipc_xpmem/) {
                 $l=~s/test .* ".*"/false/;
             }
             if ($flag_skip) {
