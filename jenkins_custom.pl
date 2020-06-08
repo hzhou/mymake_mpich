@@ -112,12 +112,9 @@ elsif ($ENV{param}) {
     dump_testlist();
 }
 
-my $netmod = $jenkins_options{"-m"};
-my $compiler = $jenkins_options{"-c"};
-my $label = $jenkins_options{"-q"};
-set_netmod($netmod);
-set_compiler($compiler);
-set_label($label);
+set_netmod();
+set_compiler();
+set_label();
 
 open Out, ">custom_import.sh" or die "Can't write custom_import.sh: $!\n";
 print "  --> [custom_import.sh]\n";
@@ -183,7 +180,7 @@ sub dump_testlist {
 }
 
 sub set_config {
-    my ($config) = @_;
+    my $config = $jenkins_options{config};
     if ($direct_config{$config}) {
         push @mymake_args, $direct_config{$config};
     }
@@ -194,7 +191,7 @@ sub set_config {
 }
 
 sub set_netmod {
-    my ($netmod) = @_;
+    my $netmod = $jenkins_options{netmod};
     $netmod=~s/-/:/;
     if (!$netmod) {
         push @mymake_args, "--with-device=ch3:nemesis:tcp";
@@ -208,13 +205,11 @@ sub set_netmod {
 }
 
 sub set_compiler {
-    my ($compiler) = @_;
-    if (!$compiler) {
+    if (!$jenkins_options{compiler}) {
         $jenkins_options{compiler}="gcc";
     }
 }
 
 sub set_label {
-    my ($label) = @_;
 }
 

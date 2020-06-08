@@ -399,13 +399,15 @@ if (!-d "$opts{moddir}/mpl") {
     print "$cmd\n";
     system $cmd;
 }
-if (!-d "$opts{moddir}/openpa") {
-    my $cmd = "cp -r src/openpa $opts{moddir}/openpa";
-    print "$cmd\n";
-    system $cmd;
-    my $cmd = "cp -r confdb $opts{moddir}/openpa/";
-    print "$cmd\n";
-    system $cmd;
+if (-d "src/openpa") {
+    if (!-d "$opts{moddir}/openpa") {
+        my $cmd = "cp -r src/openpa $opts{moddir}/openpa";
+        print "$cmd\n";
+        system $cmd;
+        my $cmd = "cp -r confdb $opts{moddir}/openpa/";
+        print "$cmd\n";
+        system $cmd;
+    }
 }
 
 if (!$opts{disable_cxx}) {
@@ -1901,7 +1903,12 @@ system "rm -f Makefile";
 system "ln -s mymake/Makefile.custom Makefile";
 
 $ENV{CFLAGS}=$opts{CFLAGS};
-system "make $opts{moddir}/mpl/include/mplconfig.h $opts{moddir}/openpa/src/opa_config.h";
+if (-d "src/openpa") {
+    system "make $opts{moddir}/mpl/include/mplconfig.h $opts{moddir}/openpa/src/opa_config.h";
+}
+else {
+    system "make $opts{moddir}/mpl/include/mplconfig.h";
+}
 
 open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
 print Out "#include \"mpl_atomic.h\"\n";
