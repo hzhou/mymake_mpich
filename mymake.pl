@@ -93,6 +93,9 @@ foreach my $a (@ARGV) {
     }
     elsif ($a=~/--((with|enable)-.*)=(.*)/ && $hash_define_val{$1}) {
         $config_defines{$hash_define_val{$1}} = $3;
+        if ($1 eq "with-ch4-max-vcis") {
+            $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__COMM";
+        }
     }
     elsif ($a=~/--((disable|enable)-.*)/ && ($hash_defines{$1} || $hash_undefs{$1})) {
         if ($hash_defines{$1}) {
@@ -251,6 +254,9 @@ foreach my $a (@ARGV) {
         }
         elsif ($a=~/--((with|enable)-.*)=(.*)/ && $hash_define_val{$1}) {
             $config_defines{$hash_define_val{$1}} = $3;
+            if ($1 eq "with-ch4-max-vcis") {
+                $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__COMM";
+            }
         }
         elsif ($a=~/--((disable|enable)-.*)/ && ($hash_defines{$1} || $hash_undefs{$1})) {
             if ($hash_defines{$1}) {
