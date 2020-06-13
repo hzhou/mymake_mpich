@@ -6,6 +6,7 @@ our %opts;
 our @config_args;
 our %hash_defines;
 our %hash_undefs;
+our %hash_define_val;
 our $srcdir;
 our $moddir;
 our $prefix;
@@ -15,6 +16,7 @@ our %objects;
 our @CONFIGS;
 our @extra_DEFS;
 our @extra_INCLUDES;
+our %config_cflags;
 our %dst_hash;
 our @programs;
 our @ltlibs;
@@ -45,6 +47,9 @@ foreach my $a (@ARGV) {
 $hash_defines{"disable-ch4-ofi-ipv6"} = "MPIDI_CH4_OFI_SKIP_IPV6";
 $hash_defines{"enable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
 $hash_defines{"enable-legacy-ofi"} = "MPIDI_ENABLE_LEGACY_OFI";
+$hash_defines{"enable-ch4-am-only"} = "MPIDI_ENABLE_AM_ONLY";
+
+$hash_define_val{"with-ch4-max-vcis"} = "MPIDI_CH4_MAX_VCIS";
 
 $hash_undefs{"disable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
 $opts{V}=0;
@@ -52,11 +57,42 @@ $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
 my $cnt_else = 0;
 foreach my $a (@ARGV) {
+    print "[$a]\n";
     if ($a=~/V=1/) {
         $opts{V} = 1;
     }
-    elsif ($a=~/--(with-posix-mutex)=(.*)/) {
-        $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
+    elsif ($a=~/--enable-thread-cs=(.*)/) {
+        my $cs = "GLOBAL";
+        if ($1 eq "per-object" or $1 eq "per_object") {
+            $cs = "POBJ";
+        }
+        elsif ($1 eq "per-vci" or $1 eq "per_vci") {
+            $cs = "VCI";
+        }
+        $config_defines{MPICH_THREAD_GRANULARITY} = "MPICH_THREAD_GRANULARITY__$cs";
+    }
+    elsif ($a=~/--with-posix-mutex=(.*)/) {
+        $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($1);
+    }
+    elsif ($a=~/--enable-ch4-vci-method=(.*)/) {
+        $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__".uc($1);
+        if ($1 eq "communicator") {
+            $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__COMM";
+        }
+    }
+    elsif ($a=~/--enable-ch4-mt=(\w+)/) {
+        if ($1 eq "direct") {
+            $config_defines{MPIDI_CH4_USE_MT_DIRECT} = 1;
+        }
+        elsif ($1 eq "handoff") {
+            $config_defines{MPIDI_CH4_USE_MT_HANDOFF} = 1;
+        }
+        elsif ($1 eq "runtime") {
+            $config_defines{MPIDI_CH4_USE_MT_RUNTIME} = 1;
+        }
+    }
+    elsif ($a=~/--((with|enable)-.*)=(.*)/ && $hash_define_val{$1}) {
+        $config_defines{$hash_define_val{$1}} = $3;
     }
     elsif ($a=~/--((disable|enable)-.*)/ && ($hash_defines{$1} || $hash_undefs{$1})) {
         if ($hash_defines{$1}) {
@@ -64,6 +100,58 @@ foreach my $a (@ARGV) {
         }
         else {
             $config_defines{$hash_undefs{$1}} = undef;
+        }
+    }
+    elsif ($a=~/--enable-g=(\S+)/) {
+        my ($g) = ($1);
+        if ($1 eq "most") {
+            $g="dbg,log,mem,meminit,mutex,handle,handlealloc";
+        }
+        elsif ($1 eq "all") {
+            $g="dbg,log,mem,meminit,mutex,handle,handlealloc,memarena";
+        }
+        foreach my $t (split /,/, $g) {
+            if ($t eq "dbg" || $t eq "debug") {
+                $config_cflags{"-g"} = 1;
+            }
+            elsif ($t eq "log") {
+                $config_defines{MPL_USE_DBG_LOGGING} = 1;
+            }
+            elsif ($t eq "mem" or $t eq "memarena") {
+                $config_defines{MPL_USE_MEMORY_TRACING} = 1;
+                $config_defines{USE_MEMORY_TRACING} = 1;
+                if ($t eq "memarena") {
+                    $config_defines{MPICH_DEBUG_MEMARENA} = 1;
+                }
+            }
+            elsif ($t eq "meminit") {
+                $config_defines{MPICH_DEBUG_MEMINIT} = 1;
+            }
+            elsif ($t eq "mutex") {
+                $config_defines{MPICH_DEBUG_MUTEX} = 1;
+            }
+            elsif ($t eq "handle") {
+                $config_defines{MPICH_DEBUG_HANDLES} = 1;
+            }
+            elsif ($t eq "handlealloc") {
+                $config_defines{MPICH_DEBUG_HANDLEALLOC} = 1;
+            }
+        }
+    }
+    elsif ($a=~/--enable-fast=(\S+)/) {
+        my ($g) = ($1);
+        if ($g =~ /O(\S)/) {
+            $config_cflags{O} = $1;
+        }
+        if ($g=~/ndebug/) {
+            $config_cflags{-DNDEBUG} = 1;
+        }
+        elsif ($g=~/all|yes/) {
+            $config_cflags{-DNDEBUG} = 1;
+            $config_cflags{O} = 2;
+        }
+        elsif ($g=~/no|none/) {
+            $config_cflags{O} = 0;
         }
     }
     else {
@@ -131,8 +219,38 @@ foreach my $a (@ARGV) {
             $opts{$1}=$2;
             push @config_args, $a;
         }
-        elsif ($a=~/--(with-posix-mutex)=(.*)/) {
-            $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($2);
+        elsif ($a=~/--enable-thread-cs=(.*)/) {
+            my $cs = "GLOBAL";
+            if ($1 eq "per-object" or $1 eq "per_object") {
+                $cs = "POBJ";
+            }
+            elsif ($1 eq "per-vci" or $1 eq "per_vci") {
+                $cs = "VCI";
+            }
+            $config_defines{MPICH_THREAD_GRANULARITY} = "MPICH_THREAD_GRANULARITY__$cs";
+        }
+        elsif ($a=~/--with-posix-mutex=(.*)/) {
+            $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_".uc($1);
+        }
+        elsif ($a=~/--enable-ch4-vci-method=(.*)/) {
+            $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__".uc($1);
+            if ($1 eq "communicator") {
+                $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__COMM";
+            }
+        }
+        elsif ($a=~/--enable-ch4-mt=(\w+)/) {
+            if ($1 eq "direct") {
+                $config_defines{MPIDI_CH4_USE_MT_DIRECT} = 1;
+            }
+            elsif ($1 eq "handoff") {
+                $config_defines{MPIDI_CH4_USE_MT_HANDOFF} = 1;
+            }
+            elsif ($1 eq "runtime") {
+                $config_defines{MPIDI_CH4_USE_MT_RUNTIME} = 1;
+            }
+        }
+        elsif ($a=~/--((with|enable)-.*)=(.*)/ && $hash_define_val{$1}) {
+            $config_defines{$hash_define_val{$1}} = $3;
         }
         elsif ($a=~/--((disable|enable)-.*)/ && ($hash_defines{$1} || $hash_undefs{$1})) {
             if ($hash_defines{$1}) {
@@ -140,6 +258,58 @@ foreach my $a (@ARGV) {
             }
             else {
                 $config_defines{$hash_undefs{$1}} = undef;
+            }
+        }
+        elsif ($a=~/--enable-g=(\S+)/) {
+            my ($g) = ($1);
+            if ($1 eq "most") {
+                $g="dbg,log,mem,meminit,mutex,handle,handlealloc";
+            }
+            elsif ($1 eq "all") {
+                $g="dbg,log,mem,meminit,mutex,handle,handlealloc,memarena";
+            }
+            foreach my $t (split /,/, $g) {
+                if ($t eq "dbg" || $t eq "debug") {
+                    $config_cflags{"-g"} = 1;
+                }
+                elsif ($t eq "log") {
+                    $config_defines{MPL_USE_DBG_LOGGING} = 1;
+                }
+                elsif ($t eq "mem" or $t eq "memarena") {
+                    $config_defines{MPL_USE_MEMORY_TRACING} = 1;
+                    $config_defines{USE_MEMORY_TRACING} = 1;
+                    if ($t eq "memarena") {
+                        $config_defines{MPICH_DEBUG_MEMARENA} = 1;
+                    }
+                }
+                elsif ($t eq "meminit") {
+                    $config_defines{MPICH_DEBUG_MEMINIT} = 1;
+                }
+                elsif ($t eq "mutex") {
+                    $config_defines{MPICH_DEBUG_MUTEX} = 1;
+                }
+                elsif ($t eq "handle") {
+                    $config_defines{MPICH_DEBUG_HANDLES} = 1;
+                }
+                elsif ($t eq "handlealloc") {
+                    $config_defines{MPICH_DEBUG_HANDLEALLOC} = 1;
+                }
+            }
+        }
+        elsif ($a=~/--enable-fast=(\S+)/) {
+            my ($g) = ($1);
+            if ($g =~ /O(\S)/) {
+                $config_cflags{O} = $1;
+            }
+            if ($g=~/ndebug/) {
+                $config_cflags{-DNDEBUG} = 1;
+            }
+            elsif ($g=~/all|yes/) {
+                $config_cflags{-DNDEBUG} = 1;
+                $config_cflags{O} = 2;
+            }
+            elsif ($g=~/no|none/) {
+                $config_cflags{O} = 0;
             }
         }
         else {
@@ -1331,6 +1501,30 @@ my $l = "AM_CFLAGS = $t";
 $l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("CFLAGS");
+if (%config_cflags) {
+    my @tlist = split /\s+/, $t;
+    foreach my $a (@tlist) {
+        if ($a=~/-O(\d+)/) {
+            if (!defined $config_cflags{O}) {
+                $config_cflags{O} = $1;
+            }
+        }
+        elsif (!$config_cflags{$a}) {
+            $config_cflags{$a} = 1;
+        }
+    }
+    my @tlist;
+    foreach my $a (keys %config_cflags) {
+        if ($a eq "O") {
+            push @tlist, "-O$config_cflags{O}";
+        }
+        else {
+            push @tlist, $a;
+        }
+    }
+    $t = join(' ', @tlist);
+    print(STDOUT "  -->  CFLAGS = $t\n");
+}
 my $l = "CFLAGS = $t";
 $l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";

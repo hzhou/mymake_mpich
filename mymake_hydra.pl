@@ -14,6 +14,7 @@ our %objects;
 our @CONFIGS;
 our @extra_DEFS;
 our @extra_INCLUDES;
+our %config_cflags;
 our %dst_hash;
 our @programs;
 our @ltlibs;
@@ -40,6 +41,7 @@ $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
 my $cnt_else = 0;
 foreach my $a (@ARGV) {
+    print "[$a]\n";
     if ($a=~/V=1/) {
         $opts{V} = 1;
     }
@@ -585,6 +587,30 @@ my $l = "AM_CFLAGS = $t";
 $l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("CFLAGS");
+if (%config_cflags) {
+    my @tlist = split /\s+/, $t;
+    foreach my $a (@tlist) {
+        if ($a=~/-O(\d+)/) {
+            if (!defined $config_cflags{O}) {
+                $config_cflags{O} = $1;
+            }
+        }
+        elsif (!$config_cflags{$a}) {
+            $config_cflags{$a} = 1;
+        }
+    }
+    my @tlist;
+    foreach my $a (keys %config_cflags) {
+        if ($a eq "O") {
+            push @tlist, "-O$config_cflags{O}";
+        }
+        else {
+            push @tlist, $a;
+        }
+    }
+    $t = join(' ', @tlist);
+    print(STDOUT "  -->  CFLAGS = $t\n");
+}
 my $l = "CFLAGS = $t";
 $l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
