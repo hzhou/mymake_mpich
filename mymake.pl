@@ -908,40 +908,42 @@ if (!-f "configure") {
         }
     }
 
-    my $skip_xpmem=1;
-    foreach my $a (@config_args) {
-        if ($a=~/--with-xpmem/) {
-            $skip_xpmem = 0;
+    if (-f "src/mpid/ch4/shm/ipc/xpmem/subconfigure.m4") {
+        my $skip_xpmem=1;
+        foreach my $a (@config_args) {
+            if ($a=~/--with-xpmem/) {
+                $skip_xpmem = 0;
+            }
         }
-    }
-    if ($skip_xpmem) {
-        my $f = "src/mpid/ch4/shm/ipc/xpmem/subconfigure.m4";
-        my $f_ = $f;
-        $f_=~s/[\.\/]/_/g;
-        my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-        push @mod_list, \@m;
+        if ($skip_xpmem) {
+            my $f = "src/mpid/ch4/shm/ipc/xpmem/subconfigure.m4";
+            my $f_ = $f;
+            $f_=~s/[\.\/]/_/g;
+            my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+            push @mod_list, \@m;
 
-        system "mv $m[0] $m[1]";
-        my @lines;
-        {
-            open In, "$m[1]" or die "Can't open $m[1].\n";
-            @lines=<In>;
-            close In;
-        }
-        my $flag_skip=0;
-        open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-        print "  --> [$m[2]]\n";
-        foreach my $l (@lines) {
-            if ($l=~/AM_CONDITIONAL.*BUILD_SHM_IPC_XPMEM.*build_ch4_shm_ipc_xpmem/) {
-                $l=~s/test .* ".*"/false/;
+            system "mv $m[0] $m[1]";
+            my @lines;
+            {
+                open In, "$m[1]" or die "Can't open $m[1].\n";
+                @lines=<In>;
+                close In;
             }
-            if ($flag_skip) {
-                next;
+            my $flag_skip=0;
+            open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+            print "  --> [$m[2]]\n";
+            foreach my $l (@lines) {
+                if ($l=~/AM_CONDITIONAL.*BUILD_SHM_IPC_XPMEM.*build_ch4_shm_ipc_xpmem/) {
+                    $l=~s/test .* ".*"/false/;
+                }
+                if ($flag_skip) {
+                    next;
+                }
+                print Out $l;
             }
-            print Out $l;
+            close Out;
+            system "cp -v $m[2] $m[0]";
         }
-        close Out;
-        system "cp -v $m[2] $m[0]";
     }
     system "autoreconf -ivf";
     foreach my $m (@mod_list) {
