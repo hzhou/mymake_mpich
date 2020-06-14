@@ -2148,18 +2148,20 @@ else {
     system "make $opts{moddir}/mpl/include/mplconfig.h";
 }
 
-open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
-print Out "#include \"mpl_atomic.h\"\n";
-print Out "#include <pthread.h>\n";
-print Out "pthread_mutex_t MPL_emulation_lock;\n";
-print Out "int main() { return sizeof(MPL_atomic_ptr_t); }\n";
-close Out;
+if (-f "src/mpl/include/mpl_atomic.h") {
+    open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
+    print Out "#include \"mpl_atomic.h\"\n";
+    print Out "#include <pthread.h>\n";
+    print Out "pthread_mutex_t MPL_emulation_lock;\n";
+    print Out "int main() { return sizeof(MPL_atomic_ptr_t); }\n";
+    close Out;
 
-system "$make_vars{CC} -Imymake/mpl/include mymake/t.c -o mymake/t";
-system "mymake/t";
-my $ret = $? >> 8;
+    system "$make_vars{CC} -Imymake/mpl/include mymake/t.c -o mymake/t";
+    system "mymake/t";
+    my $ret = $? >> 8;
 
-$config_defines{SIZEOF_MPL_ATOMIC_PTR_T} = $ret;
+    $config_defines{SIZEOF_MPL_ATOMIC_PTR_T} = $ret;
+}
 my $lock_based_atomics;
 open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
 while(<In>){
