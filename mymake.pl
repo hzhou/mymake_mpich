@@ -91,6 +91,10 @@ foreach my $a (@ARGV) {
             $config_defines{MPIDI_CH4_USE_MT_RUNTIME} = 1;
         }
     }
+    elsif ($a=~/--enable-nolocal/) {
+        $config_defines{ENABLE_NO_LOCAL} = 1;
+        $config_defines{MPIDI_CH4_DIRECT_NETMOD} = 1;
+    }
     elsif ($a=~/--((with|enable)-.*)=(.*)/ && $hash_define_val{$1}) {
         $config_defines{$hash_define_val{$1}} = $3;
         if ($1 eq "with-ch4-max-vcis") {
@@ -251,6 +255,10 @@ foreach my $a (@ARGV) {
             elsif ($1 eq "runtime") {
                 $config_defines{MPIDI_CH4_USE_MT_RUNTIME} = 1;
             }
+        }
+        elsif ($a=~/--enable-nolocal/) {
+            $config_defines{ENABLE_NO_LOCAL} = 1;
+            $config_defines{MPIDI_CH4_DIRECT_NETMOD} = 1;
         }
         elsif ($a=~/--((with|enable)-.*)=(.*)/ && $hash_define_val{$1}) {
             $config_defines{$hash_define_val{$1}} = $3;
