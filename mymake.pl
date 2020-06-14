@@ -93,7 +93,6 @@ foreach my $a (@ARGV) {
     }
     elsif ($a=~/--enable-nolocal/) {
         $config_defines{ENABLE_NO_LOCAL} = 1;
-        $config_defines{MPIDI_CH4_DIRECT_NETMOD} = 1;
     }
     elsif ($a=~/--((with|enable)-.*)=(.*)/ && $hash_define_val{$1}) {
         $config_defines{$hash_define_val{$1}} = $3;
@@ -258,7 +257,6 @@ foreach my $a (@ARGV) {
         }
         elsif ($a=~/--enable-nolocal/) {
             $config_defines{ENABLE_NO_LOCAL} = 1;
-            $config_defines{MPIDI_CH4_DIRECT_NETMOD} = 1;
         }
         elsif ($a=~/--((with|enable)-.*)=(.*)/ && $hash_define_val{$1}) {
             $config_defines{$hash_define_val{$1}} = $3;
