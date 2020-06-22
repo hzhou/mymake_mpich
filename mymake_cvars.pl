@@ -2,7 +2,13 @@
 use strict;
 use Cwd;
 
-my $pwd=getcwd();
+my $pwd;
+if ($ENV{PWD}) {
+    $pwd = $ENV{PWD};
+}
+else {
+    $pwd=getcwd();
+}
 my $pwd = getcwd();
 
 if (!-f "$pwd/maint/extractcvars.in") {

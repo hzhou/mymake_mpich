@@ -25,7 +25,13 @@ our @extra_make_rules;
 our %config_defines;
 our %make_vars;
 
-my $pwd=getcwd();
+my $pwd;
+if ($ENV{PWD}) {
+    $pwd = $ENV{PWD};
+}
+else {
+    $pwd=getcwd();
+}
 if ($0=~/^(\/.*)\//) {
     $opts{mymake} = $1;
 }
@@ -1338,6 +1344,14 @@ if ($opts{device}=~/ch4:ucx/) {
         }
         my @tlist = glob("$ucxdir/modules/*.la");
         foreach my $m (@tlist) {
+            open In, "$m" or die "Can't open $m: $!\n";
+            while(<In>){
+                if (/relink_command="\(cd \S+ucx.src.uct.(\S+);/) {
+                    my $dir = "src/uct/$1";
+                    $m=~s/modules/$dir/;
+                }
+            }
+            close In;
             system "$ucxdir/libtool --mode=install --quiet install $m $opts{prefix}/lib/ucx";
         }
         unlink "$ucxdir/need_sed";

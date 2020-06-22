@@ -8,7 +8,13 @@ our %generics;
 our %specifics;
 our %generic_index;
 
-my $pwd=getcwd();
+my $pwd;
+if ($ENV{PWD}) {
+    $pwd = $ENV{PWD};
+}
+else {
+    $pwd=getcwd();
+}
 open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
 while(<In>){
     if (/^(\w+): (.*)/) {

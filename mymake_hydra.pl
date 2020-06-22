@@ -22,7 +22,13 @@ our %special_targets;
 our @extra_make_rules;
 our %make_vars;
 
-my $pwd=getcwd();
+my $pwd;
+if ($ENV{PWD}) {
+    $pwd = $ENV{PWD};
+}
+else {
+    $pwd=getcwd();
+}
 if ($0=~/^(\/.*)\//) {
     $opts{mymake} = $1;
 }
