@@ -17,6 +17,7 @@ our @CONFIGS;
 our @extra_DEFS;
 our @extra_INCLUDES;
 our %config_cflags;
+our %config_ldflags;
 our %dst_hash;
 our @programs;
 our @ltlibs;
@@ -147,6 +148,17 @@ foreach my $a (@ARGV) {
             }
             elsif ($t eq "handlealloc") {
                 $config_defines{MPICH_DEBUG_HANDLEALLOC} = 1;
+            }
+            elsif ($t eq "asan") {
+                $config_cflags{O}=1;
+                $config_cflags{"-g"} = 1;
+                $config_cflags{"-fsanitize=address"} = 1;
+                $config_cflags{"-fno-omit-frame-pointer"} = 1;
+                $config_ldflags{"-fsanitize=address"} = 1;
+            }
+            elsif ($t eq "usan") {
+                $config_cflags{"-fsanitize=undefined"} = 1;
+                $config_ldflags{"-fsanitize=undefined"} = 1;
             }
         }
     }
@@ -311,6 +323,17 @@ foreach my $a (@ARGV) {
                 }
                 elsif ($t eq "handlealloc") {
                     $config_defines{MPICH_DEBUG_HANDLEALLOC} = 1;
+                }
+                elsif ($t eq "asan") {
+                    $config_cflags{O}=1;
+                    $config_cflags{"-g"} = 1;
+                    $config_cflags{"-fsanitize=address"} = 1;
+                    $config_cflags{"-fno-omit-frame-pointer"} = 1;
+                    $config_ldflags{"-fsanitize=address"} = 1;
+                }
+                elsif ($t eq "usan") {
+                    $config_cflags{"-fsanitize=undefined"} = 1;
+                    $config_ldflags{"-fsanitize=undefined"} = 1;
                 }
             }
         }
@@ -1044,7 +1067,7 @@ while(<In>){
     }
 }
 close In;
-open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
+open In, "mymake/Makefile.custom" or die "Can't open mymake/Makefile.custom: $!\n";
 while(<In>){
     if (/^CFLAGS *= *(.*)/) {
         $opts{CFLAGS}=$1;
@@ -1061,70 +1084,10 @@ if (!$opts{have_weak}) {
 }
 
 my $bin="\x24(PREFIX)/bin";
-if (-f "src/env/mpicc.bash") {
-    my @lines;
-    {
-        open In, "src/env/mpicc.bash" or die "Can't open src/env/mpicc.bash.\n";
-        @lines=<In>;
-        close In;
-    }
-    my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-    open Out, ">mymake/mpicc" or die "Can't write mymake/mpicc: $!\n";
-    foreach my $l (@lines) {
-        $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-        print Out $l;
-    }
-    close Out;
-    $dst_hash{"mymake/mpicc"}=$bin;
-}
-if (-f "src/env/mpicxx.bash") {
-    my @lines;
-    {
-        open In, "src/env/mpicxx.bash" or die "Can't open src/env/mpicxx.bash.\n";
-        @lines=<In>;
-        close In;
-    }
-    my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-    open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx: $!\n";
-    foreach my $l (@lines) {
-        $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-        print Out $l;
-    }
-    close Out;
-    $dst_hash{"mymake/mpicxx"}=$bin;
-}
-if (-f "src/env/mpif77.bash") {
-    my @lines;
-    {
-        open In, "src/env/mpif77.bash" or die "Can't open src/env/mpif77.bash.\n";
-        @lines=<In>;
-        close In;
-    }
-    my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-    open Out, ">mymake/mpif77" or die "Can't write mymake/mpif77: $!\n";
-    foreach my $l (@lines) {
-        $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-        print Out $l;
-    }
-    close Out;
-    $dst_hash{"mymake/mpif77"}=$bin;
-}
-if (-f "src/env/mpifort.bash") {
-    my @lines;
-    {
-        open In, "src/env/mpifort.bash" or die "Can't open src/env/mpifort.bash.\n";
-        @lines=<In>;
-        close In;
-    }
-    my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-    open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
-    foreach my $l (@lines) {
-        $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-        print Out $l;
-    }
-    close Out;
-    $dst_hash{"mymake/mpifort"}=$bin;
-}
+$dst_hash{"mymake/mpicc"}=$bin;
+$dst_hash{"mymake/mpicxx"}=$bin;
+$dst_hash{"mymake/mpif77"}=$bin;
+$dst_hash{"mymake/mpifort"}=$bin;
 $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
 $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
 
@@ -1561,6 +1524,16 @@ my $l = "AM_LDFLAGS = $t";
 $l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("LDFLAGS");
+if (%config_ldflags) {
+    my @tlist = split /\s+/, $t;
+    foreach my $a (@tlist) {
+        if (!$config_ldflags{$a}) {
+            $config_ldflags{$a} = 1;
+        }
+    }
+    $t = join ' ', keys %config_ldflags;
+    print(STDOUT "  -->  LDFLAGS = $t\n");
+}
 my $l = "LDFLAGS = $t";
 $l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
@@ -2159,6 +2132,103 @@ print Out "\n";
 close Out;
 system "rm -f Makefile";
 system "ln -s mymake/Makefile.custom Makefile";
+
+if (-f "src/env/mpicc.bash") {
+    my @lines;
+    {
+        open In, "src/env/mpicc.bash" or die "Can't open src/env/mpicc.bash.\n";
+        @lines=<In>;
+        close In;
+    }
+    my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
+    open Out, ">mymake/mpicc" or die "Can't write mymake/mpicc: $!\n";
+    print "  --> [mymake/mpicc]\n";
+    foreach my $l (@lines) {
+        if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
+            $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+        }
+        elsif ($l=~/^final_cflags="(.*)"/) {
+            my ($flags) = ($1);
+            if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+                $l = "final_cflags=\"$flags -fsanitize=$1\"\n";
+            }
+        }
+        print Out $l;
+    }
+    close Out;
+}
+if (-f "src/env/mpicxx.bash") {
+    my @lines;
+    {
+        open In, "src/env/mpicxx.bash" or die "Can't open src/env/mpicxx.bash.\n";
+        @lines=<In>;
+        close In;
+    }
+    my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
+    open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx: $!\n";
+    print "  --> [mymake/mpicxx]\n";
+    foreach my $l (@lines) {
+        if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
+            $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+        }
+        elsif ($l=~/^final_cflags="(.*)"/) {
+            my ($flags) = ($1);
+            if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+                $l = "final_cflags=\"$flags -fsanitize=$1\"\n";
+            }
+        }
+        print Out $l;
+    }
+    close Out;
+}
+if (-f "src/env/mpif77.bash") {
+    my @lines;
+    {
+        open In, "src/env/mpif77.bash" or die "Can't open src/env/mpif77.bash.\n";
+        @lines=<In>;
+        close In;
+    }
+    my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
+    open Out, ">mymake/mpif77" or die "Can't write mymake/mpif77: $!\n";
+    print "  --> [mymake/mpif77]\n";
+    foreach my $l (@lines) {
+        if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
+            $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+        }
+        elsif ($l=~/^final_cflags="(.*)"/) {
+            my ($flags) = ($1);
+            if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+                $l = "final_cflags=\"$flags -fsanitize=$1\"\n";
+            }
+        }
+        print Out $l;
+    }
+    close Out;
+}
+if (-f "src/env/mpifort.bash") {
+    my @lines;
+    {
+        open In, "src/env/mpifort.bash" or die "Can't open src/env/mpifort.bash.\n";
+        @lines=<In>;
+        close In;
+    }
+    my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
+    open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
+    print "  --> [mymake/mpifort]\n";
+    foreach my $l (@lines) {
+        if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
+            $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+        }
+        elsif ($l=~/^final_cflags="(.*)"/) {
+            my ($flags) = ($1);
+            if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+                $l = "final_cflags=\"$flags -fsanitize=$1\"\n";
+            }
+        }
+        print Out $l;
+    }
+    close Out;
+}
 
 $ENV{CFLAGS}=$opts{CFLAGS};
 if (-d "src/openpa") {

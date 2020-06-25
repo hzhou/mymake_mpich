@@ -15,6 +15,7 @@ our @CONFIGS;
 our @extra_DEFS;
 our @extra_INCLUDES;
 our %config_cflags;
+our %config_ldflags;
 our %dst_hash;
 our @programs;
 our @ltlibs;
@@ -625,6 +626,16 @@ my $l = "AM_LDFLAGS = $t";
 $l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
 my $t = get_object("LDFLAGS");
+if (%config_ldflags) {
+    my @tlist = split /\s+/, $t;
+    foreach my $a (@tlist) {
+        if (!$config_ldflags{$a}) {
+            $config_ldflags{$a} = 1;
+        }
+    }
+    $t = join ' ', keys %config_ldflags;
+    print(STDOUT "  -->  LDFLAGS = $t\n");
+}
 my $l = "LDFLAGS = $t";
 $l=~s/$opts{moddir}/\x24(MODDIR)/g;
 print Out "$l\n";
