@@ -1067,17 +1067,6 @@ while(<In>){
     }
 }
 close In;
-open In, "mymake/Makefile.custom" or die "Can't open mymake/Makefile.custom: $!\n";
-while(<In>){
-    if (/^CFLAGS *= *(.*)/) {
-        $opts{CFLAGS}=$1;
-        open Out, ">mymake/CFLAGS" or die "Can't write mymake/CFLAGS: $!\n";
-        print "  --> [mymake/CFLAGS]\n";
-        print Out "$1\n";
-        close Out;
-    }
-}
-close In;
 
 if (!$opts{have_weak}) {
     $special_targets{lib_libmpi_la}="\x24(LTCC) -DMPICH_MPI_FROM_PMPI";
@@ -2133,6 +2122,17 @@ close Out;
 system "rm -f Makefile";
 system "ln -s mymake/Makefile.custom Makefile";
 
+open In, "mymake/Makefile.custom" or die "Can't open mymake/Makefile.custom: $!\n";
+while(<In>){
+    if (/^CFLAGS *= *(.*)/) {
+        $opts{CFLAGS}=$1;
+        open Out, ">mymake/CFLAGS" or die "Can't write mymake/CFLAGS: $!\n";
+        print "  --> [mymake/CFLAGS]\n";
+        print Out "$1\n";
+        close Out;
+    }
+}
+close In;
 if (-f "src/env/mpicc.bash") {
     my @lines;
     {
