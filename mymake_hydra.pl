@@ -4,9 +4,6 @@ use Cwd;
 
 our %opts;
 our @config_args;
-our $srcdir;
-our $moddir;
-our $prefix;
 our $do_hydra2;
 our $I_list;
 our $L_list;
@@ -135,15 +132,6 @@ if ($opts{F77}) {
 if ($opts{FC}) {
     $ENV{FC}=$opts{FC};
 }
-if ($opts{srcdir}) {
-    $srcdir = $opts{srcdir};
-}
-if ($opts{moddir}) {
-    $moddir = $opts{moddir};
-}
-if ($opts{prefix}) {
-    $prefix = $opts{prefix};
-}
 if (!$opts{prefix}) {
     $opts{prefix}="$pwd/_inst";
     system "mkdir -p $opts{prefix}";
@@ -176,6 +164,7 @@ elsif (-e $mod_tarball) {
 else {
     die "moddir not set\n";
 }
+my $srcdir = $opts{srcdir};
 if (-f "./maint/version.m4") {
     $srcdir = ".";
 }
@@ -191,11 +180,15 @@ elsif (-f "../../../maint/version.m4") {
 if (!$srcdir) {
     die "srcdir not set\n";
 }
+$opts{srcdir} = $srcdir;
 if (-f "mymake/CFLAGS") {
     open In, "mymake/CFLAGS" or die "Can't open mymake/CFLAGS: $!\n";
     while(<In>){
         if (/(.+)/) {
             $ENV{CFLAGS} = $1;
+        }
+        if (/(-fsanitize=\w+)/) {
+            $ENV{LDFLAG} = $1;
         }
     }
     close In;

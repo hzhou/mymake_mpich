@@ -7,9 +7,6 @@ our @config_args;
 our %hash_defines;
 our %hash_undefs;
 our %hash_define_val;
-our $srcdir;
-our $moddir;
-our $prefix;
 our $I_list;
 our $L_list;
 our %objects;
@@ -371,15 +368,6 @@ if ($opts{F77}) {
 if ($opts{FC}) {
     $ENV{FC}=$opts{FC};
 }
-if ($opts{srcdir}) {
-    $srcdir = $opts{srcdir};
-}
-if ($opts{moddir}) {
-    $moddir = $opts{moddir};
-}
-if ($opts{prefix}) {
-    $prefix = $opts{prefix};
-}
 if (!$opts{prefix}) {
     $opts{prefix}="$pwd/_inst";
     system "mkdir -p $opts{prefix}";
@@ -412,6 +400,7 @@ elsif (-e $mod_tarball) {
 else {
     die "moddir not set\n";
 }
+my $srcdir = $opts{srcdir};
 if (-f "./maint/version.m4") {
     $srcdir = ".";
 }
@@ -427,6 +416,7 @@ elsif (-f "../../../maint/version.m4") {
 if (!$srcdir) {
     die "srcdir not set\n";
 }
+$opts{srcdir} = $srcdir;
 if ($srcdir ne ".") {
     chdir $srcdir or die "can't chdir $srcdir\n";
 }
@@ -475,12 +465,10 @@ if ($need_save_args) {
     }
     close Out;
 }
-print "srcdir: $srcdir\n";
-print "moddir: $moddir\n";
-print "prefix: $prefix\n";
-if ($opts{device}) {
-    print "device: $opts{device}\n";
-}
+print "srcdir: $opts{srcdir}\n";
+print "moddir: $opts{moddir}\n";
+print "prefix: $opts{prefix}\n";
+print "device: $opts{device}\n";
 
 if ($opts{pm} eq "gforker") {
     push @extra_make_rules,  "libmpiexec_la_OBJECTS = \\";

@@ -48,9 +48,10 @@ if (-d "src/mpi/romio") {
 if (-d "$opts{moddir}/json-c") {
     push @realclean_list, "$opts{moddir}/json-c/json.h";
 }
-push @realclean_list, "src/pm/hydra/mymake/Makefile.orig";
+push @realclean_list, "src/pm/hydra/mymake";
 push @realclean_list, "src/mpi/errhan/defmsg.h";
 push @realclean_list, "src/include/mpir_cvars.h";
 foreach my $t (@realclean_list) {
-    system "rm -fv $t";
+    print "rm -rf $t\n";
+    system "rm -rf $t";
 }
