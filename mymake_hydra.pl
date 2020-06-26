@@ -188,7 +188,7 @@ if (-f "mymake/CFLAGS") {
             $ENV{CFLAGS} = $1;
         }
         if (/(-fsanitize=\w+)/) {
-            $ENV{LDFLAG} = $1;
+            $ENV{LDFLAGS} = $1;
         }
     }
     close In;
