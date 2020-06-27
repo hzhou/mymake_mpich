@@ -2135,10 +2135,10 @@ if (-f "src/env/mpicc.bash") {
         if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
             $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         }
-        elsif ($l=~/^final_cflags="(.*)"/) {
-            my ($flags) = ($1);
+        elsif ($l=~/^final_(c|cxx|f)flags="(.*)"/) {
+            my ($c, $flags) = ($1, $2);
             if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                $l = "final_cflags=\"$flags -fsanitize=$1\"\n";
+                $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
             }
         }
         print Out $l;
@@ -2159,10 +2159,10 @@ if (-f "src/env/mpicxx.bash") {
         if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
             $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         }
-        elsif ($l=~/^final_cflags="(.*)"/) {
-            my ($flags) = ($1);
+        elsif ($l=~/^final_(c|cxx|f)flags="(.*)"/) {
+            my ($c, $flags) = ($1, $2);
             if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                $l = "final_cflags=\"$flags -fsanitize=$1\"\n";
+                $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
             }
         }
         print Out $l;
@@ -2183,10 +2183,10 @@ if (-f "src/env/mpif77.bash") {
         if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
             $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         }
-        elsif ($l=~/^final_cflags="(.*)"/) {
-            my ($flags) = ($1);
+        elsif ($l=~/^final_(c|cxx|f)flags="(.*)"/) {
+            my ($c, $flags) = ($1, $2);
             if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                $l = "final_cflags=\"$flags -fsanitize=$1\"\n";
+                $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
             }
         }
         print Out $l;
@@ -2207,10 +2207,10 @@ if (-f "src/env/mpifort.bash") {
         if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
             $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
         }
-        elsif ($l=~/^final_cflags="(.*)"/) {
-            my ($flags) = ($1);
+        elsif ($l=~/^final_(c|cxx|f)flags="(.*)"/) {
+            my ($c, $flags) = ($1, $2);
             if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                $l = "final_cflags=\"$flags -fsanitize=$1\"\n";
+                $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
             }
         }
         print Out $l;
