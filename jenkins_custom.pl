@@ -205,8 +205,34 @@ sub set_netmod {
 }
 
 sub set_compiler {
-    if (!$jenkins_options{compiler}) {
-        $jenkins_options{compiler}="gcc";
+    my $compiler = $jenkins_options{compiler};
+    if (!$compiler) {
+        $compiler = "gcc";
+    }
+    if ($compiler =~/gcc-(\d\S+)/) {
+        my ($ver) = ($1);
+        $custom_env{PATH}="$ENV{PMRS}/opt/$compiler/bin:$ENV{PATH}";
+        $custom_env{LD_LIBRARY_PATH}="$ENV{PMRS}/opt/$compiler/lib64:$ENV{LD_LIBRARY_PATH}";
+        $custom_env{CC} = "gcc-$ver";
+        $custom_env{CXX} = "g++-$ver";
+        $custom_env{F77} = "gfortran-$ver";
+        $custom_env{FC} = "gfortran-$ver";
+    }
+    elsif ($compiler =~ /clang(-*)/) {
+        $custom_env{PATH}="$ENV{PMRS}/opt/$compiler/bin:$ENV{PATH}";
+        $custom_env{CC} = "$compiler";
+        $custom_env{CXX} = "clang++";
+        $custom_env{F77} = "gfortran";
+        $custom_env{FC} = "gfortran";
+    }
+    elsif ($compiler=~/intel/) {
+        my $intel="/nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-6.5.0/intel-parallel-studio-professional.2019.3-xfiyvwh";
+        $custom_env{PATH}="$intel/bin:$ENV{PATH}";
+        $custom_env{INTEL_LICENSE_FILE}="28518@lic001.cels.anl.gov";
+        $custom_env{CC} = "icc";
+        $custom_env{CXX} = "icpc";
+        $custom_env{F77} = "ifort";
+        $custom_env{FC} = "ifort";
     }
 }
 
