@@ -228,7 +228,7 @@ sub set_compiler {
     elsif ($compiler=~/intel/) {
         my $intel="/nfs/gce/software/spack/opt/spack/linux-centos7-x86_64/gcc-6.5.0/intel-parallel-studio-professional.2019.3-xfiyvwh";
         $custom_env{PATH}="$intel/bin:$ENV{PATH}";
-        $custom_env{INTEL_LICENSE_FILE}="28518@lic001.cels.anl.gov";
+        $custom_env{INTEL_LICENSE_FILE}="28518\@lic001.cels.anl.gov";
         $custom_env{CC} = "icc";
         $custom_env{CXX} = "icpc";
         $custom_env{F77} = "ifort";
