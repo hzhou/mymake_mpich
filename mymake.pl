@@ -89,9 +89,11 @@ foreach my $a (@ARGV) {
             $config_defines{MPIDI_CH4_USE_MT_DIRECT} = 1;
         }
         elsif ($1 eq "handoff") {
+            $config_defines{MPIDI_CH4_USE_MT_DIRECT} = undef;
             $config_defines{MPIDI_CH4_USE_MT_HANDOFF} = 1;
         }
         elsif ($1 eq "runtime") {
+            $config_defines{MPIDI_CH4_USE_MT_DIRECT} = undef;
             $config_defines{MPIDI_CH4_USE_MT_RUNTIME} = 1;
         }
     }
@@ -264,9 +266,11 @@ foreach my $a (@ARGV) {
                 $config_defines{MPIDI_CH4_USE_MT_DIRECT} = 1;
             }
             elsif ($1 eq "handoff") {
+                $config_defines{MPIDI_CH4_USE_MT_DIRECT} = undef;
                 $config_defines{MPIDI_CH4_USE_MT_HANDOFF} = 1;
             }
             elsif ($1 eq "runtime") {
+                $config_defines{MPIDI_CH4_USE_MT_DIRECT} = undef;
                 $config_defines{MPIDI_CH4_USE_MT_RUNTIME} = 1;
             }
         }

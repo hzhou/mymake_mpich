@@ -52,12 +52,16 @@ if ($ENV{ghprbCommentBody}) {
         push @mpich_config, $a;
     }
 
-    while ($trigger_phrase=~/^\s*(compiler|skip_test|out_of_tree)\s*[:=]\s*([\w\-\.]+)/mg) {
+    while ($trigger_phrase=~/^\s*(compiler|skip_test|out_of_tree|default)\s*[:=]\s*([\w\-\.]+)/mg) {
         my ($key, $val) = ($1, $2);
         if ($val=~/(yes|1)/) {
             $val = "true";
         }
         $ENV{$key}=$val;
+    }
+
+    if ($ENV{default} eq "true") {
+        @mpich_config = grep !/--enable-strict/, @mpich_config;
     }
 
     while ($trigger_phrase=~/^env:\s*(\w+)\s*=\s*(.*?)\s*$/mg) {
