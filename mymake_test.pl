@@ -2,8 +2,6 @@
 use strict;
 use Cwd;
 
-our %opts;
-
 my $pwd;
 if ($ENV{PWD}) {
     $pwd = $ENV{PWD};
@@ -11,70 +9,66 @@ if ($ENV{PWD}) {
 else {
     $pwd=getcwd();
 }
-open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
+my $pwd = getcwd();
+
+my $cmd = "find test/mpi -name Makefile.am";
+my @all_makefile_ams;
+open In, "$cmd |" or die "Can't open $cmd |: $!\n";
 while(<In>){
-    if (/^(\w+): (.*)/) {
-        $opts{$1} = $2;
+    if (/^test.mpi.(util|dtpools)/) {
+    }
+    elsif (/^(test.mpi.*Makefile.am)/) {
+        push @all_makefile_ams, $1;
     }
 }
 close In;
-my $dir = "test/mpi";
-my $srcdir="../..";
-chdir $dir or die "Can't chdir $dir\n";
-if (!-d "mymake") {
-    mkdir "mymake" or die "Can't mkdir mymake\n";
-}
-
-system "which mpicc";
-
-my $cmd = "rsync -r $srcdir/confdb/ confdb/";
-print ": $cmd\n";
-system($cmd) == 0 or die "    Command failed.\n";
-my $cmd = "rsync -r $srcdir/confdb/ dtpools/confdb/";
-print ": $cmd\n";
-system($cmd) == 0 or die "    Command failed.\n";
-my $cmd = "cp $srcdir/maint/version.m4 .";
-print ": $cmd\n";
-system($cmd) == 0 or die "    Command failed.\n";
-my $cmd = "sh autogen.sh";
-print ": $cmd\n";
-system($cmd) == 0 or die "    Command failed.\n";
-my $cmd = "autoreconf -ivf";
-print ": $cmd\n";
-system($cmd) == 0 or die "    Command failed.\n";
-my $config_args = "";
-foreach my $t (split /\s+/, $opts{config_args}) {
-    if ($t=~/--(dis|en)able-.*tests/) {
-        $config_args .= " $t";
+foreach my $am (@all_makefile_ams) {
+    if ($am=~/(.*)\/Makefile.am/) {
+        my ($dir) = ($1);
+        chdir $dir;
+        my $type;
+        my @prog_list;
+        my (%prog_flags, %prog_source);
+        open In, "Makefile.am" or die "Can't open Makefile.am: $!\n";
+        while(<In>){
+            if (/^include .*Makefile_single.mtest/) {
+                $type = "single";
+            }
+            elsif (/^noinst_PROGRAMS\s*=(.*)/) {
+                my @all;
+                my $t = $1;
+                while ($t=~/(.*)\\$/) {
+                    push @all, $1;
+                    $t = <In>;
+                }
+                push @all, $1;
+                my $t = join ' ', @all;
+                $t=~s/^\s+//g;
+                $t=~s/\s+$//g;
+                @prog_list = split /\s+/, $t;
+            }
+            elsif (/^(\w+)_CPPFLAGS\s*=\s*(.*)/) {
+                $prog_flags{$1} = $2;
+            }
+            elsif (/^(\w+)_SOURCES\s*=\s*(.*)/) {
+                $prog_source{$1} = $2;
+            }
+        }
+        close In;
+        if ($type) {
+            print " --> $dir/Makefile\n";
+            open Out, ">Makefile" or die "Can't write Makefile: $!\n";
+            print Out "all: @prog_list\n\n";
+            foreach my $a (@prog_list) {
+                my $source = $prog_source{$a};
+                if (!$source) {
+                    $source = "$a.c";
+                }
+                print Out "$a: $source\n";
+                print Out "\tmpicc -o $a $source\n\n";
+            }
+            close Out;
+        }
+        chdir $pwd;
     }
-    elsif ($t=~/--with-device=(.*)/) {
-        $config_args .= " $t";
-    }
-    elsif ($t=~/--(dis|en)able-(fortran|cxx|romio)/) {
-        $config_args .= " $t";
-    }
-    elsif ($t=~/--with-(thread-package|argobots)/) {
-        $config_args .= " $t";
-    }
-}
-my $cmd = "./configure $config_args";
-print ": $cmd\n";
-system($cmd) == 0 or die "    Command failed.\n";
-
-my $cmd = "cp Makefile mymake/Makefile.orig";
-print ": $cmd\n";
-system($cmd) == 0 or die "    Command failed.\n";
-my $cmd = "cp Makefile mymake/Makefile.orig";
-print ": $cmd\n";
-system($cmd) == 0 or die "    Command failed.\n";
-if ($ENV{skip_test} eq "custom") {
-    my $dir=".";
-    if ($0=~/(.*)\//) {
-        $dir=$1;
-    }
-    my $cmd = "perl $dir/runtests.pl -tests=testlist.custom -junitfile=summary.junit.xml";
-    print ": $cmd\n";
-    system($cmd) == 0 or die "    Command failed.\n";
-}
-else {
 }

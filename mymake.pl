@@ -155,7 +155,7 @@ foreach my $a (@ARGV) {
                 $config_cflags{"-fno-omit-frame-pointer"} = 1;
                 $config_ldflags{"-fsanitize=address"} = 1;
             }
-            elsif ($t eq "usan") {
+            elsif ($t eq "usan" or $t eq "ubsan") {
                 $config_cflags{"-fsanitize=undefined"} = 1;
                 $config_ldflags{"-fsanitize=undefined"} = 1;
             }
@@ -332,7 +332,7 @@ foreach my $a (@ARGV) {
                     $config_cflags{"-fno-omit-frame-pointer"} = 1;
                     $config_ldflags{"-fsanitize=address"} = 1;
                 }
-                elsif ($t eq "usan") {
+                elsif ($t eq "usan" or $t eq "ubsan") {
                     $config_cflags{"-fsanitize=undefined"} = 1;
                     $config_ldflags{"-fsanitize=undefined"} = 1;
                 }
@@ -440,12 +440,12 @@ push @extra_make_rules, "DO_errmsg = perl $opts{mymake}_errmsg.pl";
 push @extra_make_rules, "DO_cvars = perl $opts{mymake}_cvars.pl";
 push @extra_make_rules, "DO_logs = perl $opts{mymake}_logs.pl";
 push @extra_make_rules, "DO_hydra = perl $opts{mymake}_hydra.pl";
-push @extra_make_rules, "DO_test = perl $opts{mymake}_test.pl";
+push @extra_make_rules, "DO_testing = perl $opts{mymake}_testing.pl";
 push @extra_make_rules, "DO_mpi_h = perl $opts{mymake}_mpi_h.pl";
 push @extra_make_rules, "";
 push @extra_make_rules, ".PHONY: test cvars errmsg";
-push @extra_make_rules, "test:";
-push @extra_make_rules, "\t\x24(DO_test)";
+push @extra_make_rules, "testing:";
+push @extra_make_rules, "\t\x24(DO_testing)";
 push @extra_make_rules, "";
 push @extra_make_rules, "cvars:";
 push @extra_make_rules, "\t\x24(DO_cvars)";
@@ -1250,8 +1250,8 @@ if (!$opts{disable_romio}) {
     system "cp maint/version.m4 src/mpi/romio/";
     my @t_env;
     push @t_env, "FROM_MPICH=yes";
-    push @t_env, "master_top_srcdir=$pwd";
-    push @t_env, "master_top_builddir=$pwd";
+    push @t_env, "main_top_srcdir=$pwd";
+    push @t_env, "main_top_builddir=$pwd";
     push @t_env, "CPPFLAGS='-I$opts{moddir}/mpl/include'";
     if ($opts{argobots}) {
         $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
