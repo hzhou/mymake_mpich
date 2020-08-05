@@ -2,13 +2,9 @@
 use strict;
 use Cwd;
 
-my $pwd;
-if ($ENV{PWD}) {
-    $pwd = $ENV{PWD};
-}
-else {
-    $pwd=getcwd();
-}
+my $pwd=getcwd();
+my $mymake_dir = Cwd::abs_path($0);
+$mymake_dir=~s/\/[^\/]+$//;
 my $pwd = getcwd();
 
 my $cmd = "find test/mpi -name Makefile.am";

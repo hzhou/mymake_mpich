@@ -5,28 +5,23 @@ use Cwd;
 our %opts;
 our @config_args;
 our $do_hydra2;
+our %objects;
+our @programs;
+our @ltlibs;
+our @CONFIGS;
 our $I_list;
 our $L_list;
-our %objects;
-our @CONFIGS;
+our @extra_make_rules;
+our %dst_hash;
+our %special_targets;
 our @extra_DEFS;
 our @extra_INCLUDES;
 our %config_cflags;
 our %config_ldflags;
-our %dst_hash;
-our @programs;
-our @ltlibs;
-our %special_targets;
-our @extra_make_rules;
-our %make_vars;
 
-my $pwd;
-if ($ENV{PWD}) {
-    $pwd = $ENV{PWD};
-}
-else {
-    $pwd=getcwd();
-}
+my $pwd=getcwd();
+my $mymake_dir = Cwd::abs_path($0);
+$mymake_dir=~s/\/[^\/]+$//;
 if ($0=~/^(\/.*)\//) {
     $opts{mymake} = $1;
 }
@@ -40,24 +35,12 @@ if (!-d "mymake") {
 push @extra_make_rules, "DO_stage = perl $opts{mymake}_stage.pl";
 push @extra_make_rules, "DO_clean = perl $opts{mymake}_clean.pl";
 push @extra_make_rules, "";
+if (!-f "maint/version.m4") {
+    die "Not in top_srcdir.\n";
+}
 $opts{V}=0;
 $opts{ucx}="embedded";
 $opts{libfabric}="embedded";
-my $cnt_else = 0;
-foreach my $a (@ARGV) {
-    print "[$a]\n";
-    if ($a=~/V=1/) {
-        $opts{V} = 1;
-    }
-    else {
-        $cnt_else++;
-    }
-}
-
-print "[filter_ARGV] $cnt_else ARGS\n";
-if (!$cnt_else) {
-    @ARGV = ();
-}
 my $need_save_args;
 if (!@ARGV && -f "mymake/args") {
     my $t;
@@ -75,10 +58,19 @@ elsif (@ARGV) {
     $need_save_args = 1;
 }
 foreach my $a (@ARGV) {
-    if ($a=~/^--(prefix)=(.*)/) {
+    if ($a=~/^-quick/) {
+        $opts{quick}=1;
+    }
+    elsif ($a=~/^--(.*?)=(.*)/) {
         $opts{$1}=$2;
     }
+    elsif ($a=~/^--(.*)/) {
+        $opts{$1}=1;
+    }
     elsif ($a=~/^(\w+)=(.*)/) {
+        $opts{$1}=$2;
+    }
+    if ($a=~/^--(prefix)=(.*)/) {
         $opts{$1}=$2;
     }
     elsif ($a=~/^--/) {
@@ -147,9 +139,9 @@ elsif (-e "mymake/modules.tar.gz") {
     $mod_tarball = "mymake/modules.tar.gz";
 }
 if ($ENV{MODDIR}) {
-    $opts{moddir} = $ENV{MODDIR};
+    $opts{moddir} = Cwd::abs_path($ENV{MODDIR});
 }
-elsif (-d "mymake/hwloc") {
+elsif (-e "mymake/skip_tarball") {
     $opts{moddir} = "$pwd/mymake";
 }
 elsif (-e $mod_tarball) {
@@ -160,27 +152,11 @@ elsif (-e $mod_tarball) {
     my $cmd = "tar -C $opts{moddir} -xf $mod_tarball";
     print "$cmd\n";
     system $cmd;
+    system "touch mymake/skip_tarball";
 }
 else {
     die "moddir not set\n";
 }
-my $srcdir = $opts{srcdir};
-if (-f "./maint/version.m4") {
-    $srcdir = ".";
-}
-elsif (-f "../maint/version.m4") {
-    $srcdir = "..";
-}
-elsif (-f "../../maint/version.m4") {
-    $srcdir = "../..";
-}
-elsif (-f "../../../maint/version.m4") {
-    $srcdir = "../../..";
-}
-if (!$srcdir) {
-    die "srcdir not set\n";
-}
-$opts{srcdir} = $srcdir;
 if (-f "mymake/CFLAGS") {
     open In, "mymake/CFLAGS" or die "Can't open mymake/CFLAGS: $!\n";
     while(<In>){
@@ -198,30 +174,20 @@ if ($opts{pm} eq "hydra2") {
     $do_hydra2 = 1;
 }
 
-if ($srcdir) {
-    my $dir="$srcdir/src/pm/hydra";
-    if ($do_hydra2) {
-        $dir="$srcdir/src/pm/hydra2";
-    }
-    chdir $dir or die "Can't chdir $dir\n";
+my $dir="src/pm/hydra";
+if ($do_hydra2) {
+    $dir="src/pm/hydra2";
 }
+chdir $dir or die "Can't chdir $dir\n";
+my $srcdir = "../../..";
+$pwd = getcwd();
+
 if (!-d "mymake") {
     mkdir "mymake" or die "can't mkdir mymake\n";
 }
 if (!-f "mymake/Makefile.orig") {
-    if ($srcdir) {
-        my $o="../../..";
-        system "rsync -r $o/confdb/ confdb/";
-        system "cp $o/maint/version.m4 .";
-    }
-    else {
-        if (!-d "confdb") {
-            die "hydra: missing confdb/\n";
-        }
-        if (!-f "version.m4") {
-            die "hydra: missing version.m4\n";
-        }
-    }
+    system "rsync -r $srcdir/confdb/ confdb/";
+    system "cp $srcdir/maint/version.m4 .";
 
     my @mod_list;
     if ($do_hydra2) {
@@ -443,29 +409,47 @@ my $bin="\x24(PREFIX)/bin";
 $dst_hash{"LN_S-$bin/mpiexec"}="$bin/mpiexec.hydra";
 $dst_hash{"LN_S-$bin/mpirun"}="$bin/mpiexec.hydra";
 
-$I_list .= " -I$opts{moddir}/mpl/include";
-$L_list .= " $opts{moddir}/mpl/libmpl.la";
-push @CONFIGS, "$opts{moddir}/mpl/include/mplconfig.h";
-my $config_args = "--disable-versioning --enable-embedded";
-foreach my $t (@config_args) {
-    if ($t=~/--enable-(g|strict)/) {
-        $config_args.=" $t";
-    }
-    elsif ($t=~/--with-(mpl|thread-package|argobots|uti)/) {
-        $config_args.=" $t";
+if (!-d "$opts{moddir}/mpl") {
+    my $cmd = "cp -r src/mpl $opts{moddir}/mpl";
+    print "$cmd\n";
+    system $cmd;
+    if (!$opts{quick}) {
+        my $cmd = "cp -r confdb $opts{moddir}/mpl/";
+        print "$cmd\n";
+        system $cmd;
     }
 }
-my @t = ("cd $opts{moddir}/mpl");
+push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
+$I_list .= " -I\x24(MODS)/mpl/include";
+$L_list .= " \x24(MODDIR)/mpl/libmpl.la";
+my $configure = "./configure --disable-versioning --enable-embedded";
+foreach my $t (@config_args) {
+    if ($t=~/--enable-(g|strict)/) {
+        $configure.=" $t";
+    }
+    elsif ($t=~/--with-(mpl|thread-package|argobots|uti)/) {
+        $configure.=" $t";
+    }
+}
+my $subdir="\x24(MODS)/mpl";
+my $lib_la = "\x24(MODDIR)/mpl/libmpl.la";
+my $config_h = "\x24(MODS)/mpl/include/mplconfig.h";
+my @t = ("cd $subdir");
 push @t, "\x24(DO_stage) Configure MPL";
-push @t, "autoreconf -ivf";
-push @t, "./configure $config_args";
+if (-f "$opts{moddir}/mpl/autogen.sh") {
+    push @t, "sh autogen.sh";
+}
+else {
+    push @t, "autoreconf -ivf";
+}
+push @t, "$configure";
 push @t, "cp $pwd/libtool .";
-push @extra_make_rules, "$opts{moddir}/mpl/include/mplconfig.h: ";
+push @extra_make_rules, "$config_h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-my @t = ("cd $opts{moddir}/mpl");
+my @t = ("cd $subdir");
 push @t, "\x24(MAKE)";
-push @extra_make_rules, "$opts{moddir}/mpl/libmpl.la: $opts{moddir}/mpl/include/mplconfig.h";
+push @extra_make_rules, "$lib_la: $config_h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if (!-d "$opts{moddir}/hwloc") {
@@ -473,37 +457,38 @@ if (!-d "$opts{moddir}/hwloc") {
     print "$cmd\n";
     system $cmd;
 }
-$I_list .= " -I$opts{moddir}/hwloc/include";
-$L_list .= " $opts{moddir}/hwloc/hwloc/libhwloc_embedded.la";
-push @CONFIGS, "$opts{moddir}/hwloc/include/hwloc/autogen/config.h";
-my @t = ("cd $opts{moddir}/hwloc");
+push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
+$I_list .= " -I\x24(MODS)/hwloc/include";
+$L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+my $configure = "./configure --enable-embedded-mode --enable-visibility";
+my $subdir="\x24(MODS)/hwloc";
+my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+my $config_h = "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
+my @t = ("cd $subdir");
 push @t, "\x24(DO_stage) Configure HWLOC";
-push @t, "sh autogen.sh";
-push @t, "./configure --enable-embedded-mode --enable-visibility";
-push @extra_make_rules, "$opts{moddir}/hwloc/include/hwloc/autogen/config.h: ";
+if (-f "$opts{moddir}/hwloc/autogen.sh") {
+    push @t, "sh autogen.sh";
+}
+else {
+    push @t, "autoreconf -ivf";
+}
+push @t, "$configure";
+push @t, "cp $pwd/libtool .";
+push @extra_make_rules, "$config_h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-my @t = ("cd $opts{moddir}/hwloc");
+my @t = ("cd $subdir");
 push @t, "\x24(MAKE)";
-push @extra_make_rules, "$opts{moddir}/hwloc/hwloc/libhwloc_embedded.la: $opts{moddir}/hwloc/include/hwloc/autogen/config.h";
+push @extra_make_rules, "$lib_la: $config_h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if ($opts{argobots}) {
     $I_list .= " -I$opts{argobots}/include";
     $L_list .= " -L$opts{argobots}/lib -labt";
 }
-my $lt_opt;
-if ($opts{V}==0) {
-    $lt_opt = "--quiet";
-}
-
 if ($opts{argobots}) {
     $I_list .= " -I$opts{argobots}/include";
 }
-my $_P = `pwd`;
-chomp $_P;
-$I_list=~s/$_P/./g;
-
 %objects=();
 my $tlist;
 open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
@@ -545,176 +530,8 @@ while(<In>){
     }
 }
 close In;
-open Out, ">mymake/Makefile.custom" or die "Can't write mymake/Makefile.custom: $!\n";
-print "  --> [mymake/Makefile.custom]\n";
-print Out "export MODDIR=$opts{moddir}\n";
-print Out "PREFIX=$opts{prefix}\n";
-print Out "\n";
-if (@CONFIGS) {
-    my $l = "CONFIGS = @CONFIGS";
-    $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-    print Out "$l\n";
-    print Out "\n";
-}
-my $t = get_object("DEFS");
-$t .= " @extra_DEFS";
-my $l = "DEFS = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-my $t = get_object("DEFAULT_INCLUDES");
-my $l = "DEFAULT_INCLUDES = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-my $t = get_object("INCLUDES");
-$t .= " @extra_INCLUDES";
-my $l = "INCLUDES = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-my $t = get_object("AM_CPPFLAGS");
-$t=~s/\@HWLOC_\S+\@\s*//;
-$t=~s/\s*-I\S*mpl\/include//g;
-$t .= $I_list;
-my $l = "AM_CPPFLAGS = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-my $t = get_object("CPPFLAGS");
-my $l = "CPPFLAGS = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-my $t = get_object("AM_CFLAGS");
-$t=~s/\@HWLOC_\S+\@\s*//;
-my $l = "AM_CFLAGS = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-my $t = get_object("CFLAGS");
-if (%config_cflags) {
-    my @tlist = split /\s+/, $t;
-    foreach my $a (@tlist) {
-        if ($a=~/-O(\d+)/) {
-            if (!defined $config_cflags{O}) {
-                $config_cflags{O} = $1;
-            }
-        }
-        elsif (!$config_cflags{$a}) {
-            $config_cflags{$a} = 1;
-        }
-    }
-    my @tlist;
-    foreach my $a (keys %config_cflags) {
-        if ($a eq "O") {
-            push @tlist, "-O$config_cflags{O}";
-        }
-        else {
-            push @tlist, $a;
-        }
-    }
-    $t = join(' ', @tlist);
-    print(STDOUT "  -->  CFLAGS = $t\n");
-}
-my $l = "CFLAGS = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-my $t = get_object("AM_LDFLAGS");
-my $l = "AM_LDFLAGS = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-my $t = get_object("LDFLAGS");
-if (%config_ldflags) {
-    my @tlist = split /\s+/, $t;
-    foreach my $a (@tlist) {
-        if (!$config_ldflags{$a}) {
-            $config_ldflags{$a} = 1;
-        }
-    }
-    $t = join ' ', keys %config_ldflags;
-    print(STDOUT "  -->  LDFLAGS = $t\n");
-}
-my $l = "LDFLAGS = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-my $t = get_object("LIBS");
-my $l = "LIBS = $t";
-$l=~s/$opts{moddir}/\x24(MODDIR)/g;
-print Out "$l\n";
-print Out "\n";
-
-my $cc = get_object("CC");
-my $ccld = get_object("CCLD");
-
-print Out "COMPILE = $cc \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) \x24(AM_CFLAGS) \x24(CFLAGS)\n";
-print Out "LINK = $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
-print Out "LTCC = /bin/sh ./libtool --mode=compile $lt_opt \x24(COMPILE)\n";
-print Out "LTLD = /bin/sh ./libtool --mode=link $lt_opt \x24(LINK)\n";
-print Out "\n";
-if (!$opts{disable_cxx}) {
-    my $cxx = get_object("CXX");
-    my $flags = get_object("CXXFLAGS");
-    my $am_flags = get_object("AM_CXXFLAGS");
-    print Out "CXXCOMPILE = $cxx \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) $flags $am_flags\n";
-
-    my $cxxld = get_object("CXXLD");
-    if ($cxxld) {
-        print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt --tag=CXX \x24(CXXCOMPILE)\n";
-        print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CXX $cxxld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
-    }
-    else {
-        print Out "LTCXX = /bin/sh ./libtool --mode=compile $lt_opt \x24(CXXCOMPILE)\n";
-        print Out "CXXLD = /bin/sh ./libtool --mode=link $lt_opt --tag=CC $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
-    }
-    print Out "\n";
-}
-if (!$opts{disable_fortran}) {
-    my $fc = get_object("F77");
-    my $flags = get_object("FFLAGS");
-    my $am_flags = get_object("AM_FFLAGS");
-    $flags.=" $am_flags";
-    if ($flags=~/-I(\S+)/) {
-        my ($modpath) = ($1);
-        if ($fc =~/^(pgfortran|ifort)/) {
-            $flags.=" -module $modpath";
-        }
-        elsif ($fc =~/^sunf\d+/) {
-            $flags.=" -moddir=$modpath";
-        }
-        elsif ($fc =~/^af\d+/) {
-            $flags.=" -YMOD_OUT_DIR=$modpath";
-        }
-        else {
-            $flags.=" -J$modpath";
-        }
-    }
-    print Out "F77COMPILE = $fc $flags\n";
-    print Out "LTF77 = /bin/sh ./libtool --mode=compile $lt_opt --tag=F77 \x24(F77COMPILE)\n";
-
-    my $ld = get_object("F77LD");
-    print Out "F77LD = /bin/sh ./libtool --mode=link $lt_opt --tag=F77 $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
-    print Out "\n";
-    my $fc = get_object("FC");
-    my $flags = get_object("FCFLAGS");
-    my $am_flags = get_object("AM_FCFLAGS");
-    $flags.=" $am_flags";
-    if ($flags=~/-I(\S+)/) {
-        my ($modpath) = ($1);
-        if ($fc =~/^(pgfortran|ifort)/) {
-            $flags.=" -module $modpath";
-        }
-        elsif ($fc =~/^sunf\d+/) {
-            $flags.=" -moddir=$modpath";
-        }
-        elsif ($fc =~/^af\d+/) {
-            $flags.=" -YMOD_OUT_DIR=$modpath";
-        }
-        else {
-            $flags.=" -J$modpath";
-        }
-    }
-    print Out "FCCOMPILE = $fc $flags\n";
-    print Out "LTFC = /bin/sh ./libtool --mode=compile $lt_opt --tag=FC \x24(FCCOMPILE)\n";
-
-    my $ld = get_object("FCLD");
-    print Out "FCLD = /bin/sh ./libtool --mode=link $lt_opt --tag=FC $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
-    print Out "\n";
-}
+$objects{MODS}="-";
+$objects{MODDIR}="-";
 
 my $tlist = get_list("lib_LTLIBRARIES");
 foreach my $t (@$tlist) {
@@ -734,411 +551,37 @@ foreach my $t (@$tlist) {
     push @ltlibs, $t;
 }
 
-print Out "all: @ltlibs @programs\n";
-print Out "\n";
-
 foreach my $p (@ltlibs) {
-    my $ld = "LTLD";
-    if ($p=~/libmpifort.la/) {
-        $ld = "F77LD";
-    }
-    elsif ($p=~/libmpicxx.la/) {
-        $ld = "CXXLD";
-    }
-    my $cmd = "\x24($ld)";
-    if ($opts{V}==0) {
-        $cmd = "\@echo $ld \$\@ && $cmd";
-    }
-
     my $a = $p;
     $a=~s/[\.\/]/_/g;
-
-    my ($deps, $objs);
-    my $o= "${a}_OBJECTS";
-    my $tlist = get_list($o);
-    my @tlist = sort @$tlist;
-    if ($special_targets{$a}) {
-        foreach my $t (@tlist) {
-            $t=~s/([^\/]+)-(\w+)/$2.$1/;
-        }
-    }
-    else {
-        foreach my $t (@tlist) {
-            $t=~s/[^\/]+-//;
-        }
-    }
-
-    my @t;
-    foreach my $t (@tlist) {
-        if ($t=~/^-l\w+/) {
-            $objs.=" $t";
-        }
-        elsif ($t=~/^-L\S+/) {
-            $objs.=" $t";
-        }
-        else {
-            push @t, $t;
-        }
-    }
-
-
-    print Out "$o = \\\n";
-    my $last_item = pop @t;
-    foreach my $t (@t) {
-        if ($t) {
-            my $l = "    $t \\";
-            $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-            print Out "$l\n";
-        }
-    }
-    my $l = "    $last_item";
-    $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-    print Out "$l\n";
-
-    if (@CONFIGS and "$o"=~/_OBJECTS$/) {
-        print Out "\x24($o): \x24(CONFIGS)\n";
-    }
-    $deps .= " \x24($o)";
     my $add = $a."_LIBADD";
+    my $t = get_make_var($add);
+    $t=~s/\s*\S*\/libmpl.la//g;
+    $t=~s/-lhydra/libhydra.la/g;
+    $t=~s/-lpm/libpm.la/g;
 
-    if ($objects{$add}) {
-        my $t = get_object($add);
-        $t=~s/\s*\S*\/libmpl.la//g;
-        $t=~s/-lhydra/libhydra.la/g;
-        $t=~s/-lpm/libpm.la/g;
-        $t .= $L_list;
-        $t=~s/^\s+//;
-        my @tlist = split /\s+/, $t;
-        my @t;
-        foreach my $t (@tlist) {
-            if ($t=~/^-l\w+/) {
-                $objs.=" $t";
-            }
-            elsif ($t=~/^-L\S+/) {
-                $objs.=" $t";
-            }
-            else {
-                push @t, $t;
-            }
-        }
-
-
-        print Out "$add = \\\n";
-        my $last_item = pop @t;
-        foreach my $t (@t) {
-            if ($t) {
-                my $l = "    $t \\";
-                $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-                print Out "$l\n";
-            }
-        }
-        my $l = "    $last_item";
-        $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-        print Out "$l\n";
-
-        if (@CONFIGS and "$add"=~/_OBJECTS$/) {
-            print Out "\x24($add): \x24(CONFIGS)\n";
-        }
-        $deps .= " \x24($add)";
+    if ($add=~/libhydra.*_la/) {
+        $t.= $L_list;
     }
-
-    $objs = "$deps $objs \x24(LIBS)";
-
-    if ($dst_hash{$p}=~/\/lib$/) {
-        my $opt="-rpath $dst_hash{$p}";
-        if ($opts{so_version}) {
-            $opt.=" -version-info $opts{so_version}";
-        }
-        $objs = "$opt $objs";
-    }
-
-    print Out "$p: $deps\n";
-    print Out "\t$cmd -o \$\@ $objs\n";
-    print Out "\n";
+    $objects{$add} = $t;
 }
-
 foreach my $p (@programs) {
-    my $ld = "LTLD";
-    if ($p=~/libmpifort.la/) {
-        $ld = "F77LD";
-    }
-    elsif ($p=~/libmpicxx.la/) {
-        $ld = "CXXLD";
-    }
-    my $cmd = "\x24($ld)";
-    if ($opts{V}==0) {
-        $cmd = "\@echo $ld \$\@ && $cmd";
-    }
-
     my $a = $p;
     $a=~s/[\.\/]/_/g;
-
-    my ($deps, $objs);
-    my $o= "${a}_OBJECTS";
-    my $tlist = get_list($o);
-    my @tlist = sort @$tlist;
-    if ($special_targets{$a}) {
-        foreach my $t (@tlist) {
-            $t=~s/([^\/]+)-(\w+)/$2.$1/;
-        }
-    }
-    else {
-        foreach my $t (@tlist) {
-            $t=~s/[^\/]+-//;
-        }
-    }
-
-    my @t;
-    foreach my $t (@tlist) {
-        if ($t=~/^-l\w+/) {
-            $objs.=" $t";
-        }
-        elsif ($t=~/^-L\S+/) {
-            $objs.=" $t";
-        }
-        else {
-            push @t, $t;
-        }
-    }
-
-
-    print Out "$o = \\\n";
-    my $last_item = pop @t;
-    foreach my $t (@t) {
-        if ($t) {
-            my $l = "    $t \\";
-            $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-            print Out "$l\n";
-        }
-    }
-    my $l = "    $last_item";
-    $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-    print Out "$l\n";
-
-    if (@CONFIGS and "$o"=~/_OBJECTS$/) {
-        print Out "\x24($o): \x24(CONFIGS)\n";
-    }
-    $deps .= " \x24($o)";
     my $add = $a."_LDADD";
+    my $t = get_make_var($add);
+    $t=~s/\s*\S*\/libmpl.la//g;
+    $t=~s/-lhydra/libhydra.la/g;
+    $t=~s/-lpm/libpm.la/g;
 
-    if ($objects{$add}) {
-        my $t = get_object($add);
-        $t=~s/\s*\S*\/libmpl.la//g;
-        $t=~s/-lhydra/libhydra.la/g;
-        $t=~s/-lpm/libpm.la/g;
-        $t .= $L_list;
-        $t=~s/^\s+//;
-        my @tlist = split /\s+/, $t;
-        my @t;
-        foreach my $t (@tlist) {
-            if ($t=~/^-l\w+/) {
-                $objs.=" $t";
-            }
-            elsif ($t=~/^-L\S+/) {
-                $objs.=" $t";
-            }
-            else {
-                push @t, $t;
-            }
-        }
+    $objects{$add} = $t;
+}
+dump_makefile("mymake/Makefile.custom");
 
-
-        print Out "$add = \\\n";
-        my $last_item = pop @t;
-        foreach my $t (@t) {
-            if ($t) {
-                my $l = "    $t \\";
-                $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-                print Out "$l\n";
-            }
-        }
-        my $l = "    $last_item";
-        $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-        print Out "$l\n";
-
-        if (@CONFIGS and "$add"=~/_OBJECTS$/) {
-            print Out "\x24($add): \x24(CONFIGS)\n";
-        }
-        $deps .= " \x24($add)";
-    }
-    if ($objects{"${a}_CFLAGS"}) {
-        $cmd.= ' '. get_object("${a}_CFLAGS");
-        $cmd .= " \x24(CFLAGS)";
-    }
-    if ($objects{"${a}_LDFLAGS"}) {
-        $cmd.= ' '. get_object("${a}_LDFLAGS");
-        $cmd .= " \x24(LDFLAGS)";
-    }
-
-    $objs = "$deps $objs \x24(LIBS)";
-
-    if ($dst_hash{$p}=~/\/lib$/) {
-        my $opt="-rpath $dst_hash{$p}";
-        if ($opts{so_version}) {
-            $opt.=" -version-info $opts{so_version}";
-        }
-        $objs = "$opt $objs";
-    }
-
-    print Out "$p: $deps\n";
-    print Out "\t$cmd -o \$\@ $objs\n";
-    print Out "\n";
-}
-
-print Out "\x23 --------------------\n";
-foreach my $l (@extra_make_rules) {
-    $l=~s/$opts{moddir}/\x24(MODDIR)/g;
-    print Out "$l\n";
-}
-print Out "\x23 --------------------\n";
-print Out "%.o: %.c\n";
-if ($opts{V}==0) {
-    print Out "\t\@echo CC \$\@ && \x24(COMPILE) -c -o \$\@ \$<\n";
-}
-else {
-    print Out "\t\x24(COMPILE) -c -o \$\@ \$<\n";
-}
-print Out "\n";
-print Out "%.lo: %.c\n";
-if ($opts{V}==0) {
-    print Out "\t\@echo LTCC \$\@ && \x24(LTCC) -c -o \$\@ \$<\n";
-}
-else {
-    print Out "\t\x24(LTCC) -c -o \$\@ \$<\n";
-}
-print Out "\n";
-if (!$opts{disable_cxx}) {
-    print Out "%.lo: %.cxx\n";
-    if ($opts{V}==0) {
-        print Out "\t\@echo LTCXX \$\@ && \x24(LTCXX) -c -o \$\@ \$<\n";
-    }
-    else {
-        print Out "\t\x24(LTCXX) -c -o \$\@ \$<\n";
-    }
-    print Out "\n";
-}
-if (!$opts{disable_fortran}) {
-    print Out "%.lo: %.f\n";
-    if ($opts{V}==0) {
-        print Out "\t\@echo LTF77 \$\@ && \x24(LTF77) -c -o \$\@ \$<\n";
-    }
-    else {
-        print Out "\t\x24(LTF77) -c -o \$\@ \$<\n";
-    }
-    print Out "\n";
-    print Out "%.lo: %.f90\n";
-    if ($opts{V}==0) {
-        print Out "\t\@echo LTFC \$\@ && \x24(LTFC) -c -o \$\@ \$<\n";
-    }
-    else {
-        print Out "\t\x24(LTFC) -c -o \$\@ \$<\n";
-    }
-    print Out "\n";
-}
-while (my ($k, $v) = each %special_targets) {
-    print Out "%.$k.lo: %.c\n";
-    if ($opts{V}==0) {
-        print Out "\t\@echo LTCC \$\@ && $v -c -o \$\@ \$<\n";
-    }
-    else {
-        print Out "\t$v -c -o \$\@ \$<\n";
-    }
-    print Out "\n";
-}
-print Out "%.i: %.c\n";
-if ($opts{V}==0) {
-    print Out "\t\@echo CC -E \$\@ && \x24(COMPILE) -E -o \$\@ \$<\n";
-}
-else {
-    print Out "\t\x24(COMPILE) -E -o \$\@ \$<\n";
-}
-print Out "\n";
-my $t1 = get_list("include_HEADERS");
-my $t2 = get_list("nodist_include_HEADERS");
-my $t3 = get_list("modinc_HEADERS");
-if (@$t1 or @$t2 or @$t3) {
-    foreach my $t (@$t1, @$t2, @$t3) {
-        $t=~s/use_mpi_f08/use_mpi/;
-        $dst_hash{$t} = "$opts{prefix}/include";
-    }
-}
-
-my (%dirs, @install_list, @install_deps, @lns_list);
-while (my ($k, $v) = each %dst_hash) {
-    if ($k=~/^LN_S-(.*)/) {
-        push @lns_list, "rm -f $1 && ln -s $v $1";
-    }
-    elsif ($v) {
-        if (!$dirs{$v}) {
-            $dirs{$v} = 1;
-        }
-        if ($v=~/\/lib$/) {
-            push @install_list, "/bin/sh ./libtool --mode=install $lt_opt install $k $v";
-            push @install_deps, $k;
-        }
-        elsif ($v=~/\/bin$/) {
-            push @install_list, "/bin/sh ./libtool --mode=install $lt_opt install $k $v";
-            push @install_deps, $k;
-        }
-        elsif ($v=~/\/include$/) {
-            push @install_list, "cp $k $v";
-        }
-    }
-}
-
-my @install_list = sort @install_list;
-foreach my $d (keys %dirs) {
-    unshift @install_list, "mkdir -p $d";
-}
-push @install_list, sort @lns_list;
-
-if (@install_list) {
-    print Out "\x23 --------------------\n";
-    print Out ".PHONY: install\n";
-    print Out "install: @install_deps\n";
-    foreach my $l (@install_list) {
-        print Out "\t$l\n";
-    }
-    print Out "\n";
-}
-print Out "\x23 --------------------\n";
-print Out ".PHONY: clean realclean realrealclean\n";
-print Out "clean:\n";
-print Out "\t(find src -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' |xargs rm -f)\n";
-print Out "\n";
-print Out "realclean: clean\n";
-print Out "\trm -f configure mymake/Makefile.orig src/mpi/errhan/defmsg.h src/include/mpir_cvars.h src/utils/mpir_cvars.c src/pm/hydra/configure src/pm/hydra/mymake/Makefile.orig\n";
-print Out "\trm -rf mymake/mpl mymake/openpa mymake/romio\n";
-print Out "\n";
-
-close Out;
 system "rm -f Makefile";
 system "ln -s mymake/Makefile.custom Makefile";
 
 # ---- subroutines --------------------------------------------
-sub get_object {
-    my ($key) = @_;
-    my $arr = $objects{$key};
-    if (defined $arr) {
-        my $t;
-        if (ref($arr) eq "ARRAY") {
-            $t = join(' ', @$arr);
-        }
-        else {
-            $t = $arr;
-        }
-        $t=~s/\$\(am__v_[\w]+\)//g;
-        $t=~s/\$\((\w+)\)/get_object($1)/ge;
-        $t=~s/\s+/ /g;
-
-        $make_vars{$key} = $t;
-        return $t;
-    }
-    else {
-        return "";
-    }
-}
-
 sub get_list {
     my ($key) = @_;
     my @t;
@@ -1149,10 +592,673 @@ sub get_list {
             push @t, @$L;
         }
         else {
-            $t=~s/\$\((\w+)\)/get_object($1)/ge;
+            $t=~s/\$\((\w+)\)/get_make_var($1)/ge;
             push @t, $t;
         }
     }
     return \@t;
+}
+
+sub get_make_var {
+    my ($name) = @_;
+    my $t = $objects{$name};
+    if ($t eq "-") {
+        return "\x24($name)";
+    }
+    if (defined $t) {
+        if (ref($t) eq "ARRAY") {
+            $t = join(' ', @$t);
+        }
+        $t=~s/\$\((\w+)\)/get_make_var($1)/ge;
+        $t=~s/\s+/ /g;
+
+        $t=~s/$opts{moddir}/\x24(MODS)/g;
+        return $t;
+    }
+    elsif ($name=~/^am__v_\w+/) {
+        return "";
+    }
+    else {
+        return "";
+    }
+}
+
+sub dump_makefile {
+    my ($makefile) = @_;
+
+    my $lt = get_make_var("LIBTOOL");
+    my $lt_opt;
+    if (!$opts{V}) {
+        $lt_opt = "--quiet";
+    }
+
+    open Out, ">$makefile" or die "Can't write $makefile: $!\n";
+    print "  --> [$makefile]\n";
+    print Out "PREFIX=$opts{prefix}\n";
+    print Out "export MODDIR=$opts{moddir}\n";
+    my $pwd = getcwd();
+    if ($makefile eq "Makefile") {
+        print Out "MODS=mymake\n";
+    }
+    else {
+        print Out "MODS=$opts{moddir}\n";
+    }
+    print Out "\n";
+    print Out "CONFIGS = @CONFIGS\n";
+    print Out "\n";
+    my $t = get_make_var_unique("DEFS");
+    $t .= " @extra_DEFS";
+    print Out "DEFS = $t\n";
+    my $t = get_make_var_unique("DEFAULT_INCLUDES");
+    print Out "DEFAULT_INCLUDES = $t\n";
+    my $t = get_make_var_unique("INCLUDES");
+    $t .= " @extra_INCLUDES";
+    print Out "INCLUDES = $t\n";
+    my $t = get_make_var_unique("AM_CPPFLAGS");
+    $t=~s/\@HWLOC_\S+\@\s*//;
+    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa)\/\S+\s*//g;
+    $t=~s/-I\S+\/json-c//g;
+    print Out "AM_CPPFLAGS = $t\n";
+    my $t = get_make_var_unique("CPPFLAGS");
+    $t=~s/\@HWLOC_\S+\@\s*//;
+    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa)\/\S+\s*//g;
+    $t=~s/-I\S+\/json-c//g;
+    $t .= $I_list;
+    print Out "CPPFLAGS = $t\n";
+    my $t = get_make_var_unique("AM_CFLAGS");
+    $t=~s/\@HWLOC_\S+\@\s*//;
+    print Out "AM_CFLAGS = $t\n";
+    my $t = get_make_var_unique("CFLAGS");
+    if (%config_cflags) {
+        my @tlist = split /\s+/, $t;
+        foreach my $a (@tlist) {
+            if ($a=~/-O(\d+)/) {
+                if (!defined $config_cflags{O}) {
+                    $config_cflags{O} = $1;
+                }
+            }
+            elsif (!$config_cflags{$a}) {
+                $config_cflags{$a} = 1;
+            }
+        }
+        my @tlist;
+        foreach my $a (keys %config_cflags) {
+            if ($a eq "O") {
+                push @tlist, "-O$config_cflags{O}";
+            }
+            else {
+                push @tlist, $a;
+            }
+        }
+        $t = join(' ', @tlist);
+        print(STDOUT "  -->  CFLAGS = $t\n");
+    }
+    print Out "CFLAGS = $t\n";
+    my $t = get_make_var_unique("AM_LDFLAGS");
+    print Out "AM_LDFLAGS = $t\n";
+    my $t = get_make_var_unique("LDFLAGS");
+    if (%config_ldflags) {
+        my @tlist = split /\s+/, $t;
+        foreach my $a (@tlist) {
+            if (!$config_ldflags{$a}) {
+                $config_ldflags{$a} = 1;
+            }
+        }
+        $t = join ' ', keys %config_ldflags;
+        print(STDOUT "  -->  LDFLAGS = $t\n");
+    }
+    print Out "LDFLAGS = $t\n";
+    my $t = get_make_var_unique("LIBS");
+    print Out "LIBS = $t\n";
+    print Out "\n";
+
+    my $cc = get_make_var("CC");
+    my $ccld = get_make_var("CCLD");
+
+    print Out "COMPILE = $cc \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) \x24(AM_CFLAGS) \x24(CFLAGS)\n";
+    print Out "LINK = $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+    print Out "LTCC = $lt --mode=compile $lt_opt \x24(COMPILE)\n";
+    print Out "LTLD = $lt --mode=link $lt_opt \x24(LINK)\n";
+    print Out "\n";
+    if (!$opts{disable_cxx}) {
+        my $cxx = get_make_var("CXX");
+        my $flags = get_make_var("CXXFLAGS");
+        my $am_flags = get_make_var("AM_CXXFLAGS");
+        print Out "CXXCOMPILE = $cxx \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) $flags $am_flags\n";
+
+        my $cxxld = get_make_var("CXXLD");
+        if ($cxxld) {
+            print Out "LTCXX = $lt --mode=compile $lt_opt --tag=CXX \x24(CXXCOMPILE)\n";
+            print Out "CXXLD = $lt --mode=link $lt_opt --tag=CXX $cxxld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+        }
+        else {
+            print Out "LTCXX = $lt --mode=compile $lt_opt \x24(CXXCOMPILE)\n";
+            print Out "CXXLD = $lt --mode=link $lt_opt --tag=CC $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+        }
+        print Out "\n";
+    }
+    if (!$opts{disable_fortran}) {
+        my $fc = get_make_var("F77");
+        my $flags = get_make_var("FFLAGS");
+        my $am_flags = get_make_var("AM_FFLAGS");
+        $flags.=" $am_flags";
+        if ($flags=~/-I(\S+)/) {
+            my ($modpath) = ($1);
+            if ($fc =~/^(pgfortran|ifort)/) {
+                $flags.=" -module $modpath";
+            }
+            elsif ($fc =~/^sunf\d+/) {
+                $flags.=" -moddir=$modpath";
+            }
+            elsif ($fc =~/^af\d+/) {
+                $flags.=" -YMOD_OUT_DIR=$modpath";
+            }
+            else {
+                $flags.=" -J$modpath";
+            }
+        }
+        print Out "F77COMPILE = $fc $flags\n";
+        print Out "LTF77 = $lt --mode=compile $lt_opt --tag=F77 \x24(F77COMPILE)\n";
+
+        my $ld = get_make_var("F77LD");
+        print Out "F77LD = $lt --mode=link $lt_opt --tag=F77 $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+        print Out "\n";
+        my $fc = get_make_var("FC");
+        my $flags = get_make_var("FCFLAGS");
+        my $am_flags = get_make_var("AM_FCFLAGS");
+        $flags.=" $am_flags";
+        if ($flags=~/-I(\S+)/) {
+            my ($modpath) = ($1);
+            if ($fc =~/^(pgfortran|ifort)/) {
+                $flags.=" -module $modpath";
+            }
+            elsif ($fc =~/^sunf\d+/) {
+                $flags.=" -moddir=$modpath";
+            }
+            elsif ($fc =~/^af\d+/) {
+                $flags.=" -YMOD_OUT_DIR=$modpath";
+            }
+            else {
+                $flags.=" -J$modpath";
+            }
+        }
+        print Out "FCCOMPILE = $fc $flags\n";
+        print Out "LTFC = $lt --mode=compile $lt_opt --tag=FC \x24(FCCOMPILE)\n";
+
+        my $ld = get_make_var("FCLD");
+        print Out "FCLD = $lt --mode=link $lt_opt --tag=FC $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
+        print Out "\n";
+    }
+
+    foreach my $target (@ltlibs, @programs) {
+        if ($target=~/^(lib|bin)\//) {
+            $dst_hash{$target} = "\x24(PREFIX)/$1";
+        }
+    }
+
+    print Out "all: @ltlibs @programs\n";
+    print Out "\n";
+    foreach my $p (@ltlibs) {
+        my $ld = "LTLD";
+        if ($p=~/libmpifort.la/) {
+            $ld = "F77LD";
+        }
+        elsif ($p=~/libmpicxx.la/) {
+            $ld = "CXXLD";
+        }
+        my $cmd = "\x24($ld)";
+        if ($opts{V}==0) {
+            $cmd = "\@echo $ld \$\@ && $cmd";
+        }
+
+        my $a = $p;
+        $a=~s/[\.\/]/_/g;
+
+        my ($deps, $objs);
+        my $t_cppflags = get_make_var("${a}_CPPFLAGS");
+        my $o= "${a}_OBJECTS";
+        my $tlist = get_make_objects($a);
+        if ($special_targets{$a}) {
+            foreach my $t (@$tlist) {
+                $t=~s/\.(l?o)$/.$a.$1/;
+            }
+        }
+
+        my @t;
+        foreach my $t (@$tlist) {
+            if ($t=~/^-l\w+/) {
+                $objs.=" $t";
+            }
+            elsif ($t=~/^-L\S+/) {
+                $objs.=" $t";
+            }
+            else {
+                if ($t_cppflags and $t=~/(\w+)\.o/) {
+                    my $obj=$1;
+                    if ($obj ne $a) {
+                        $obj .= "_$a";
+                        $t = "$obj.o";
+                    }
+                    print Out "$t: $1.c\n";
+                    print Out "\t\@echo CC \$\@ && \x24(COMPILE) $t_cppflags -c -o \$\@ \$<\n";
+                }
+                push @t, $t;
+            }
+        }
+
+        if ($#t > 1) {
+
+            my $last_item = pop @t;
+            if ($last_item) {
+                print Out "$o = \\\n";
+                foreach my $t (@t) {
+                    if ($t) {
+                        print Out "    $t \\\n";
+                    }
+                }
+                print Out "    $last_item\n";
+            }
+            else {
+                print Out "$o =\n";
+            }
+            print Out "\n";
+
+            if (@CONFIGS and "$o"=~/_OBJECTS$/) {
+                print Out "\x24($o): \x24(CONFIGS)\n";
+            }
+            $deps .= " \x24($o)";
+        }
+        else {
+            $deps .= " @t";
+        }
+        my $add = $a."_LIBADD";
+
+        my $t = get_make_var($add);
+        if ($t) {
+            $t=~s/^\s+//;
+            my @tlist = split /\s+/, $t;
+            my @t;
+            foreach my $t (@tlist) {
+                if ($t=~/^-l\w+/) {
+                    $objs.=" $t";
+                }
+                elsif ($t=~/^-L\S+/) {
+                    $objs.=" $t";
+                }
+                else {
+                    if ($t_cppflags and $t=~/(\w+)\.o/) {
+                        my $obj=$1;
+                        if ($obj ne $a) {
+                            $obj .= "_$a";
+                            $t = "$obj.o";
+                        }
+                        print Out "$t: $1.c\n";
+                        print Out "\t\@echo CC \$\@ && \x24(COMPILE) $t_cppflags -c -o \$\@ \$<\n";
+                    }
+                    push @t, $t;
+                }
+            }
+
+            if ($#t > 1) {
+
+                my $last_item = pop @t;
+                if ($last_item) {
+                    print Out "$add = \\\n";
+                    foreach my $t (@t) {
+                        if ($t) {
+                            print Out "    $t \\\n";
+                        }
+                    }
+                    print Out "    $last_item\n";
+                }
+                else {
+                    print Out "$add =\n";
+                }
+                print Out "\n";
+
+                if (@CONFIGS and "$add"=~/_OBJECTS$/) {
+                    print Out "\x24($add): \x24(CONFIGS)\n";
+                }
+                $deps .= " \x24($add)";
+            }
+            else {
+                $deps .= " @t";
+            }
+        }
+
+        $objs = "$deps $objs \x24(LIBS)";
+
+        if ($dst_hash{$p}=~/\/lib$/) {
+            my $opt="-rpath $dst_hash{$p}";
+            if ($opts{so_version}) {
+                $opt.=" -version-info $opts{so_version}";
+            }
+            $objs = "$opt $objs";
+        }
+
+        print Out "$p: $deps\n";
+        print Out "\t$cmd -o \$\@ $objs\n";
+        print Out "\n";
+    }
+
+    foreach my $p (@programs) {
+        my $ld = "LTLD";
+        if ($p=~/libmpifort.la/) {
+            $ld = "F77LD";
+        }
+        elsif ($p=~/libmpicxx.la/) {
+            $ld = "CXXLD";
+        }
+        my $cmd = "\x24($ld)";
+        if ($opts{V}==0) {
+            $cmd = "\@echo $ld \$\@ && $cmd";
+        }
+
+        my $a = $p;
+        $a=~s/[\.\/]/_/g;
+
+        my ($deps, $objs);
+        my $t_cppflags = get_make_var("${a}_CPPFLAGS");
+        my $o= "${a}_OBJECTS";
+        my $tlist = get_make_objects($a, 1);
+        if ($special_targets{$a}) {
+            foreach my $t (@$tlist) {
+                $t=~s/\.(l?o)$/.$a.$1/;
+            }
+        }
+
+        my @t;
+        foreach my $t (@$tlist) {
+            if ($t=~/^-l\w+/) {
+                $objs.=" $t";
+            }
+            elsif ($t=~/^-L\S+/) {
+                $objs.=" $t";
+            }
+            else {
+                if ($t_cppflags and $t=~/(\w+)\.o/) {
+                    my $obj=$1;
+                    if ($obj ne $a) {
+                        $obj .= "_$a";
+                        $t = "$obj.o";
+                    }
+                    print Out "$t: $1.c\n";
+                    print Out "\t\@echo CC \$\@ && \x24(COMPILE) $t_cppflags -c -o \$\@ \$<\n";
+                }
+                push @t, $t;
+            }
+        }
+
+        if ($#t > 1) {
+
+            my $last_item = pop @t;
+            if ($last_item) {
+                print Out "$o = \\\n";
+                foreach my $t (@t) {
+                    if ($t) {
+                        print Out "    $t \\\n";
+                    }
+                }
+                print Out "    $last_item\n";
+            }
+            else {
+                print Out "$o =\n";
+            }
+            print Out "\n";
+
+            if (@CONFIGS and "$o"=~/_OBJECTS$/) {
+                print Out "\x24($o): \x24(CONFIGS)\n";
+            }
+            $deps .= " \x24($o)";
+        }
+        else {
+            $deps .= " @t";
+        }
+        my $ldadd = get_make_var("LDADD");
+        if ($ldadd) {
+            $deps .= " $ldadd";
+        }
+        my $add = $a."_LDADD";
+
+        my $t = get_make_var($add);
+        if ($t) {
+            $t=~s/^\s+//;
+            my @tlist = split /\s+/, $t;
+            my @t;
+            foreach my $t (@tlist) {
+                if ($t=~/^-l\w+/) {
+                    $objs.=" $t";
+                }
+                elsif ($t=~/^-L\S+/) {
+                    $objs.=" $t";
+                }
+                else {
+                    if ($t_cppflags and $t=~/(\w+)\.o/) {
+                        my $obj=$1;
+                        if ($obj ne $a) {
+                            $obj .= "_$a";
+                            $t = "$obj.o";
+                        }
+                        print Out "$t: $1.c\n";
+                        print Out "\t\@echo CC \$\@ && \x24(COMPILE) $t_cppflags -c -o \$\@ \$<\n";
+                    }
+                    push @t, $t;
+                }
+            }
+
+            if ($#t > 1) {
+
+                my $last_item = pop @t;
+                if ($last_item) {
+                    print Out "$add = \\\n";
+                    foreach my $t (@t) {
+                        if ($t) {
+                            print Out "    $t \\\n";
+                        }
+                    }
+                    print Out "    $last_item\n";
+                }
+                else {
+                    print Out "$add =\n";
+                }
+                print Out "\n";
+
+                if (@CONFIGS and "$add"=~/_OBJECTS$/) {
+                    print Out "\x24($add): \x24(CONFIGS)\n";
+                }
+                $deps .= " \x24($add)";
+            }
+            else {
+                $deps .= " @t";
+            }
+        }
+        my $t = get_make_var("${a}_CFLAGS");
+        if ($t) {
+            $cmd.= " $t";
+            $cmd .= " \x24(CFLAGS)";
+        }
+        my $t = get_make_var("${a}_LDFLAGS");
+        if ($t) {
+            $cmd.= " $t";
+            $cmd .= " \x24(LDFLAGS)";
+        }
+
+        $objs = "$deps $objs \x24(LIBS)";
+
+        if ($dst_hash{$p}=~/\/lib$/) {
+            my $opt="-rpath $dst_hash{$p}";
+            if ($opts{so_version}) {
+                $opt.=" -version-info $opts{so_version}";
+            }
+            $objs = "$opt $objs";
+        }
+
+        print Out "$p: $deps\n";
+        print Out "\t$cmd -o \$\@ $objs\n";
+        print Out "\n";
+    }
+
+
+    print Out "\x23 --------------------\n";
+    foreach my $l (@extra_make_rules) {
+        print Out "$l\n";
+    }
+    print Out "\x23 --------------------\n";
+    print Out "%.o: %.c\n";
+    if ($opts{V}==0) {
+        print Out "\t\@echo CC \$\@ && \x24(COMPILE) -c -o \$\@ \$<\n";
+    }
+    else {
+        print Out "\t\x24(COMPILE) -c -o \$\@ \$<\n";
+    }
+    print Out "\n";
+    print Out "%.lo: %.c\n";
+    if ($opts{V}==0) {
+        print Out "\t\@echo LTCC \$\@ && \x24(LTCC) -c -o \$\@ \$<\n";
+    }
+    else {
+        print Out "\t\x24(LTCC) -c -o \$\@ \$<\n";
+    }
+    print Out "\n";
+    if (!$opts{disable_cxx}) {
+        print Out "%.lo: %.cxx\n";
+        if ($opts{V}==0) {
+            print Out "\t\@echo LTCXX \$\@ && \x24(LTCXX) -c -o \$\@ \$<\n";
+        }
+        else {
+            print Out "\t\x24(LTCXX) -c -o \$\@ \$<\n";
+        }
+        print Out "\n";
+    }
+    if (!$opts{disable_fortran}) {
+        print Out "%.lo: %.f\n";
+        if ($opts{V}==0) {
+            print Out "\t\@echo LTF77 \$\@ && \x24(LTF77) -c -o \$\@ \$<\n";
+        }
+        else {
+            print Out "\t\x24(LTF77) -c -o \$\@ \$<\n";
+        }
+        print Out "\n";
+        print Out "%.lo: %.f90\n";
+        if ($opts{V}==0) {
+            print Out "\t\@echo LTFC \$\@ && \x24(LTFC) -c -o \$\@ \$<\n";
+        }
+        else {
+            print Out "\t\x24(LTFC) -c -o \$\@ \$<\n";
+        }
+        print Out "\n";
+    }
+    while (my ($k, $v) = each %special_targets) {
+        print Out "%.$k.lo: %.c\n";
+        if ($opts{V}==0) {
+            print Out "\t\@echo LTCC \$\@ && $v -c -o \$\@ \$<\n";
+        }
+        else {
+            print Out "\t$v -c -o \$\@ \$<\n";
+        }
+        print Out "\n";
+    }
+    print Out "%.i: %.c\n";
+    if ($opts{V}==0) {
+        print Out "\t\@echo CC -E \$\@ && \x24(COMPILE) -E -o \$\@ \$<\n";
+    }
+    else {
+        print Out "\t\x24(COMPILE) -E -o \$\@ \$<\n";
+    }
+    print Out "\n";
+    my $t1 = get_make_var_list("include_HEADERS");
+    my $t2 = get_make_var_list("nodist_include_HEADERS");
+    my $t3 = get_make_var_list("modinc_HEADERS");
+    if (@$t1 or @$t2 or @$t3) {
+        foreach my $t (@$t1, @$t2, @$t3) {
+            $t=~s/use_mpi_f08/use_mpi/;
+            $dst_hash{$t} = "$opts{prefix}/include";
+        }
+    }
+
+    my (%dirs, @install_list, @install_deps, @lns_list);
+    foreach my $k (sort keys %dst_hash) {
+        my $v = $dst_hash{$k};
+        if ($k=~/^LN_S-(.*)/) {
+            push @lns_list, "rm -f $1 && ln -s $v $1";
+        }
+        elsif ($v=~/noinst/) {
+        }
+        elsif ($v) {
+            if (!$dirs{$v}) {
+                $dirs{$v} = 1;
+            }
+            if ($v=~/\/lib$/) {
+                push @install_list, "$lt --mode=install $lt_opt install $k $v";
+                push @install_deps, $k;
+            }
+            elsif ($v=~/\/bin$/) {
+                push @install_list, "$lt --mode=install $lt_opt install $k $v";
+                push @install_deps, $k;
+            }
+            elsif ($v=~/\/include$/) {
+                push @install_list, "cp $k $v";
+            }
+        }
+    }
+
+    foreach my $d (keys %dirs) {
+        unshift @install_list, "mkdir -p $d";
+    }
+    push @install_list, sort @lns_list;
+
+    if (@install_list) {
+        print Out "\x23 --------------------\n";
+        print Out ".PHONY: install\n";
+        print Out "install: @install_deps\n";
+        foreach my $l (@install_list) {
+            print Out "\t$l\n";
+        }
+        print Out "\n";
+    }
+    print Out "\x23 --------------------\n";
+    print Out ".PHONY: clean\n";
+    print Out "clean:\n";
+    print Out "\t(find src -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' |xargs rm -f)\n";
+    print Out "\n";
+    close Out;
+
+}
+
+sub get_make_var_unique {
+    my ($name) = @_;
+    my (@t, %cache);
+    foreach my $k (split /\s+/, get_make_var($name)) {
+        if (!$cache{$k}) {
+            $cache{$k} = 1;
+            push @t, $k;
+        }
+    }
+    return join(' ', @t);
+}
+
+sub get_make_objects {
+    my ($a) = @_;
+    my $tlist = get_list("${a}_OBJECTS");
+    my @tlist = sort @$tlist;
+    foreach my $t (@tlist) {
+        $t=~s/$a-//g;
+    }
+    return \@tlist;
+}
+
+sub get_make_var_list {
+    my ($name) = @_;
+    my (@tlist, %cache);
+    foreach my $k (split /\s+/, get_make_var($name)) {
+        if (!$k) {
+            next;
+        }
+        if (!$cache{$k}) {
+            $cache{$k} = 1;
+            push @tlist, $k;
+        }
+    }
+    return \@tlist;
 }
 
