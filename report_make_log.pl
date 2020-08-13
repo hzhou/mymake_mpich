@@ -7,19 +7,6 @@ my @make_log;
 my %got_hash;
 open In, "$make_log_file" or die "Can't open $make_log_file: $!\n";
 while(<In>){
-    if (/Direct leak of /) {
-        my @t;
-        push @t, $_;
-        while(<In>){
-            s/^Unexpected[^:]*://;
-            if (/^\s*$/) {
-                last;
-            }
-            push @t, $_;
-        }
-        push @make_log, \@t;
-        next;
-    }
     if ($compiler=~/intel|icc/) {
         if (/^(\S+\(\d+\): (error|warning) #\d+:\s*.*)/) {
             my ($t) = ($1);
@@ -29,6 +16,18 @@ while(<In>){
     elsif ($compiler=~/pgi/) {
         if (/^(PGC-W-\d+-.*)/) {
             my ($t) = ($1);
+            push @make_log, $t;
+        }
+        elsif (/^"\S*", line \d+: warning: (.*)/) {
+            my ($t) = ($1);
+            while(<In>){
+                if (/^(\s+)(\S.+)/) {
+                    $t.=" $1\n";
+                }
+                else {
+                    last;
+                }
+            }
             push @make_log, $t;
         }
     }
@@ -78,68 +77,32 @@ sub dump_report {
             last;
         }
         $i++;
-        if (ref($t) eq "ARRAY") {
-            my $o = parse_sanitizer($t);
-            if ($o) {
-                print Out "<testcase name=\"$o->{name}\">\n";
-            }
-            else {
-                print Out "<testcase name=\"$i\">\n";
-            }
-            print Out "<failure message=\"$o->{msg}\">\n";
-            print Out "<![CDATA[@$t]]>\n";
-            print Out "</failure>\n";
-
-            print Out "</testcase>\n";
+        $t=~s/"//g;
+        $t=~s/</&lt;/g;
+        $t=~s/>/&gt;/g;
+        my $o = parse_warning($t);
+        if ($o) {
+            print Out "<testcase name=\"$o->{file}:$o->{line}\">\n";
         }
         else {
-            $t=~s/"//g;
-            $t=~s/</&lt;/g;
-            $t=~s/>/&gt;/g;
-            my $o = parse_warning($t);
-            if ($o) {
-                print Out "<testcase name=\"$o->{file}:$o->{line}\">\n";
-            }
-            else {
-                print Out "<testcase name=\"$i\">\n";
-            }
-            if ($o->{skip}) {
-                print Out "<skipped type=\"TodoTestSkipped\" message=\"$o->{skip}\">\n";
-                print Out "<![CDATA[$t]]>\n";
-                print Out "</skipped>\n";
-            }
-            else {
-                print Out "<failure message=\"$t\">\n";
-                print Out "Build details are in make.log.\n";
-                print Out "</failure>\n";
-            }
-            print Out "</testcase>\n";
+            print Out "<testcase name=\"$i\">\n";
         }
+        if ($o->{skip}) {
+            print Out "<skipped type=\"TodoTestSkipped\" message=\"$o->{skip}\">\n";
+            print Out "<![CDATA[$t]]>\n";
+            print Out "</skipped>\n";
+        }
+        else {
+            print Out "<failure message=\"$t\">\n";
+            print Out "Build details are in make.log.\n";
+            print Out "</failure>\n";
+        }
+        print Out "</testcase>\n";
     }
 
     print Out "</testsuite>\n";
     print Out "</testsuites>\n";
     close Out;
-}
-
-sub parse_sanitizer {
-    my ($t) = @_;
-    my $o = {};
-    foreach my $l (@$t) {
-        if ($l=~/^Unexpected output in (\w+): (Direct leak of.*)/) {
-            $l = "$2\n";
-            $o->{name}=$1;
-            $o->{msg}=$2;
-            $o->{msg}=~s/ allocated from://;
-            last;
-        }
-        elsif ($l=~/^Direct leak of.*/) {
-            $o->{name}="cpi";
-            $o->{msg}=$l;
-            $o->{msg}=~s/ allocated from://;
-        }
-    }
-    return $o;
 }
 
 sub parse_warning {
@@ -152,6 +115,9 @@ sub parse_warning {
         $o = { file=>$1, line=>$2 };
     }
     elsif ($t=~/^PGC-.*\((.*):\s*(\d+)\)/) {
+        $o = { file=>$1, line=>$2 };
+    }
+    elsif ($t=~/^"(\S+)", line (\d+): warning:/) {
         $o = { file=>$1, line=>$2 };
     }
     elsif ($t=~/"(.*)", line (\d+): warning:/) {
