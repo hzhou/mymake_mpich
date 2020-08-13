@@ -54,7 +54,7 @@ else {
 
 open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
 while(<In>){
-    if (/^(\w+): (.*)/) {
+    if (/^(\S+): (.*)/) {
         $opts{$1} = $2;
     }
 }
@@ -64,6 +64,7 @@ $hash_defines{"enable-legacy-ofi"} = "MPIDI_ENABLE_LEGACY_OFI";
 $hash_defines{"enable-ch4-am-only"} = "MPIDI_ENABLE_AM_ONLY";
 $hash_defines{"with-ch4-max-vcis"} = "MPIDI_CH4_MAX_VCIS";
 $hash_defines{"enable-nolocal"} = "ENABLE_NO_LOCAL";
+$hash_defines{"enable-izem-queue"} = "ENABLE_IZEM_QUEUE";
 
 $hash_defines{"enable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
 $hash_defines{"disable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
@@ -100,7 +101,15 @@ $hash_define_vals{"MPIDI_CH4_VCI_METHOD"} = {
     "implicit" => "MPICH_VCI__IMPLICIT",
     "explicit" => "MPICH_VCI__EXPLICIT",
 };
-my @tlist = split /\s+/, $opts{config_args};
+
+my $t;
+{
+    open In, "mymake/args" or die "Can't open mymake/args.\n";
+    local $/;
+    $t=<In>;
+    close In;
+}
+my @tlist = split /\s+/, $t;
 foreach my $a (@tlist, @ARGV) {
     if (0) {
     }
@@ -465,10 +474,10 @@ if ($config eq "mpich") {
         autoconf_file("src/mpid/ch4/shm/posix/eager/include/posix_eager_pre.h", \%confs);
         my @net_list;
         if ($opts{"with-device"}=~/ch4:ofi/) {
-            @net_list = "ofi";
+            push @net_list, "ofi";
         }
         elsif ($opts{"with-device"} =~/ch4:ucx/) {
-            @net_list = "ucx";
+            push @net_list, "ucx";
         }
 
         if (@net_list) {

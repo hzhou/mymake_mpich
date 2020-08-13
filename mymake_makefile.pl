@@ -30,7 +30,7 @@ print "-- mymake_makefile $what ...\n";
 
 open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
 while(<In>){
-    if (/^(\w+): (.*)/) {
+    if (/^(\S+): (.*)/) {
         $opts{$1} = $2;
     }
 }
@@ -54,6 +54,9 @@ $make_vars{"MODS"} = "-";
 $make_vars{"MODDIR"} = "-";
 $make_vars{CFLAGS} = "-g -O2";
 $make_vars{DEFS} = "-DHAVE_CONFIG_H";
+
+$make_vars{EXEEXT}="";
+$make_vars{OBJEXT}="o";
 
 if ($what eq "mpich") {
     $make_vars{DEFAULT_INCLUDES} = ("-I. -I./src/include");
@@ -603,8 +606,8 @@ elsif ($what eq "hydra") {
 }
 elsif ($what eq "test") {
     my %conds;
-    my $dir = "pt2pt";
-    foreach my $dir ("attr", "pt2pt", "coll", "rma") {
+    $autoconf_vars{threadlib} = "-lpthread";
+    foreach my $dir ("attr", "comm", "datatype", "pt2pt", "coll", "rma", "threads/pt2pt") {
         %make_vars = ();
         @ltlibs = ();
         @programs = ();
@@ -624,18 +627,18 @@ elsif ($what eq "test") {
         $make_vars{"MODDIR"} = "-";
         $make_vars{CFLAGS} = "-g -O2";
         $make_vars{DEFS} = "-DHAVE_CONFIG_H";
+
+        $make_vars{EXEEXT}="";
+        $make_vars{OBJEXT}="o";
         my $top_srcdir = $dir;
         $top_srcdir=~s/[^\/]+/../g;
         $make_vars{top_srcdir}=$top_srcdir;
         load_automake("test/mpi/$dir/Makefile.am", \%conds);
 
+        @extra_make_rules=();
         push @extra_make_rules, "$top_srcdir/dtpools/src/libdtpools.la:";
         push @extra_make_rules, "\t(cd $top_srcdir/dtpools/src && \x24(MAKE) libdtpools.la)";
         push @extra_make_rules, "";
-        $make_vars{LDADD} = "$top_srcdir/util/mtest.o";
-        $make_vars{LDADD} .= " $top_srcdir/util/mtest_common.o";
-        $make_vars{LDADD} .= " $top_srcdir/util/mtest_single.o";
-        $make_vars{LDADD} .= " $top_srcdir/dtpools/src/libdtpools.la";
 
         $make_vars{LIBTOOL} = "$top_srcdir/libtool";
         $make_vars{CC} = "mpicc";
@@ -921,6 +924,7 @@ sub dump_makefile {
 
     print Out "all: @ltlibs @programs\n";
     print Out "\n";
+    my %rules_ADD;
     foreach my $p (@ltlibs) {
         my $ld = "LTLD";
         if ($p=~/libmpifort.la/) {
@@ -969,7 +973,10 @@ sub dump_makefile {
             }
         }
 
-        if ($#t > 1) {
+        if ($rules_ADD{$o}) {
+            $deps .= " \x24($o)";
+        }
+        elsif ($#t > 1) {
 
             my $last_item = pop @t;
             if ($last_item) {
@@ -989,14 +996,19 @@ sub dump_makefile {
             if (@CONFIGS and "$o"=~/_OBJECTS$/) {
                 print Out "\x24($o): \x24(CONFIGS)\n";
             }
+            $rules_ADD{$o} = 1;
             $deps .= " \x24($o)";
         }
         else {
             $deps .= " @t";
         }
         my $add = $a."_LIBADD";
-
         my $t = get_make_var($add);
+        if (!$t) {
+            $add = "LIBADD";
+            $t = get_make_var($add);
+        }
+
         if ($t) {
             $t=~s/^\s+//;
             my @tlist = split /\s+/, $t;
@@ -1022,7 +1034,10 @@ sub dump_makefile {
                 }
             }
 
-            if ($#t > 1) {
+            if ($rules_ADD{$add}) {
+                $deps .= " \x24($add)";
+            }
+            elsif ($#t > 1) {
 
                 my $last_item = pop @t;
                 if ($last_item) {
@@ -1042,6 +1057,7 @@ sub dump_makefile {
                 if (@CONFIGS and "$add"=~/_OBJECTS$/) {
                     print Out "\x24($add): \x24(CONFIGS)\n";
                 }
+                $rules_ADD{$add} = 1;
                 $deps .= " \x24($add)";
             }
             else {
@@ -1112,7 +1128,10 @@ sub dump_makefile {
             }
         }
 
-        if ($#t > 1) {
+        if ($rules_ADD{$o}) {
+            $deps .= " \x24($o)";
+        }
+        elsif ($#t > 1) {
 
             my $last_item = pop @t;
             if ($last_item) {
@@ -1132,18 +1151,19 @@ sub dump_makefile {
             if (@CONFIGS and "$o"=~/_OBJECTS$/) {
                 print Out "\x24($o): \x24(CONFIGS)\n";
             }
+            $rules_ADD{$o} = 1;
             $deps .= " \x24($o)";
         }
         else {
             $deps .= " @t";
         }
-        my $ldadd = get_make_var("LDADD");
-        if ($ldadd) {
-            $deps .= " $ldadd";
-        }
         my $add = $a."_LDADD";
-
         my $t = get_make_var($add);
+        if (!$t) {
+            $add = "LDADD";
+            $t = get_make_var($add);
+        }
+
         if ($t) {
             $t=~s/^\s+//;
             my @tlist = split /\s+/, $t;
@@ -1169,7 +1189,10 @@ sub dump_makefile {
                 }
             }
 
-            if ($#t > 1) {
+            if ($rules_ADD{$add}) {
+                $deps .= " \x24($add)";
+            }
+            elsif ($#t > 1) {
 
                 my $last_item = pop @t;
                 if ($last_item) {
@@ -1189,6 +1212,7 @@ sub dump_makefile {
                 if (@CONFIGS and "$add"=~/_OBJECTS$/) {
                     print Out "\x24($add): \x24(CONFIGS)\n";
                 }
+                $rules_ADD{$add} = 1;
                 $deps .= " \x24($add)";
             }
             else {

@@ -44,6 +44,7 @@ $hash_defines{"enable-legacy-ofi"} = "MPIDI_ENABLE_LEGACY_OFI";
 $hash_defines{"enable-ch4-am-only"} = "MPIDI_ENABLE_AM_ONLY";
 $hash_defines{"with-ch4-max-vcis"} = "MPIDI_CH4_MAX_VCIS";
 $hash_defines{"enable-nolocal"} = "ENABLE_NO_LOCAL";
+$hash_defines{"enable-izem-queue"} = "ENABLE_IZEM_QUEUE";
 
 $hash_defines{"enable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
 $hash_defines{"disable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
@@ -1758,12 +1759,7 @@ sub dump_makefile {
     print Out "PREFIX=$opts{prefix}\n";
     print Out "export MODDIR=$opts{moddir}\n";
     my $pwd = getcwd();
-    if ($makefile eq "Makefile") {
-        print Out "MODS=mymake\n";
-    }
-    else {
-        print Out "MODS=$opts{moddir}\n";
-    }
+    print Out "MODS=mymake\n";
     print Out "\n";
     print Out "CONFIGS = @CONFIGS\n";
     print Out "\n";
@@ -1919,6 +1915,7 @@ sub dump_makefile {
 
     print Out "all: @ltlibs @programs\n";
     print Out "\n";
+    my %rules_ADD;
     foreach my $p (@ltlibs) {
         my $ld = "LTLD";
         if ($p=~/libmpifort.la/) {
@@ -1967,7 +1964,10 @@ sub dump_makefile {
             }
         }
 
-        if ($#t > 1) {
+        if ($rules_ADD{$o}) {
+            $deps .= " \x24($o)";
+        }
+        elsif ($#t > 1) {
             if ($o=~/mpifort.*_OBJECTS/) {
                 my @f08_wrappers_f;
                 foreach my $t (@t) {
@@ -2009,14 +2009,19 @@ sub dump_makefile {
             if (@CONFIGS and "$o"=~/_OBJECTS$/) {
                 print Out "\x24($o): \x24(CONFIGS)\n";
             }
+            $rules_ADD{$o} = 1;
             $deps .= " \x24($o)";
         }
         else {
             $deps .= " @t";
         }
         my $add = $a."_LIBADD";
-
         my $t = get_make_var($add);
+        if (!$t) {
+            $add = "LIBADD";
+            $t = get_make_var($add);
+        }
+
         if ($t) {
             $t=~s/^\s+//;
             my @tlist = split /\s+/, $t;
@@ -2042,7 +2047,10 @@ sub dump_makefile {
                 }
             }
 
-            if ($#t > 1) {
+            if ($rules_ADD{$add}) {
+                $deps .= " \x24($add)";
+            }
+            elsif ($#t > 1) {
                 if ($add=~/mpifort.*_OBJECTS/) {
                     my @f08_wrappers_f;
                     foreach my $t (@t) {
@@ -2084,6 +2092,7 @@ sub dump_makefile {
                 if (@CONFIGS and "$add"=~/_OBJECTS$/) {
                     print Out "\x24($add): \x24(CONFIGS)\n";
                 }
+                $rules_ADD{$add} = 1;
                 $deps .= " \x24($add)";
             }
             else {
@@ -2154,7 +2163,10 @@ sub dump_makefile {
             }
         }
 
-        if ($#t > 1) {
+        if ($rules_ADD{$o}) {
+            $deps .= " \x24($o)";
+        }
+        elsif ($#t > 1) {
             if ($o=~/mpifort.*_OBJECTS/) {
                 my @f08_wrappers_f;
                 foreach my $t (@t) {
@@ -2196,18 +2208,19 @@ sub dump_makefile {
             if (@CONFIGS and "$o"=~/_OBJECTS$/) {
                 print Out "\x24($o): \x24(CONFIGS)\n";
             }
+            $rules_ADD{$o} = 1;
             $deps .= " \x24($o)";
         }
         else {
             $deps .= " @t";
         }
-        my $ldadd = get_make_var("LDADD");
-        if ($ldadd) {
-            $deps .= " $ldadd";
-        }
         my $add = $a."_LDADD";
-
         my $t = get_make_var($add);
+        if (!$t) {
+            $add = "LDADD";
+            $t = get_make_var($add);
+        }
+
         if ($t) {
             $t=~s/^\s+//;
             my @tlist = split /\s+/, $t;
@@ -2233,7 +2246,10 @@ sub dump_makefile {
                 }
             }
 
-            if ($#t > 1) {
+            if ($rules_ADD{$add}) {
+                $deps .= " \x24($add)";
+            }
+            elsif ($#t > 1) {
                 if ($add=~/mpifort.*_OBJECTS/) {
                     my @f08_wrappers_f;
                     foreach my $t (@t) {
@@ -2275,6 +2291,7 @@ sub dump_makefile {
                 if (@CONFIGS and "$add"=~/_OBJECTS$/) {
                     print Out "\x24($add): \x24(CONFIGS)\n";
                 }
+                $rules_ADD{$add} = 1;
                 $deps .= " \x24($add)";
             }
             else {
