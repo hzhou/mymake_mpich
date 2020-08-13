@@ -249,6 +249,9 @@ foreach my $a (@ARGV) {
                 $config_cflags{O} = 0;
             }
         }
+        elsif ($a=~/--enable-strict/) {
+            $config_cflags{"-Wall -Wextra -Wno-missing-field-initializers -Wstrict-prototypes -Wmissing-prototypes -DGCC_WALL -Wno-unused-parameter -Wshadow -Wmissing-declarations -Wno-long-long -Wundef -Wno-endif-labels -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wno-sign-compare -Wold-style-definition -Wno-multichar -Wno-deprecated-declarations -Wnested-externs -Winvalid-pch -Wno-pointer-sign -Wvariadic-macros -Wtype-limits -Werror-implicit-function-declaration -Wstack-usage=262144"} = 1;
+        }
 
         else {
             push @config_args, $a;
