@@ -904,7 +904,9 @@ elsif ($config eq "mpl") {
     $config_defines{HAVE_CLOCK_GETRES} = 1;
     $config_defines{HAVE_GETTIMEOFDAY} = 1;
 
-    $config_defines{HAVE_C11_ATOMICS}=1;
+    if (test_cc_header($CC, "stdatomic.h")) {
+        $config_defines{HAVE_C11_ATOMICS}=1;
+    }
     $config_defines{HAVE_GCC_INTRINSIC_ATOMIC}=1;
     $config_defines{HAVE_GCC_INTRINSIC_SYNC}=1;
 
@@ -1253,5 +1255,20 @@ sub autoconf_file {
         print Out $l;
     }
     close Out;
+}
+
+sub test_cc_header {
+    my ($cc, $header) = @_;
+    open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
+    print Out "#include <$header>\n";
+    print Out "int main(){return 0;}\n";
+    close Out;
+    system "$cc -c -o mymake/t.o mymake/t.c 2>/dev/null";
+    if ($? == 0) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
 
