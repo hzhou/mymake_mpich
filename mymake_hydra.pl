@@ -532,6 +532,7 @@ while(<In>){
 close In;
 $objects{MODS}="-";
 $objects{MODDIR}="-";
+$objects{PREFIX}="-";
 
 my $tlist = get_list("lib_LTLIBRARIES");
 foreach my $t (@$tlist) {

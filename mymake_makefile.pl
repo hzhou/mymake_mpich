@@ -50,13 +50,15 @@ if (!$make_vars{CXX}) {
 }
 $make_vars{CCLD} = $make_vars{CC};
 $make_vars{CXXLD} = $make_vars{CXX};
-$make_vars{"MODS"} = "-";
-$make_vars{"MODDIR"} = "-";
 $make_vars{CFLAGS} = "-g -O2";
 $make_vars{DEFS} = "-DHAVE_CONFIG_H";
 
 $make_vars{EXEEXT}="";
 $make_vars{OBJEXT}="o";
+
+$make_vars{"MODS"} = "-";
+$make_vars{"MODDIR"} = "-";
+$make_vars{"PREFIX"} = "-";
 
 if ($what eq "mpich") {
     $make_vars{DEFAULT_INCLUDES} = ("-I. -I./src/include");
@@ -623,13 +625,15 @@ elsif ($what eq "test") {
         }
         $make_vars{CCLD} = $make_vars{CC};
         $make_vars{CXXLD} = $make_vars{CXX};
-        $make_vars{"MODS"} = "-";
-        $make_vars{"MODDIR"} = "-";
         $make_vars{CFLAGS} = "-g -O2";
         $make_vars{DEFS} = "-DHAVE_CONFIG_H";
 
         $make_vars{EXEEXT}="";
         $make_vars{OBJEXT}="o";
+
+        $make_vars{"MODS"} = "-";
+        $make_vars{"MODDIR"} = "-";
+        $make_vars{"PREFIX"} = "-";
         my $top_srcdir = $dir;
         $top_srcdir=~s/[^\/]+/../g;
         $make_vars{top_srcdir}=$top_srcdir;
