@@ -18,7 +18,7 @@ while(<In>){
             my ($t) = ($1);
             push @make_log, $t;
         }
-        elsif (/^"\S*", line \d+: warning: (.*)/) {
+        elsif (/^("\S*", line \d+: warning: .*)/) {
             my ($t) = ($1);
             while(<In>){
                 if (/^(\s+)(\S.+)/) {
