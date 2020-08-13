@@ -235,6 +235,10 @@ $CC = "gcc";
 if ($ENV{CC}) {
     $CC = $ENV{CC};
 }
+$opts{cc_version} = get_cc_version($CC);
+if ($opts{cc_version}=~/gcc 4/) {
+    $CC = "$CC -std=gnu99";
+}
 my @header_list=("stdio.h");
 my @type_list=("void *", "char", "short", "int", "long", "long long", "size_t", "off_t", "float", "double", "long double");
 if ($config eq "mpich") {
@@ -1134,6 +1138,38 @@ if ($config eq "mpl") {
 close Out;
 
 # ---- subroutines --------------------------------------------
+sub get_cc_version {
+    my ($cc) = @_;
+    my $t;
+    if ($cc =~/sun/) {
+        $t = `$cc -V`;
+    }
+    else {
+        $t=`$cc --version`;
+    }
+    if ($t=~/^(gcc) .* ([0-9\.]+)$/m) {
+        return "$1 $2";
+    }
+    elsif ($t=~/^(clang) version ([0-9\.]+)/) {
+        return "$1 $2";
+    }
+    elsif ($t=~/^Apple LLVM version ([0-9\.]+)/) {
+        return "clang $1";
+    }
+    elsif ($t=~/^icc .*? ([0-9\.]+)/) {
+        return "intel $1";
+    }
+    elsif ($t=~/^pgcc .*? ([0-9\.]+)/) {
+        return "pgi $1";
+    }
+    elsif ($t=~/^Studio ([0-9\.]+)/) {
+        return "sun $1";
+    }
+    else {
+        return "unknown";
+    }
+}
+
 sub get_sizeof {
     my ($typelist, $headerlist) = @_;
     open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";

@@ -272,6 +272,7 @@ case "$compiler" in
 esac
 
 mpicc examples/cpi.c -o examples/cpi $cpi_lib
+MPIEXEC_TIMEOUT=10
 mpirun -n 2 examples/cpi
 
 if test x$skip_test = xtrue ; then
