@@ -826,6 +826,13 @@ if ($config eq "mpich") {
     $opts{enable_shm} = 1;
     if ($opts{device} =~ /ch3/) {
         $make_conds{BUILD_CH3} = 1;
+        if ($opts{device} =~/ch3:sock/) {
+            $make_conds{BUILD_CH3_SOCK}=1;
+            $make_conds{BUILD_CH3_UTIL_SOCK}=1;
+        }
+        else {
+            $make_conds{BUILD_CH3_NEMESIS}=1;
+        }
     }
     else {
         $make_conds{BUILD_CH4} = 1;
@@ -907,7 +914,7 @@ if ($config eq "mpich") {
 elsif ($config eq "mpl") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
     while(<In>){
-        if (/^(\w+):\s*([01])/) {
+        if (/^(\w+):\s*(.+)/) {
             $opts{$1} = $2;
         }
     }
@@ -975,7 +982,7 @@ elsif ($config eq "mpl") {
 elsif ($config eq "hydra") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
     while(<In>){
-        if (/^(\w+):\s*([01])/) {
+        if (/^(\w+):\s*(.+)/) {
             $opts{$1} = $2;
         }
     }
@@ -1050,7 +1057,7 @@ elsif ($config eq "hydra") {
 elsif ($config eq "test") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
     while(<In>){
-        if (/^(\w+):\s*([01])/) {
+        if (/^(\w+):\s*(.+)/) {
             $opts{$1} = $2;
         }
     }
@@ -1091,7 +1098,7 @@ elsif ($config eq "test") {
 elsif ($config eq "dtpools") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
     while(<In>){
-        if (/^(\w+):\s*([01])/) {
+        if (/^(\w+):\s*(.+)/) {
             $opts{$1} = $2;
         }
     }
@@ -1199,23 +1206,23 @@ sub get_cc_version {
     else {
         $t=`$cc --version`;
     }
-    if ($t=~/^(gcc) .* ([0-9\.]+)$/m) {
+    if ($t=~/^(gcc) .*? ([0-9\.]+)/m) {
         return "$1 $2";
     }
-    elsif ($t=~/^(clang) version ([0-9\.]+)/) {
+    elsif ($t=~/^(clang) version ([0-9\.]+)/m) {
         return "$1 $2";
     }
-    elsif ($t=~/^Apple LLVM version ([0-9\.]+)/) {
-        return "clang $1";
+    elsif ($t=~/^(Apple LLVM) version ([0-9\.]+)/m) {
+        return "clang $2";
     }
-    elsif ($t=~/^icc .*? ([0-9\.]+)/) {
-        return "intel $1";
+    elsif ($t=~/^(icc) .*? ([0-9\.]+)/m) {
+        return "intel $2";
     }
-    elsif ($t=~/^pgcc .*? ([0-9\.]+)/) {
-        return "pgi $1";
+    elsif ($t=~/^(pgcc) .*? ([0-9\.]+)/m) {
+        return "pgi $2";
     }
-    elsif ($t=~/^Studio ([0-9\.]+)/) {
-        return "sun $1";
+    elsif ($t=~/^(Studio) ([0-9\.]+)/m) {
+        return "sun $2";
     }
     else {
         return "unknown";

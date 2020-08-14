@@ -37,7 +37,7 @@ while(<In>){
 close In;
 open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
 while(<In>){
-    if (/^(\w+):\s*([01])/) {
+    if (/^(\w+):\s*(.+)/) {
         $opts{$1} = $2;
     }
 }
