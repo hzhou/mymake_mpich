@@ -538,7 +538,7 @@ if ($config eq "mpich") {
             autoconf_file("src/mpid/ch4/include/netmodpre.h", \%confs);
         }
     }
-    elsif ($opts{device} =~ /ch3/ and $opt{device}!~/:sock/) {
+    elsif ($opts{device} =~ /ch3/ and $opts{device}!~/:sock/) {
         my %confs;
         my $a = "tcp";
         if ($opts{device} =~/ch3:.*:ofi/) {
