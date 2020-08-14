@@ -392,6 +392,7 @@ $config_defines{HAVE_SCHED_YIELD}=1;
 $config_defines{HAVE_PTHREAD_YIELD}=1;
 $config_defines{HAVE_MMAP}=1;
 $config_defines{HAVE_MUNMAP}=1;
+$config_defines{HAVE_INET_PTON}=1;
 $config_defines{STRERROR_R_CHAR_P} = 1;
 
 if ($config eq "mpich") {
