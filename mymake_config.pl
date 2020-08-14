@@ -422,7 +422,6 @@ if ($config eq "mpich") {
     $temp{HAVE_NAMEPUB_SERVICE} = 1;
 
     $temp{HAVE_ERROR_CHECKING}='MPID_ERROR_LEVEL_ALL';
-    $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
     $temp{MPICH_ERROR_MSG_LEVEL} = 'MPICH_ERROR_MSG__ALL';
     $temp{MPICH_IS_THREADED} = 1;
     $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__GLOBAL';
@@ -445,6 +444,8 @@ if ($config eq "mpich") {
         $config_defines{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__ZERO';
         $config_defines{CH4_RANK_BITS}=32;
         $config_defines{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
+
+        $config_defines{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
 
         if ($opts{device}=~/ch4:ucx/) {
             $config_defines{MPIDI_CH4_DIRECT_NETMOD}=1;
@@ -472,6 +473,15 @@ if ($config eq "mpich") {
     }
     elsif ($opts{device}=~/ch3/) {
         $config_defines{CH3_RANK_BITS} = 16;
+        $config_defines{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_DATALOOP';
+        $config_defines{PREFETCH_CELL}=1;
+        $config_defines{USE_FASTBOX}=1;
+        if ($opts{device}=~/ch3:sock/) {
+        }
+        else {
+            $config_defines{MPID_NEM_INLINE}=1;
+            $config_defines{MPID_NEM_LOCAL_LMT_IMPL}="MPID_NEM_LOCAL_LMT_SHM_COPY";
+        }
     }
 
     if (1) {
@@ -543,6 +553,11 @@ if ($config eq "mpich") {
     }
 
     $config_defines{MPIF_STATUS_SIZE} = $sizeof_hash{MPI_STATUS};
+
+    if (0) {
+        $config_defines{HAVE_NAMESPACES}=1;
+        $config_defines{HAVE_NAMESPACE_STD}=1;
+    }
     my %confs;
     $confs{BASH_SHELL} = "/bin/bash";
     $confs{LDFLAGS} = $ENV{LDFLAGS};
