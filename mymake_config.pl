@@ -421,12 +421,6 @@ if ($config eq "mpich") {
     $temp{USE_PMI_PORT} = 1;
     $temp{HAVE_NAMEPUB_SERVICE} = 1;
 
-    $temp{MPIDI_BUILD_CH4_LOCALITY_INFO}=1;
-    $temp{MPIDI_CH4U_USE_PER_COMM_QUEUE}=1;
-    $temp{MPIDI_CH4_MAX_VCIS}=1;
-    $temp{MPIDI_CH4_USE_MT_DIRECT}=1;
-    $temp{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__ZERO';
-
     $temp{HAVE_ERROR_CHECKING}='MPID_ERROR_LEVEL_ALL';
     $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
     $temp{MPICH_ERROR_MSG_LEVEL} = 'MPICH_ERROR_MSG__ALL';
@@ -434,9 +428,6 @@ if ($config eq "mpich") {
     $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__GLOBAL';
     $temp{MPICH_THREAD_LEVEL} = 'MPI_THREAD_MULTIPLE';
     $temp{MPICH_THREAD_REFCOUNT} = 'MPICH_REFCOUNT__NONE';
-
-    $temp{CH4_RANK_BITS}=32;
-    $temp{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
 
     $temp{TRUE} = 1;
     $temp{FALSE} = 0;
@@ -447,6 +438,14 @@ if ($config eq "mpich") {
     }
 
     if ($opts{device}=~/ch4/) {
+        $config_defines{MPIDI_BUILD_CH4_LOCALITY_INFO}=1;
+        $config_defines{MPIDI_CH4U_USE_PER_COMM_QUEUE}=1;
+        $config_defines{MPIDI_CH4_MAX_VCIS}=1;
+        $config_defines{MPIDI_CH4_USE_MT_DIRECT}=1;
+        $config_defines{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__ZERO';
+        $config_defines{CH4_RANK_BITS}=32;
+        $config_defines{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
+
         if ($opts{device}=~/ch4:ucx/) {
             $config_defines{MPIDI_CH4_DIRECT_NETMOD}=1;
             $config_defines{HAVE_CH4_NETMOD_UCX}=1;
