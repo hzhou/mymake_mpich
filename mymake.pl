@@ -259,6 +259,15 @@ foreach my $a (@ARGV) {
     }
 }
 
+if ($config_defines{MPIDI_CH4_MAX_VCIS} > 1 and !$config_defines{MPIDI_CH4_VCI_METHOD}) {
+    $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__COMM";
+}
+if ($config_defines{MPICH_THREAD_GRANULARITY} =~/VCI|POBJ/) {
+    $config_defines{MPICH_THREAD_REFCOUNT} = "MPICH_REFCOUNT__LOCKFREE";
+}
+else {
+    $config_defines{MPICH_THREAD_REFCOUNT} = "MPICH_REFCOUNT__NONE";
+}
 if ($opts{CC}) {
     $ENV{CC}=$opts{CC};
 }
