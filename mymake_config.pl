@@ -934,6 +934,7 @@ if ($config eq "mpich") {
     print Out "CXX: $opts{CXX}\n";
     print Out "F77: $opts{F77}\n";
     print Out "FC: $opts{FC}\n";
+    print Out "cc_version: $opts{cc_version}\n";
     close Out;
 }
 elsif ($config eq "mpl") {
@@ -977,7 +978,12 @@ elsif ($config eq "mpl") {
     $config_defines{HAVE_GCC_INTRINSIC_ATOMIC}=1;
     $config_defines{HAVE_GCC_INTRINSIC_SYNC}=1;
 
-    $config_defines{COMPILER_TLS}="_Thread_local";
+    if ($opts{cc_version}=~/gcc 4/) {
+        $config_defines{COMPILER_TLS}="__thread";
+    }
+    else {
+        $config_defines{COMPILER_TLS}="_Thread_local";
+    }
     $config_defines{DEFINE_ALIGNED_ALLOC}=1;
     $config_defines{HAVE_FUNC_ATTRIBUTE_FALLTHROUGH}=1;
     $config_defines{HAVE_VAR_ATTRIBUTE_USED}=1;
