@@ -510,10 +510,10 @@ if ($config eq "mpich") {
         autoconf_file("src/mpid/ch4/shm/posix/posix_eager_array.c", \%confs);
         autoconf_file("src/mpid/ch4/shm/posix/eager/include/posix_eager_pre.h", \%confs);
         my @net_list;
-        if ($opts{"with-device"}=~/ch4:ofi/) {
+        if ($opts{device}=~/ch4:ofi/) {
             push @net_list, "ofi";
         }
-        elsif ($opts{"with-device"} =~/ch4:ucx/) {
+        elsif ($opts{device} =~/ch4:ucx/) {
             push @net_list, "ucx";
         }
 
@@ -522,6 +522,7 @@ if ($config eq "mpich") {
             $confs{ch4_nets_array_sz} = @net_list;
             my $a = $net_list[0];
             $confs{ch4_nets_func_array} = "\&MPIDI_NM_${a}_funcs";
+            $confs{ch4_nets_native_func_array} = "\&MPIDI_NM_native_${a}_funcs";
             $confs{ch4_nets_strings} = "\"${a}\"";
             $confs{ch4_nets_func_decl} = "MPIDI_NM_${a}_funcs";
             $confs{ch4_nets_native_func_decl} = "MPIDI_NM_native_${a}_funcs";
