@@ -12,9 +12,6 @@ our %config_ldflags;
 our %hash_defines;
 our %hash_define_vals;
 our $version;
-our $CC;
-our $CXX;
-our $FC;
 our %sizeof_hash;
 our %headers_hash;
 
@@ -231,13 +228,33 @@ while(<In>){
 }
 close In;
 
-$CC = "gcc";
 if ($ENV{CC}) {
-    $CC = $ENV{CC};
+    $opts{CC} = $ENV{CC};
 }
-$opts{cc_version} = get_cc_version($CC);
+else {
+    $opts{CC} = "gcc";
+}
+if ($ENV{CXX}) {
+    $opts{CXX} = $ENV{CXX};
+}
+else {
+    $opts{CXX} = "gcc";
+}
+if ($ENV{F77}) {
+    $opts{F77} = $ENV{F77};
+}
+else {
+    $opts{F77} = "gfortran";
+}
+if ($ENV{FC}) {
+    $opts{FC} = $ENV{FC};
+}
+else {
+    $opts{FC} = "gfortran";
+}
+$opts{cc_version} = get_cc_version($opts{CC});
 if ($opts{cc_version}=~/gcc 4/) {
-    $CC = "$CC -std=gnu99";
+    $opts{CC} .= " -std=gnu99";
 }
 my @header_list=("stdio.h");
 my @type_list=("void *", "char", "short", "int", "long", "long long", "size_t", "off_t", "float", "double", "long double");
@@ -531,7 +548,7 @@ if ($config eq "mpich") {
     $confs{MPILIBNAME} = "mpi";
     $confs{LPMPILIBNAME} = "";
     $confs{MPICH_VERSION} = $version;
-    $confs{CC} = $CC;
+    $confs{CC} = $opts{CC};
     $confs{with_wrapper_dl_type} = "runpath";
     $confs{INTERLIB_DEPS} = "yes";
 
@@ -872,15 +889,29 @@ if ($config eq "mpich") {
     if (1) {
         $make_conds{BUILD_NAMEPUB_PMI}=1;
     }
-    open Out, ">mymake/make_conds.mpich" or die "Can't write mymake/make_conds.mpich: $!\n";
-    print "  --> [mymake/make_conds.mpich]\n";
+    open Out, ">mymake/make_cond.mpich" or die "Can't write mymake/make_cond.mpich: $!\n";
+    print "  --> [mymake/make_cond.mpich]\n";
     foreach my $k (sort keys %make_conds) {
-        print Out "$k: $make_conds{$k}\n";
+        print Out "cond-$k: $make_conds{$k}\n";
     }
     close Out;
 
+    open Out, ">mymake/make_opts.mpich" or die "Can't write mymake/make_opts.mpich: $!\n";
+    print "  --> [mymake/make_opts.mpich]\n";
+    print Out "make-CC: $opts{CC}\n";
+    print Out "make-CXX: $opts{CXX}\n";
+    print Out "make-F77: $opts{F77}\n";
+    print Out "make-FC: $opts{FC}\n";
+    close Out;
 }
 elsif ($config eq "mpl") {
+    open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
+    while(<In>){
+        if (/^(\w+):\s*([01])/) {
+            $opts{$1} = $2;
+        }
+    }
+    close In;
     $config_defines{PACKAGE}='"mpl"';
     $config_defines{PACKAGE_BUGREPORT}='""';
     $config_defines{PACKAGE_NAME}='"MPL"';
@@ -908,7 +939,7 @@ elsif ($config eq "mpl") {
     $config_defines{HAVE_CLOCK_GETRES} = 1;
     $config_defines{HAVE_GETTIMEOFDAY} = 1;
 
-    if (test_cc_header($CC, "stdatomic.h")) {
+    if (test_cc_header($opts{CC}, "stdatomic.h")) {
         $config_defines{HAVE_C11_ATOMICS}=1;
     }
     $config_defines{HAVE_GCC_INTRINSIC_ATOMIC}=1;
@@ -942,6 +973,13 @@ elsif ($config eq "mpl") {
     autoconf_file("mymake/mpl/include/mpl_timer.h", \%confs);
 }
 elsif ($config eq "hydra") {
+    open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
+    while(<In>){
+        if (/^(\w+):\s*([01])/) {
+            $opts{$1} = $2;
+        }
+    }
+    close In;
     $config_defines{PACKAGE}='"hydra"';
     $config_defines{PACKAGE_BUGREPORT}='""';
     $config_defines{PACKAGE_NAME}='"Hydra"';
@@ -955,7 +993,7 @@ elsif ($config eq "hydra") {
     $config_defines{_POSIX_PTHREAD_SEMANTICS}=1;
     $config_defines{_TANDEM_SOURCE}=1;
     $config_defines{__EXTENSIONS__}=1;
-    $config_defines{HYDRA_CC} = "\"$CC  -g -O2   \"";
+    $config_defines{HYDRA_CC} = "\"$opts{CC} -g -O2   \"";
     $config_defines{HYDRA_CONFIGURE_ARGS_CLEAN} = "\"'CC=' 'CFLAGS=-g -O2'\"";
     $config_defines{HYDRA_PMI_PROXY} = '"hydra_pmi_proxy"';
     $config_defines{HYDRA_RELEASE_DATE} = '"unreleased development copy"';
@@ -1010,6 +1048,13 @@ elsif ($config eq "hydra") {
     $config_defines{HYDRA_DEFAULT_TOPOLIB} = "\"$topolibs[0]\"";
 }
 elsif ($config eq "test") {
+    open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
+    while(<In>){
+        if (/^(\w+):\s*([01])/) {
+            $opts{$1} = $2;
+        }
+    }
+    close In;
     $config_defines{PACKAGE}='"mpich-testsuite"';
     $config_defines{PACKAGE_BUGREPORT}='"discuss@mpich.org"';
     $config_defines{PACKAGE_NAME}='"mpich-testsuite"';
@@ -1044,6 +1089,13 @@ elsif ($config eq "test") {
     }
 }
 elsif ($config eq "dtpools") {
+    open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
+    while(<In>){
+        if (/^(\w+):\s*([01])/) {
+            $opts{$1} = $2;
+        }
+    }
+    close In;
     $config_defines{PACKAGE}='"dtpools"';
     $config_defines{PACKAGE_BUGREPORT}='"discuss@mpich.org"';
     $config_defines{PACKAGE_NAME}='"dtpools"';
@@ -1192,7 +1244,7 @@ sub get_sizeof {
     print Out "}\n";
     close Out;
 
-    my $t = `$CC mymake/t.c -o mymake/t.out 2>/dev/null && mymake/t.out`;
+    my $t = `$opts{CC} mymake/t.c -o mymake/t.out 2>/dev/null && mymake/t.out`;
     if ($? == 0) {
         while ($t=~/A(\d+):\s+(\d+)/g) {
             my $name = get_config_name($typelist->[$1]);
@@ -1224,7 +1276,7 @@ sub get_sizeof_bsend_status {
     print Out "}\n";
     close Out;
 
-    my $t = `$CC mymake/t.c -o mymake/t.out && mymake/t.out`;
+    my $t = `$opts{CC} mymake/t.c -o mymake/t.out && mymake/t.out`;
     if ($? == 0) {
         while ($t=~/(\w+):\s+(\d+)/g) {
             $sizeof_hash{$1} = $2;
@@ -1254,7 +1306,7 @@ sub get_config_name {
 sub get_have_headers {
     my ($headerlist) = @_;
     my @cpp_paths;
-    my $cpp = `$CC -print-prog-name=cpp`;
+    my $cpp = `$opts{CC} -print-prog-name=cpp`;
     chomp $cpp;
     if ($cpp) {
         my $t = `$cpp -v </dev/null 2>&1`;

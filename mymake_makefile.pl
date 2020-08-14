@@ -35,13 +35,20 @@ while(<In>){
     }
 }
 close In;
+open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
+while(<In>){
+    if (/^(\w+):\s*([01])/) {
+        $opts{$1} = $2;
+    }
+}
+close In;
 %make_vars = ();
 @ltlibs = ();
 @programs = ();
 
 $make_vars{LIBTOOL} = "./libtool";
-$make_vars{CC} = $ENV{CC};
-$make_vars{CXX} = $ENV{CXX};
+$make_vars{CC} = $opts{CC};
+$make_vars{CXX} = $opts{CXX};
 if (!$make_vars{CC}) {
     $make_vars{CC} = "gcc";
 }
@@ -502,14 +509,6 @@ if ($what eq "mpich") {
 
     $make_vars{CPPFLAGS}.="-D_REENTRANT ";
 
-    my %conds;
-    open In, "mymake/make_conds.mpich" or die "Can't open mymake/make_conds.mpich: $!\n";
-    while(<In>){
-        if (/^(\w+):\s*([01])/) {
-            $conds{$1} = $2;
-        }
-    }
-    close In;
     load_automake("Makefile.am", \%conds);
 
     if (1) {
@@ -615,8 +614,8 @@ elsif ($what eq "test") {
         @programs = ();
 
         $make_vars{LIBTOOL} = "./libtool";
-        $make_vars{CC} = $ENV{CC};
-        $make_vars{CXX} = $ENV{CXX};
+        $make_vars{CC} = $opts{CC};
+        $make_vars{CXX} = $opts{CXX};
         if (!$make_vars{CC}) {
             $make_vars{CC} = "gcc";
         }
