@@ -835,7 +835,7 @@ if ($config eq "mpich") {
         }
         else {
             $make_conds{BUILD_CH3_NEMESIS}=1;
-            if (opts{device}=~/ofi/) {
+            if ($opts{device}=~/ofi/) {
                 $make_conds{BUILD_NEMESIS_NETMOD_OFI}=1;
             }
             else {
