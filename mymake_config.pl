@@ -218,6 +218,12 @@ foreach my $a (@tlist, @ARGV) {
 if ($config_defines{MPIDI_CH4_MAX_VCIS} > 1 and !$config_defines{MPIDI_CH4_VCI_METHOD}) {
     $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__COMM";
 }
+if ($config_defines{MPICH_THREAD_GRANULARITY} =~/VCI|POBJ/) {
+    $config_defines{MPICH_THREAD_REFCOUNT} = "MPICH_REFCOUNT__LOCKFREE";
+}
+else {
+    $config_defines{MPICH_THREAD_REFCOUNT} = "MPICH_REFCOUNT__NONE";
+}
 
 open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
 while(<In>){
@@ -431,63 +437,58 @@ if ($config eq "mpich") {
 
     $temp{TRUE} = 1;
     $temp{FALSE} = 0;
-    while (my ($k, $v) = each %temp) {
-        if (!exists $config_defines{$k}) {
-            $config_defines{$k} = $v;
-        }
-    }
 
     if ($opts{device}=~/ch4/) {
-        $config_defines{MPIDI_BUILD_CH4_LOCALITY_INFO}=1;
-        $config_defines{MPIDI_CH4U_USE_PER_COMM_QUEUE}=1;
-        $config_defines{MPIDI_CH4_MAX_VCIS}=1;
-        $config_defines{MPIDI_CH4_USE_MT_DIRECT}=1;
-        $config_defines{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__ZERO';
-        $config_defines{CH4_RANK_BITS}=32;
-        $config_defines{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
+        $temp{MPIDI_BUILD_CH4_LOCALITY_INFO}=1;
+        $temp{MPIDI_CH4U_USE_PER_COMM_QUEUE}=1;
+        $temp{MPIDI_CH4_MAX_VCIS}=1;
+        $temp{MPIDI_CH4_USE_MT_DIRECT}=1;
+        $temp{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__ZERO';
+        $temp{CH4_RANK_BITS}=32;
+        $temp{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
 
-        $config_defines{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
+        $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
 
         if ($opts{device}=~/ch4:ucx/) {
-            $config_defines{MPIDI_CH4_DIRECT_NETMOD}=1;
-            $config_defines{HAVE_CH4_NETMOD_UCX}=1;
-            $config_defines{HAVE_LIBUCP} = 1;
-            $config_defines{HAVE_UCP_PUT_NB}=1;
-            $config_defines{HAVE_UCP_GET_NB}=1;
+            $temp{MPIDI_CH4_DIRECT_NETMOD}=1;
+            $temp{HAVE_CH4_NETMOD_UCX}=1;
+            $temp{HAVE_LIBUCP} = 1;
+            $temp{HAVE_UCP_PUT_NB}=1;
+            $temp{HAVE_UCP_GET_NB}=1;
         }
         elsif ($opts{device}=~/ch4:ofi/) {
-            $config_defines{HAVE_CH4_NETMOD_OFI}=1;
-            $config_defines{MPIDI_OFI_VNI_USE_DOMAIN}=1;
+            $temp{HAVE_CH4_NETMOD_OFI}=1;
+            $temp{MPIDI_OFI_VNI_USE_DOMAIN}=1;
             if ($opts{device}=~/ch4:ofi:(\w+)/) {
                 my ($set) = ($1);
                 $set = uc($set);
-                $config_defines{"MPIDI_CH4_OFI_USE_SET_$set"}=1;
+                $temp{"MPIDI_CH4_OFI_USE_SET_$set"}=1;
             }
             else {
-                $config_defines{MPIDI_CH4_OFI_USE_SET_RUNTIME}=1;
+                $temp{MPIDI_CH4_OFI_USE_SET_RUNTIME}=1;
             }
             if (0) {
-                $config_defines{MPIDI_CH4_SHM_ENABLE_GPU}=1;
+                $temp{MPIDI_CH4_SHM_ENABLE_GPU}=1;
                 $make_conds{BUILD_SHM_IPC_GPU} = 1;
             }
         }
     }
     elsif ($opts{device}=~/ch3/) {
-        $config_defines{CH3_RANK_BITS} = 16;
-        $config_defines{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_DATALOOP';
-        $config_defines{PREFETCH_CELL}=1;
-        $config_defines{USE_FASTBOX}=1;
+        $temp{CH3_RANK_BITS} = 16;
+        $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_DATALOOP';
+        $temp{PREFETCH_CELL}=1;
+        $temp{USE_FASTBOX}=1;
         if ($opts{device}=~/ch3:sock/) {
         }
         else {
-            $config_defines{MPID_NEM_INLINE}=1;
-            $config_defines{MPID_NEM_LOCAL_LMT_IMPL}="MPID_NEM_LOCAL_LMT_SHM_COPY";
+            $temp{MPID_NEM_INLINE}=1;
+            $temp{MPID_NEM_LOCAL_LMT_IMPL}="MPID_NEM_LOCAL_LMT_SHM_COPY";
         }
     }
 
     if (1) {
-        $config_defines{HAVE_F08_BINDING} = 0;
-        $config_defines{HAVE_NO_FORTRAN_MPI_TYPES_IN_C} = 1;
+        $temp{HAVE_F08_BINDING} = 0;
+        $temp{HAVE_NO_FORTRAN_MPI_TYPES_IN_C} = 1;
     }
 
     if ($opts{device} =~ /ch4/) {
@@ -559,11 +560,16 @@ if ($config eq "mpich") {
         autoconf_file("src/mpid/ch3/channels/nemesis/include/mpid_nem_net_module_defs.h", \%confs);
     }
 
-    $config_defines{MPIF_STATUS_SIZE} = $sizeof_hash{MPI_STATUS};
+    $temp{MPIF_STATUS_SIZE} = $sizeof_hash{MPI_STATUS};
 
     if (0) {
-        $config_defines{HAVE_NAMESPACES}=1;
-        $config_defines{HAVE_NAMESPACE_STD}=1;
+        $temp{HAVE_NAMESPACES}=1;
+        $temp{HAVE_NAMESPACE_STD}=1;
+    }
+    while (my ($k, $v) = each %temp) {
+        if (!exists $config_defines{$k}) {
+            $config_defines{$k} = $v;
+        }
     }
     my %confs;
     $confs{BASH_SHELL} = "/bin/bash";
