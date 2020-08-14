@@ -892,16 +892,16 @@ if ($config eq "mpich") {
     open Out, ">mymake/make_conds.mpich" or die "Can't write mymake/make_conds.mpich: $!\n";
     print "  --> [mymake/make_conds.mpich]\n";
     foreach my $k (sort keys %make_conds) {
-        print Out "cond-$k: $make_conds{$k}\n";
+        print Out "$k: $make_conds{$k}\n";
     }
     close Out;
 
     open Out, ">mymake/make_opts.mpich" or die "Can't write mymake/make_opts.mpich: $!\n";
     print "  --> [mymake/make_opts.mpich]\n";
-    print Out "make-CC: $opts{CC}\n";
-    print Out "make-CXX: $opts{CXX}\n";
-    print Out "make-F77: $opts{F77}\n";
-    print Out "make-FC: $opts{FC}\n";
+    print Out "CC: $opts{CC}\n";
+    print Out "CXX: $opts{CXX}\n";
+    print Out "F77: $opts{F77}\n";
+    print Out "FC: $opts{FC}\n";
     close Out;
 }
 elsif ($config eq "mpl") {
