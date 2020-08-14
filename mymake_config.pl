@@ -471,6 +471,9 @@ if ($config eq "mpich") {
             }
         }
     }
+    elsif ($opts{device}=~/ch3/) {
+        $config_defines{CH3_RANK_BITS} = 16;
+    }
 
     if (1) {
         $config_defines{HAVE_F08_BINDING} = 0;
@@ -832,6 +835,12 @@ if ($config eq "mpich") {
         }
         else {
             $make_conds{BUILD_CH3_NEMESIS}=1;
+            if (opts{device}=~/ofi/) {
+                $make_conds{BUILD_NEMESIS_NETMOD_OFI}=1;
+            }
+            else {
+                $make_conds{BUILD_NEMESIS_NETMOD_TCP}=1;
+            }
         }
     }
     else {
@@ -870,8 +879,10 @@ if ($config eq "mpich") {
     $make_conds{BUILD_MPID_COMMON_SCHED} = 1;
     $make_conds{BUILD_MPID_COMMON_THREAD} = 1;
     $make_conds{BUILD_MPID_COMMON_SHM} = 1;
-    $make_conds{BUILD_MPID_COMMON_BC} = 1;
-    $make_conds{BUILD_MPID_COMMON_GENQ} = 1;
+    if ($opts{device}=~/ch4/) {
+        $make_conds{BUILD_MPID_COMMON_BC} = 1;
+        $make_conds{BUILD_MPID_COMMON_GENQ} = 1;
+    }
 
     if (0) {
         $make_conds{BUILD_ROMIO} = 1;

@@ -503,7 +503,7 @@ if ($what eq "mpich") {
     if ($opts{device} =~/ch4:ofi/) {
         $make_vars{CPPFLAGS} = "-DNETMOD_INLINE=__netmod_inline_ofi__ ";
     }
-    else {
+    elsif ($opts{device} =~/ch4:ucx/) {
         $make_vars{CPPFLAGS} = "-DNETMOD_INLINE=__netmod_inline_ucx__ ";
     }
 
