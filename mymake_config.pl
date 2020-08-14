@@ -529,7 +529,7 @@ if ($config eq "mpich") {
             $confs{ch4_nets_native_func_decl} = "MPIDI_NM_native_${a}_funcs";
 
             $confs{ch4_netmod_pre_include} = "#include \"../netmod/${a}/${a}_pre.h\"";
-            $confs{ch4_netmod_amrequest_decl} = "MPIDI_${UCX}_am_request_t $a;";
+            $confs{ch4_netmod_amrequest_decl} = "MPIDI_${A}_am_request_t $a;";
             $confs{ch4_netmod_request_decl} = "MPIDI_${A}_request_t $a;";
             $confs{ch4_netmod_comm_decl} = "MPIDI_${A}_comm_t $a;";
             $confs{ch4_netmod_dt_decl} = "MPIDI_${A}_dt_t $a;";
