@@ -529,7 +529,7 @@ if ($config eq "mpich") {
             $confs{ch4_nets_native_func_decl} = "MPIDI_NM_native_${a}_funcs";
 
             $confs{ch4_netmod_pre_include} = "#include \"../netmod/${a}/${a}_pre.h\"";
-            $confs{ch4_netmod_amrequest_decl} = "MPIDI_OFI_am_request_t $a;";
+            $confs{ch4_netmod_amrequest_decl} = "MPIDI_${UCX}_am_request_t $a;";
             $confs{ch4_netmod_request_decl} = "MPIDI_${A}_request_t $a;";
             $confs{ch4_netmod_comm_decl} = "MPIDI_${A}_comm_t $a;";
             $confs{ch4_netmod_dt_decl} = "MPIDI_${A}_dt_t $a;";
@@ -947,6 +947,44 @@ if ($config eq "mpich") {
     print Out "F77: $opts{F77}\n";
     print Out "FC: $opts{FC}\n";
     print Out "cc_version: $opts{cc_version}\n";
+    my $cflags = "-g -O2";
+    my $ldflags = "";
+    if (%config_cflags) {
+        my @tlist = split /\s+/, $cflags;
+        foreach my $a (@tlist) {
+            if ($a=~/-O(\d+)/) {
+                if (!defined $config_cflags{O}) {
+                    $config_cflags{O} = $1;
+                }
+            }
+            elsif (!$config_cflags{$a}) {
+                $config_cflags{$a} = 1;
+            }
+        }
+        my @tlist;
+        foreach my $a (keys %config_cflags) {
+            if ($a eq "O") {
+                push @tlist, "-O$config_cflags{O}";
+            }
+            else {
+                push @tlist, $a;
+            }
+        }
+        $cflags = join(' ', @tlist);
+        print(STDOUT "  -->  CFLAGS = $cflags\n");
+    }
+    print Out "cflags: $cflags\n";
+    if (%config_ldflags) {
+        my @tlist = split /\s+/, $ldflags;
+        foreach my $a (@tlist) {
+            if (!$config_ldflags{$a}) {
+                $config_ldflags{$a} = 1;
+            }
+        }
+        $ldflags = join ' ', keys %config_ldflags;
+        print(STDOUT "  -->  LDFLAGS = $ldflags\n");
+    }
+    print Out "ldflags: $ldflags\n";
     close Out;
 }
 elsif ($config eq "mpl") {

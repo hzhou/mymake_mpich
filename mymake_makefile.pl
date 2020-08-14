@@ -57,8 +57,10 @@ if (!$make_vars{CXX}) {
 }
 $make_vars{CCLD} = $make_vars{CC};
 $make_vars{CXXLD} = $make_vars{CXX};
-$make_vars{CFLAGS} = "-g -O2";
 $make_vars{DEFS} = "-DHAVE_CONFIG_H";
+
+$make_vars{CFLAGS} = $opts{cflags};
+$make_vars{LDFLAGS} = $opts{ldflags};
 
 $make_vars{EXEEXT}="";
 $make_vars{OBJEXT}="o";
@@ -632,8 +634,10 @@ elsif ($what eq "test") {
         }
         $make_vars{CCLD} = $make_vars{CC};
         $make_vars{CXXLD} = $make_vars{CXX};
-        $make_vars{CFLAGS} = "-g -O2";
         $make_vars{DEFS} = "-DHAVE_CONFIG_H";
+
+        $make_vars{CFLAGS} = $opts{cflags};
+        $make_vars{LDFLAGS} = $opts{ldflags};
 
         $make_vars{EXEEXT}="";
         $make_vars{OBJEXT}="o";
