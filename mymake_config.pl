@@ -540,13 +540,17 @@ if ($config eq "mpich") {
     }
     elsif ($opts{device} =~ /ch3/) {
         my %confs;
-        $confs{nemesis_nets_array_sz} = 1;
         my $a = "tcp";
+        if ($opts{device} =~/ch3:.*:ofi/) {
+            $a = "ofi";
+        }
+        $confs{nemesis_nets_array_sz} = 1;
         $confs{nemesis_nets_func_decl} = "MPIDI_nem_${a}_funcs";
-        $confs{nemesis_nets_func_array} = "MPIDI_NEM_TCP";
-        $confs{nemesis_nets_strings} = "\"tcp\"";
+        $confs{nemesis_nets_func_array} = "\&MPIDI_nem_${a}_funcs";
+        $confs{nemesis_nets_strings} = "\"$a\"";
 
-        $confs{nemesis_nets_macro_defs} = "#define MPIDI_NEM_TCP 0";
+        my $A=uc($a);
+        $confs{nemesis_nets_macro_defs} = "#define MPIDI_NEM_${A} 0";
 
         autoconf_file("src/mpid/ch3/channels/nemesis/src/mpid_nem_net_array.c", \%confs);
         autoconf_file("src/mpid/ch3/channels/nemesis/include/mpid_nem_net_module_defs.h", \%confs);
