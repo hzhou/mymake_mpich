@@ -509,6 +509,14 @@ if ($what eq "mpich") {
 
     $make_vars{CPPFLAGS}.="-D_REENTRANT ";
 
+    my %conds;
+    open In, "mymake/make_conds.mpich" or die "Can't open mymake/make_conds.mpich: $!\n";
+    while(<In>){
+        if (/^(\w+):\s*([01])/) {
+            $conds{$1} = $2;
+        }
+    }
+    close In;
     load_automake("Makefile.am", \%conds);
 
     if (1) {

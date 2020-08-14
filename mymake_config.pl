@@ -889,8 +889,8 @@ if ($config eq "mpich") {
     if (1) {
         $make_conds{BUILD_NAMEPUB_PMI}=1;
     }
-    open Out, ">mymake/make_cond.mpich" or die "Can't write mymake/make_cond.mpich: $!\n";
-    print "  --> [mymake/make_cond.mpich]\n";
+    open Out, ">mymake/make_conds.mpich" or die "Can't write mymake/make_conds.mpich: $!\n";
+    print "  --> [mymake/make_conds.mpich]\n";
     foreach my $k (sort keys %make_conds) {
         print Out "cond-$k: $make_conds{$k}\n";
     }
