@@ -521,6 +521,7 @@ if ($config eq "mpich") {
             my %confs;
             $confs{ch4_nets_array_sz} = @net_list;
             my $a = $net_list[0];
+            my $A = uc($a);
             $confs{ch4_nets_func_array} = "\&MPIDI_NM_${a}_funcs";
             $confs{ch4_nets_native_func_array} = "\&MPIDI_NM_native_${a}_funcs";
             $confs{ch4_nets_strings} = "\"${a}\"";
@@ -529,12 +530,12 @@ if ($config eq "mpich") {
 
             $confs{ch4_netmod_pre_include} = "#include \"../netmod/${a}/${a}_pre.h\"";
             $confs{ch4_netmod_amrequest_decl} = "MPIDI_OFI_am_request_t $a;";
-            $confs{ch4_netmod_request_decl} = "MPIDI_OFI_request_t $a;";
-            $confs{ch4_netmod_comm_decl} = "MPIDI_OFI_comm_t $a;";
-            $confs{ch4_netmod_dt_decl} = "MPIDI_OFI_dt_t $a;";
-            $confs{ch4_netmod_win_decl} = "MPIDI_OFI_win_t $a;";
-            $confs{ch4_netmod_addr_decl} = "MPIDI_OFI_addr_t $a;";
-            $confs{ch4_netmod_op_decl} = "MPIDI_OFI_op_t $a;";
+            $confs{ch4_netmod_request_decl} = "MPIDI_${A}_request_t $a;";
+            $confs{ch4_netmod_comm_decl} = "MPIDI_${A}_comm_t $a;";
+            $confs{ch4_netmod_dt_decl} = "MPIDI_${A}_dt_t $a;";
+            $confs{ch4_netmod_win_decl} = "MPIDI_${A}_win_t $a;";
+            $confs{ch4_netmod_addr_decl} = "MPIDI_${A}_addr_t $a;";
+            $confs{ch4_netmod_op_decl} = "MPIDI_${A}_op_t $a;";
 
             autoconf_file("src/mpid/ch4/src/mpid_ch4_net_array.c", \%confs);
             autoconf_file("src/mpid/ch4/include/netmodpre.h", \%confs);
