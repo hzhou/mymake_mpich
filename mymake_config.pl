@@ -1043,7 +1043,6 @@ elsif ($config eq "mpl") {
         $config_defines{COMPILER_TLS}="_Thread_local";
     }
     $config_defines{DEFINE_ALIGNED_ALLOC}=1;
-    $config_defines{HAVE_FUNC_ATTRIBUTE_FALLTHROUGH}=1;
     $config_defines{HAVE_VAR_ATTRIBUTE_USED}=1;
     $config_defines{HAVE_VAR_ATTRIBUTE_ALIGNED}=1;
     $config_defines{HAVE__BOOL}=1;
