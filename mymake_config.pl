@@ -1242,9 +1242,13 @@ while(<In>){
                 $b = "_mpl_$a";
             }
 
-            if (defined $config_defines{$a}) {
+            my $val = $config_defines{$a};
+            if (defined $config_defines{"MPL_$a"}) {
+                $val = $config_defines{"MPL_$a"};
+            }
+            if (defined $val) {
                 push @lines, "#ifndef $b\n";
-                push @lines, "#define $b $config_defines{$a}\n";
+                push @lines, "#define $b $val\n";
                 push @lines, "#endif\n";
             }
             else {
