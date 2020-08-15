@@ -211,9 +211,30 @@ foreach my $a (@tlist, @ARGV) {
         }
     }
     elsif ($a=~/--enable-strict/) {
-        foreach my $o (qw(-Wall -Wextra -Wno-missing-field-initializers -Wstrict-prototypes -Wmissing-prototypes -DGCC_WALL -Wno-unused-parameter -Wshadow -Wmissing-declarations -Wno-long-long -Wundef -Wno-endif-labels -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wno-sign-compare -Wold-style-definition -Wno-multichar -Wno-deprecated-declarations -Wnested-externs -Winvalid-pch -Wno-pointer-sign -Wvariadic-macros -Wtype-limits -Werror-implicit-function-declaration -Wstack-usage=262144)) {
-            $config_cflags{$o} = 1;
-        }
+        $config_cflags{"-Wall"} = 1;
+        $config_cflags{"-Wextra"} = 1;
+        $config_cflags{"-Wmissing-prototypes"} = 1;
+        $config_cflags{"-DGCC_WALL"} = 1;
+        $config_cflags{"-Wshadow"} = 1;
+        $config_cflags{"-Wmissing-declarations"} = 1;
+        $config_cflags{"-Wundef"} = 1;
+        $config_cflags{"-Wpointer-arith"} = 1;
+        $config_cflags{"-Wbad-function-cast"} = 1;
+        $config_cflags{"-Wwrite-strings"} = 1;
+        $config_cflags{"-Wnested-externs"} = 1;
+        $config_cflags{"-Winvalid-pch"} = 1;
+        $config_cflags{"-Wvariadic-macros"} = 1;
+        $config_cflags{"-Wtype-limits"} = 1;
+        $config_cflags{"-Werror-implicit-function-declaration"} = 1;
+        $config_cflags{"-Wstack-usage=262144"} = 1;
+        $config_cflags{"-Wno-missing-field-initializers"} = 1;
+        $config_cflags{"-Wno-unused-parameter"} = 1;
+        $config_cflags{"-Wno-long-long"} = 1;
+        $config_cflags{"-Wno-endif-labels"} = 1;
+        $config_cflags{"-Wno-sign-compare"} = 1;
+        $config_cflags{"-Wno-multichar"} = 1;
+        $config_cflags{"-Wno-deprecated-declarations"} = 1;
+        $config_cflags{"-Wno-pointer-sign"} = 1;
     }
 
 }
@@ -1020,7 +1041,6 @@ elsif ($config eq "mpl") {
 
     $config_defines{THREAD_PACKAGE_NAME} = "MPL_THREAD_PACKAGE_POSIX";
     $config_defines{PROC_MUTEX_PACKAGE_NAME} = "MPL_PROC_MUTEX_PACKAGE_POSIX";
-    $config_defines{POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_TICKETLOCK";
 
     $config_defines{USE_MMAP_SHM} = 1;
     $config_defines{MPL_USE_MMAP_SHM} = 1;
