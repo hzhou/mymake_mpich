@@ -1041,6 +1041,9 @@ elsif ($config eq "mpl") {
 
     $config_defines{THREAD_PACKAGE_NAME} = "MPL_THREAD_PACKAGE_POSIX";
     $config_defines{PROC_MUTEX_PACKAGE_NAME} = "MPL_PROC_MUTEX_PACKAGE_POSIX";
+    if (!$config_defines{MPL_POSIX_MUTEX_NAME}) {
+        $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_NATIVE";
+    }
 
     $config_defines{USE_MMAP_SHM} = 1;
     $config_defines{MPL_USE_MMAP_SHM} = 1;
