@@ -211,7 +211,9 @@ foreach my $a (@tlist, @ARGV) {
         }
     }
     elsif ($a=~/--enable-strict/) {
-        $config_cflags{"-Wall -Wextra -Wno-missing-field-initializers -Wstrict-prototypes -Wmissing-prototypes -DGCC_WALL -Wno-unused-parameter -Wshadow -Wmissing-declarations -Wno-long-long -Wundef -Wno-endif-labels -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wno-sign-compare -Wold-style-definition -Wno-multichar -Wno-deprecated-declarations -Wnested-externs -Winvalid-pch -Wno-pointer-sign -Wvariadic-macros -Wtype-limits -Werror-implicit-function-declaration -Wstack-usage=262144"} = 1;
+        foreach my $o (qw(-Wall -Wextra -Wno-missing-field-initializers -Wstrict-prototypes -Wmissing-prototypes -DGCC_WALL -Wno-unused-parameter -Wshadow -Wmissing-declarations -Wno-long-long -Wundef -Wno-endif-labels -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wno-sign-compare -Wold-style-definition -Wno-multichar -Wno-deprecated-declarations -Wnested-externs -Winvalid-pch -Wno-pointer-sign -Wvariadic-macros -Wtype-limits -Werror-implicit-function-declaration -Wstack-usage=262144)) {
+            $config_cflags{$o} = 1;
+        }
     }
 
 }
@@ -976,7 +978,7 @@ if ($config eq "mpich") {
                 push @tlist, $a;
             }
         }
-        $cflags = join(' ', @tlist);
+        $cflags = join(' ', sort @tlist);
         print(STDOUT "  -->  CFLAGS = $cflags\n");
     }
     print Out "cflags: $cflags\n";
@@ -987,7 +989,7 @@ if ($config eq "mpich") {
                 $config_ldflags{$a} = 1;
             }
         }
-        $ldflags = join ' ', keys %config_ldflags;
+        $ldflags = join ' ', sort keys %config_ldflags;
         print(STDOUT "  -->  LDFLAGS = $ldflags\n");
     }
     print Out "ldflags: $ldflags\n";

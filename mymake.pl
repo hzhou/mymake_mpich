@@ -250,7 +250,9 @@ foreach my $a (@ARGV) {
             }
         }
         elsif ($a=~/--enable-strict/) {
-            $config_cflags{"-Wall -Wextra -Wno-missing-field-initializers -Wstrict-prototypes -Wmissing-prototypes -DGCC_WALL -Wno-unused-parameter -Wshadow -Wmissing-declarations -Wno-long-long -Wundef -Wno-endif-labels -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wno-sign-compare -Wold-style-definition -Wno-multichar -Wno-deprecated-declarations -Wnested-externs -Winvalid-pch -Wno-pointer-sign -Wvariadic-macros -Wtype-limits -Werror-implicit-function-declaration -Wstack-usage=262144"} = 1;
+            foreach my $o (qw(-Wall -Wextra -Wno-missing-field-initializers -Wstrict-prototypes -Wmissing-prototypes -DGCC_WALL -Wno-unused-parameter -Wshadow -Wmissing-declarations -Wno-long-long -Wundef -Wno-endif-labels -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wno-sign-compare -Wold-style-definition -Wno-multichar -Wno-deprecated-declarations -Wnested-externs -Winvalid-pch -Wno-pointer-sign -Wvariadic-macros -Wtype-limits -Werror-implicit-function-declaration -Wstack-usage=262144)) {
+                $config_cflags{$o} = 1;
+            }
         }
 
         else {
@@ -1820,7 +1822,7 @@ sub dump_makefile {
                 push @tlist, $a;
             }
         }
-        $t = join(' ', @tlist);
+        $t = join(' ', sort @tlist);
         print(STDOUT "  -->  CFLAGS = $t\n");
     }
     print Out "CFLAGS = $t\n";
@@ -1834,7 +1836,7 @@ sub dump_makefile {
                 $config_ldflags{$a} = 1;
             }
         }
-        $t = join ' ', keys %config_ldflags;
+        $t = join ' ', sort keys %config_ldflags;
         print(STDOUT "  -->  LDFLAGS = $t\n");
     }
     print Out "LDFLAGS = $t\n";

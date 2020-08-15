@@ -831,7 +831,7 @@ sub dump_makefile {
                 push @tlist, $a;
             }
         }
-        $t = join(' ', @tlist);
+        $t = join(' ', sort @tlist);
         print(STDOUT "  -->  CFLAGS = $t\n");
     }
     print Out "CFLAGS = $t\n";
@@ -845,7 +845,7 @@ sub dump_makefile {
                 $config_ldflags{$a} = 1;
             }
         }
-        $t = join ' ', keys %config_ldflags;
+        $t = join ' ', sort keys %config_ldflags;
         print(STDOUT "  -->  LDFLAGS = $t\n");
     }
     print Out "LDFLAGS = $t\n";
