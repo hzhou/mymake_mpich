@@ -1655,9 +1655,6 @@ else {
     if ($lock_based_atomics) {
         $config_defines{ENABLE_NO_LOCAL} = 1;
     }
-    if ($opts{device}=~/ch4:/ && !$config_defines{MPL_POSIX_MUTEX_NAME}) {
-        $config_defines{MPL_POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_TICKETLOCK";
-    }
     if (%config_defines) {
         my (@lines, $cnt);
         open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
