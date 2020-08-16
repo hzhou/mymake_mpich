@@ -22,7 +22,7 @@ while(<In>){
             my ($t) = ($1);
             while(<In>){
                 if (/^(\s+)(\S.+)/) {
-                    $t.=" $1\n";
+                    $t.=" $2\n";
                 }
                 else {
                     last;
@@ -80,6 +80,10 @@ sub dump_report {
         $t=~s/"//g;
         $t=~s/</&lt;/g;
         $t=~s/>/&gt;/g;
+
+        my @t_lines = split /\n/, $t;
+        my $msg = $t_lines[0];
+
         my $o = parse_warning($t);
         if ($o) {
             print Out "<testcase name=\"$o->{file}:$o->{line}\">\n";
@@ -93,8 +97,13 @@ sub dump_report {
             print Out "</skipped>\n";
         }
         else {
-            print Out "<failure message=\"$t\">\n";
-            print Out "Build details are in make.log.\n";
+            print Out "<failure message=\"$msg\">\n";
+            if ($msg eq $t) {
+                print Out "Build details are in make.log.\n";
+            }
+            else {
+                print Out "<![CDATA[$t]]>\n";
+            }
             print Out "</failure>\n";
         }
         print Out "</testcase>\n";
@@ -139,6 +148,9 @@ sub parse_warning {
         }
         elsif ($compiler eq "gcc-4" and $t=~/\[(-Wmaybe-uninitialized)\]/) {
             $o->{skip}="gcc-4: $1";
+        }
+        elsif ($compiler eq "pgi" and $t=~/transfer of control bypasses initialization of/) {
+            $o->{skip}="pgi: goto bypasses variable initialization";
         }
         return $o;
     }
