@@ -277,13 +277,13 @@ if ($what eq "mpich") {
             }
             if ($ENV{compiler} =~ /pgi|sun/) {
                 my @lines;
-                open In, "ucx/src/ucs/type/status.h" or die "Can't open ucx/src/ucs/type/status.h: $!\n";
+                open In, "$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't open $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
                 while(<In>){
                     s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
                     push @lines, $_;
                 }
                 close In;
-                open Out, ">ucx/src/ucs/type/status.h" or die "Can't write ucx/src/ucs/type/status.h: $!\n";
+                open Out, ">$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't write $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
                 print Out @lines;
                 close Out;
             }
