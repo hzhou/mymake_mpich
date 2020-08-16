@@ -82,7 +82,8 @@ sub dump_report {
         $t=~s/>/&gt;/g;
 
         my @t_lines = split /\n/, $t;
-        my $msg = $t_lines[0];
+        my $msg = shift @t_lines;
+        my $detail = join("\n", @t_lines);
 
         my $o = parse_warning($t);
         if ($o) {
@@ -98,11 +99,11 @@ sub dump_report {
         }
         else {
             print Out "<failure message=\"$msg\">\n";
-            if ($msg eq $t) {
+            if (!$detail) {
                 print Out "Build details are in make.log.\n";
             }
             else {
-                print Out "<![CDATA[$t]]>\n";
+                print Out "<![CDATA[$detail]]>\n";
             }
             print Out "</failure>\n";
         }
@@ -158,6 +159,9 @@ sub parse_warning {
             }
             elsif ($t=~/warning: variable \w+ was set but never used/) {
                 $o->{skip}="pgi: variable set but unused";
+            }
+            elsif ($t=~/warning: statement is unreachable/) {
+                $o->{skip}="pgi: statement unreachable";
             }
         }
         return $o;
