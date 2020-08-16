@@ -149,8 +149,16 @@ sub parse_warning {
         elsif ($compiler eq "gcc-4" and $t=~/\[(-Wmaybe-uninitialized)\]/) {
             $o->{skip}="gcc-4: $1";
         }
-        elsif ($compiler eq "pgi" and $t=~/transfer of control bypasses initialization of/) {
-            $o->{skip}="pgi: goto bypasses variable initialization";
+        elsif ($compiler eq "pgi") {
+            if ($t=~/warning: transfer of control bypasses initialization of/) {
+                $o->{skip}="pgi: goto bypasses variable initialization";
+            }
+            elsif ($t=~/warning: cc clobber ignored/) {
+                $o->{skip}="pgi: cc clobber ignored";
+            }
+            elsif ($t=~/warning: variable \w+ was set but never used/) {
+                $o->{skip}="pgi: variable set but unused";
+            }
         }
         return $o;
     }
