@@ -163,6 +163,9 @@ sub parse_warning {
             elsif ($t=~/warning: statement is unreachable/) {
                 $o->{skip}="pgi: statement unreachable";
             }
+            elsif ($t=~/warning: integer conversion resulted in a change of sign/) {
+                $o->{skip}="pgi: sign conversion";
+            }
         }
         return $o;
     }
