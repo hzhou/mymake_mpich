@@ -500,6 +500,7 @@ if ($what eq "mpich") {
     $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
 
     $autoconf_vars{MPILIBNAME} = "mpi";
+    $autoconf_vars{MPICXXLIBNAME} = "mpicxx";
     $autoconf_vars{VISIBILITY_CFLAGS} = "-fvisibility=hidden";
 
     if ($opts{device} =~/ch4:ofi/) {

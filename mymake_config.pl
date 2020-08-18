@@ -860,6 +860,23 @@ if ($config eq "mpich") {
     $confs{MPICH_CUSTOM_STRING}="";
     $confs{MPICH_ABIVERSION} = "0:0:0";
     autoconf_file("src/include/mpichinfo.h", \%confs);
+    if (!$opts{disable_cxx}) {
+        my %confs;
+        $confs{HAVE_CXX_EXCEPTIONS}=0;
+        if (!$opts{disable_fortran}) {
+            $confs{FORTRAN_BINDING} = 1;
+        }
+        else {
+            $confs{FORTRAN_BINDING} = 0;
+        }
+
+        $confs{MPIR_CXX_BOOL} = sprintf("0x4c00%02x33", $sizeof_hash{"CXX_BOOL"});
+        $confs{MPIR_CXX_COMPLEX} = sprintf("0x4c00%02x34", $sizeof_hash{"CXX_COMPLEX"});
+        $confs{MPIR_CXX_DOUBLE_COMPLEX} = sprintf("0x4c00%02x35", $sizeof_hash{"CXX_DOUBLE_COMPLEX"});
+        $confs{MPIR_CXX_LONG_DOUBLE_COMPLEX} = sprintf("0x4c00%02x36", $sizeof_hash{"CXX_LONG_DOUBLE_COMPLEX"});
+
+        autoconf_file("src/binding/cxx/mpicxx.h", \%confs);
+    }
     $make_conds{BUILD_PROFILING_LIB} = 0;
     $make_conds{BUILD_COVERAGE} = 0;
     $make_conds{MAINTAINER_MODE} = 0;
@@ -939,17 +956,17 @@ if ($config eq "mpich") {
         $make_conds{BUILD_MPID_COMMON_SHM} = 1;
     }
 
-    if (0) {
+    if (!$opts{disable_romio}) {
         $make_conds{BUILD_ROMIO} = 1;
     }
-    if (0) {
-        $make_conds{BUILD_CXX_BINDING} = 0;
+
+    if (!$opts{disable_cxx}) {
+        $make_conds{BUILD_CXX_BINDING} = 1;
     }
-    if (0) {
-        $make_conds{BUILD_F77_BINDING} = 0;
-    }
-    if (0) {
-        $make_conds{BUILD_FC_BINDING} = 0;
+
+    if (!$opts{disable_fortran}) {
+        $make_conds{BUILD_F77_BINDING} = 1;
+        $make_conds{BUILD_FC_BINDING} = 1;
     }
 
     if (1) {

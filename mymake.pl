@@ -1643,6 +1643,7 @@ else {
 
         $config_defines{SIZEOF_MPL_ATOMIC_PTR_T} = $ret;
     }
+    $config_defines{SIZEOF_OPA_PTR_T} = 8;
     my $lock_based_atomics;
     open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
     while(<In>){
