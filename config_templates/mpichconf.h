@@ -972,6 +972,9 @@
 /* The size of `MPII_Bsend_data_t', as computed by sizeof. */
 #undef SIZEOF_MPII_BSEND_DATA_T
 
+/* legacy */
+#undef SIZEOF_OPA_PTR_T
+
 /* The size of `short', as computed by sizeof. */
 #undef SIZEOF_SHORT
 

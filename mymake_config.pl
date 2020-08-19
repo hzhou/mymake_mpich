@@ -5,6 +5,7 @@ use Cwd;
 our $config;
 our $config_in;
 our $config_out;
+our $config_prefix;
 our %config_defines;
 our %opts;
 our %config_cflags;
@@ -26,9 +27,16 @@ if ($config eq "mpich") {
     $config_out = "src/include/mpichconf.h";
 }
 elsif ($config eq "mpl") {
+    $config_prefix = "mpl";
     $config_in = "$mymake_dir/config_templates/mplconfig.h";
     $config_out = "mymake/mpl/include/mplconfig.h";
     symlink "../../libtool", "mymake/mpl/libtool";
+}
+elsif ($config eq "opa") {
+    $config_prefix = "opa";
+    $config_in = "$mymake_dir/config_templates/opa_config.h";
+    $config_out = "mymake/openpa/src/opa_config.h";
+    symlink "../../../libtool", "mymake/openpa/src/libtool";
 }
 elsif ($config eq "hydra") {
     $config_in = "$mymake_dir/config_templates/hydra_config.h";
@@ -408,6 +416,7 @@ $config_defines{HAVE_SNPRINTF}=1;
 $config_defines{HAVE_STRDUP}=1;
 $config_defines{HAVE_STRERROR}=1;
 $config_defines{HAVE_STRERROR_R}=1;
+$config_defines{HAVE_STRNCMP}=1;
 $config_defines{HAVE_STRNCASECMP}=1;
 $config_defines{HAVE_VSNPRINTF}=1;
 $config_defines{HAVE_VSPRINTF}=1;
@@ -515,24 +524,26 @@ if ($config eq "mpich") {
     }
 
     if ($opts{device} =~ /ch4/) {
-        my $eager_modules="iqueue";
-        if ($opts{"with-ch4-posix-eager-modules"}) {
-            $eager_modules = $opts{"with-ch4-posix-eager-modules"};
+        if (-f "src/mpid/ch4/shm/posix/posix_eager_array.c.in") {
+            my $eager_modules="iqueue";
+            if ($opts{"with-ch4-posix-eager-modules"}) {
+                $eager_modules = $opts{"with-ch4-posix-eager-modules"};
+            }
+            my @eager_list = split /\s+/, $eager_modules;
+
+            my %confs;
+            $confs{ch4_posix_eager_array_sz} = @eager_list;
+            my $a = $eager_list[0];
+            $confs{ch4_posix_eager_func_array} = "\&MPIDI_POSIX_eager_${a}_funcs";
+            $confs{ch4_posix_eager_strings} = "\"${a}\"";
+            $confs{ch4_posix_eager_func_decl} = "MPIDI_POSIX_eager_${a}_funcs";
+
+            $confs{ch4_posix_eager_pre_include} = "#include \"../${a}/${a}_pre.h\"";
+            $confs{ch4_posix_eager_recv_transaction_decl} = "MPIDI_POSIX_eager_${a}_recv_transaction_t ${a};";
+
+            autoconf_file("src/mpid/ch4/shm/posix/posix_eager_array.c", \%confs);
+            autoconf_file("src/mpid/ch4/shm/posix/eager/include/posix_eager_pre.h", \%confs);
         }
-        my @eager_list = split /\s+/, $eager_modules;
-
-        my %confs;
-        $confs{ch4_posix_eager_array_sz} = @eager_list;
-        my $a = $eager_list[0];
-        $confs{ch4_posix_eager_func_array} = "\&MPIDI_POSIX_eager_${a}_funcs";
-        $confs{ch4_posix_eager_strings} = "\"${a}\"";
-        $confs{ch4_posix_eager_func_decl} = "MPIDI_POSIX_eager_${a}_funcs";
-
-        $confs{ch4_posix_eager_pre_include} = "#include \"../${a}/${a}_pre.h\"";
-        $confs{ch4_posix_eager_recv_transaction_decl} = "MPIDI_POSIX_eager_${a}_recv_transaction_t ${a};";
-
-        autoconf_file("src/mpid/ch4/shm/posix/posix_eager_array.c", \%confs);
-        autoconf_file("src/mpid/ch4/shm/posix/eager/include/posix_eager_pre.h", \%confs);
         my @net_list;
         if ($opts{device}=~/ch4:ofi/) {
             push @net_list, "ofi";
@@ -986,6 +997,8 @@ if ($config eq "mpich") {
     }
     close Out;
 
+    $sizeof_hash{OPA_PTR_T} = 8;
+
     open Out, ">mymake/make_opts.mpich" or die "Can't write mymake/make_opts.mpich: $!\n";
     print "  --> [mymake/make_opts.mpich]\n";
     print Out "CC: $opts{CC}\n";
@@ -1106,6 +1119,32 @@ elsif ($config eq "mpl") {
     $confs{MPL_TIMER_TYPE} = "struct timespec";
     $confs{MPL_TIMER_KIND} = "MPL_TIMER_KIND__CLOCK_GETTIME";
     autoconf_file("mymake/mpl/include/mpl_timer.h", \%confs);
+}
+elsif ($config eq "opa") {
+    open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
+    while(<In>){
+        if (/^(\w+):\s*(.+)/) {
+            $opts{$1} = $2;
+        }
+    }
+    close In;
+    $config_defines{PACKAGE}='"openpa"';
+    $config_defines{PACKAGE_BUGREPORT}='"https://trac.mcs.anl.gov/projects/openpa/newticket"';
+    $config_defines{PACKAGE_NAME}='"OpenPA"';
+    $config_defines{PACKAGE_STRING}="\"OpenPA 1.0.3\"";
+    $config_defines{PACKAGE_TARNAME}='"openpa"';
+    $config_defines{PACKAGE_URL}='""';
+    $config_defines{PACKAGE_VERSION}="\"1.0.3\"";
+    $config_defines{VERSION}="\"1.0.3\"";
+    $config_defines{OPA_HAVE_GCC_INTRINSIC_ATOMICS} = 1;
+    $config_defines{OPA_HAVE_GCC_X86_32_64} = 1;
+    $config_defines{OPA_HAVE_GCC_X86_32_64_P3} = 1;
+
+    $config_defines{HAVE_LIBPTHREAD}=1;
+    $config_defines{OPA_MAX_NTHREADS} = 100;
+
+    $config_defines{SIZEOF_INT} = $sizeof_hash{INT};
+    $config_defines{SIZEOF_VOID_P} = $sizeof_hash{VOID_P};
 }
 elsif ($config eq "hydra") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
@@ -1267,23 +1306,28 @@ while(<In>){
     }
 }
 close In;
+my $P;
+if ($config_prefix) {
+    $P = uc($config_prefix);
+}
+
 my @lines;
 open In, "$config_in" or die "Can't open $config_in: $!\n";
 while(<In>){
     if (/^#undef\s+(\w+)/) {
         my ($a) = ($1);
-        if ($config eq "mpl") {
-            my $b = "MPL_$a";
-            if ($a=~/^(_|MPL_|const|inline|restrict)/) {
+        if ($config_prefix) {
+            my $b = "${P}_$a";
+            if ($a=~/^(_|${P}_|const|inline|restrict)/) {
                 $b = $a;
             }
             elsif ($a=~/^[a-z]/) {
-                $b = "_mpl_$a";
+                $b = "_${config_prefix}_$a";
             }
 
             my $val = $config_defines{$a};
-            if (defined $config_defines{"MPL_$a"}) {
-                $val = $config_defines{"MPL_$a"};
+            if (defined $config_defines{"${P}_$a"}) {
+                $val = $config_defines{"${P}_$a"};
             }
             if (defined $val) {
                 push @lines, "#ifndef $b\n";
@@ -1314,16 +1358,16 @@ close In;
 
 open Out, ">$config_out" or die "Can't write $config_out: $!\n";
 print "  --> [$config_out]\n";
-if ($config eq "mpl") {
-    print Out "#ifndef INCLUDE_MPLCONFIG_H\n";
-    print Out "#define INCLUDE_MPLCONFIG_H 1\n";
+if ($config_prefix) {
+    print Out "#ifndef INCLUDE_${P}CONFIG_H\n";
+    print Out "#define INCLUDE_${P}CONFIG_H 1\n";
 }
 
 foreach my $l (@lines) {
     print Out $l;
 }
 
-if ($config eq "mpl") {
+if ($config_prefix) {
     print Out "#endif\n";
 }
 close Out;
@@ -1406,7 +1450,12 @@ sub get_sizeof_bsend_status {
     print Out "#include <stdio.h>\n";
     print Out "#include <stdlib.h>\n";
     print Out "#include <stdint.h>\n";
-    print Out "#include \"$pwd/src/include/mpir_bsend.h\"\n";
+    if (-f "src/include/mpir_bsend.h") {
+        print Out "#include \"$pwd/src/include/mpir_bsend.h\"\n";
+    }
+    elsif (-f "src/include/mpii_bsend.h") {
+        print Out "#include \"$pwd/src/include/mpii_bsend.h\"\n";
+    }
     print Out "typedef struct {int lo; int hi; int src; int tag; int err;} MPI_Status;";
     print Out "int main() {\n";
     print Out "    printf(\"MPII_BSEND_DATA_T: %lu\\n\", sizeof(MPII_Bsend_data_t));\n";

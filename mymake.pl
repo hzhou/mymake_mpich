@@ -902,94 +902,7 @@ else {
             $L_list .= " -lfabric";
         }
         if (!$opts{quick}) {
-            if ($opts{device}=~/ch3:nemesis:ofi/) {
-                my @mod_list;
-                my $flag;
-                my $f = "src/mpid/ch3/channels/nemesis/netmod/ofi/subconfigure.m4";
-                my $f_ = $f;
-                $f_=~s/[\.\/]/_/g;
-                my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-                push @mod_list, \@m;
-
-                system "mv $m[0] $m[1]";
-                my @lines;
-                {
-                    open In, "$m[1]" or die "Can't open $m[1].\n";
-                    @lines=<In>;
-                    close In;
-                }
-                my $flag_skip=0;
-                open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-                print "  --> [$m[2]]\n";
-                foreach my $l (@lines) {
-                    if ($l=~/^AM_COND_IF\(\[BUILD_NEMESIS_NETMOD_OFI\]/) {
-                        $flag = 1;
-                        next;
-                    }
-                    elsif ($flag) {
-                        if ($l=~/^\]\).*AM_COND_IF\(BUILD_NEMESIS_NETMOD_OFI/) {
-                            $flag = 0;
-                            print Out "    AC_DEFINE([ENABLE_COMM_OVERRIDES], [1], [Define to add per-vc function pointers to override send and recv functions])\n";
-                        }
-                        next;
-                    }
-                    if ($flag_skip) {
-                        next;
-                    }
-                    print Out $l;
-                }
-                close Out;
-                system "cp -v $m[2] $m[0]";
-            }
-            else {
-                my @mod_list;
-                my $flag;
-                my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
-                my $f_ = $f;
-                $f_=~s/[\.\/]/_/g;
-                my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-                push @mod_list, \@m;
-
-                system "mv $m[0] $m[1]";
-                my @lines;
-                {
-                    open In, "$m[1]" or die "Can't open $m[1].\n";
-                    @lines=<In>;
-                    close In;
-                }
-                my $flag_skip=0;
-                open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-                print "  --> [$m[2]]\n";
-                foreach my $l (@lines) {
-                    if ($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_OFI\]/) {
-                        $flag = 1;
-                        next;
-                    }
-                    elsif ($flag) {
-                        if ($l=~/^\]\).*AM_COND_IF\(BUILD_CH4_NETMOD_OFI/) {
-                            $flag = 0;
-                            print Out "    AC_DEFINE([MPIDI_CH4_OFI_USE_SET_RUNTIME], [1], [Define to use runtime capability set])\n";
-                            next;
-                        }
-                        elsif ($l=~/AC_ARG_ENABLE/) {
-                            $flag=2;
-                        }
-                        elsif ($flag==2) {
-                        }
-                        else {
-                            next;
-                        }
-                    }
-                    if ($flag_skip) {
-                        next;
-                    }
-                    print Out $l;
-                }
-                close Out;
-                system "cp -v $m[2] $m[0]";
-            }
         }
-
     }
 
     if (!$opts{disable_cxx}) {
@@ -1316,6 +1229,93 @@ else {
                 system "cp -v $m[2] $m[0]";
             }
         }
+
+        if ($opts{device}=~/ch3:nemesis:ofi/) {
+            my @mod_list;
+            my $flag;
+            my $f = "src/mpid/ch3/channels/nemesis/netmod/ofi/subconfigure.m4";
+            my $f_ = $f;
+            $f_=~s/[\.\/]/_/g;
+            my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+            push @mod_list, \@m;
+
+            system "mv $m[0] $m[1]";
+            my @lines;
+            {
+                open In, "$m[1]" or die "Can't open $m[1].\n";
+                @lines=<In>;
+                close In;
+            }
+            my $flag_skip=0;
+            open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+            print "  --> [$m[2]]\n";
+            foreach my $l (@lines) {
+                if ($l=~/^AM_COND_IF\(\[BUILD_NEMESIS_NETMOD_OFI\]/) {
+                    $flag = 1;
+                    next;
+                }
+                elsif ($flag) {
+                    if ($l=~/^\]\).*AM_COND_IF\(BUILD_NEMESIS_NETMOD_OFI/) {
+                        $flag = 0;
+                        print Out "    AC_DEFINE([ENABLE_COMM_OVERRIDES], [1], [Define to add per-vc function pointers to override send and recv functions])\n";
+                    }
+                    next;
+                }
+                if ($flag_skip) {
+                    next;
+                }
+                print Out $l;
+            }
+            close Out;
+            system "cp -v $m[2] $m[0]";
+        }
+        elsif ($opts{device}=~/ch4:ofi/) {
+            my @mod_list;
+            my $flag;
+            my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
+            my $f_ = $f;
+            $f_=~s/[\.\/]/_/g;
+            my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+            push @mod_list, \@m;
+
+            system "mv $m[0] $m[1]";
+            my @lines;
+            {
+                open In, "$m[1]" or die "Can't open $m[1].\n";
+                @lines=<In>;
+                close In;
+            }
+            my $flag_skip=0;
+            open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+            print "  --> [$m[2]]\n";
+            foreach my $l (@lines) {
+                if ($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_OFI\]/) {
+                    $flag = 1;
+                    next;
+                }
+                elsif ($flag) {
+                    if ($l=~/^\]\).*AM_COND_IF\(BUILD_CH4_NETMOD_OFI/) {
+                        $flag = 0;
+                        print Out "    AC_DEFINE([MPIDI_CH4_OFI_USE_SET_RUNTIME], [1], [Define to use runtime capability set])\n";
+                        next;
+                    }
+                    elsif ($l=~/AC_ARG_ENABLE/) {
+                        $flag=2;
+                    }
+                    elsif ($flag==2) {
+                    }
+                    else {
+                        next;
+                    }
+                }
+                if ($flag_skip) {
+                    next;
+                }
+                print Out $l;
+            }
+            close Out;
+            system "cp -v $m[2] $m[0]";
+        }
         system "autoreconf -ivf";
         foreach my $m (@mod_list) {
             system "cp $m->[1] $m->[0]";
@@ -1487,7 +1487,7 @@ else {
         $a=~s/[\.\/]/_/g;
         my $add = $a."_LIBADD";
         my $t = get_make_var($add);
-        $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c)\/\S+\.la\s*//g;
+        $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
         $t=~s/\@ucxlib\@\s*//g;
         $t=~s/\@ofilib\@\s*//g;
 
@@ -1501,7 +1501,7 @@ else {
         $a=~s/[\.\/]/_/g;
         my $add = $a."_LDADD";
         my $t = get_make_var($add);
-        $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c)\/\S+\.la\s*//g;
+        $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
         $t=~s/\@ucxlib\@\s*//g;
         $t=~s/\@ofilib\@\s*//g;
 
@@ -1807,12 +1807,12 @@ sub dump_makefile {
     print Out "INCLUDES = $t\n";
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
-    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa)\/\S+\s*//g;
+    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
     $t=~s/-I\S+\/json-c//g;
     print Out "AM_CPPFLAGS = $t\n";
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
-    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa)\/\S+\s*//g;
+    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
     $t=~s/-I\S+\/json-c//g;
     $t .= $I_list;
     print Out "CPPFLAGS = $t\n";

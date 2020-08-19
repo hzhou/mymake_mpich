@@ -15,20 +15,26 @@ while(<In>){
 }
 close In;
 my @realclean_list;
+push @realclean_list, "subsys_include.m4";
 push @realclean_list, "src/mpi/errhan/defmsg.h";
 push @realclean_list, "src/include/mpir_cvars.h";
-if ($opts{quick}) {
-    push @realclean_list, "src/include/mpichconf.h";
-    push @realclean_list, "mymake/mpl";
-    push @realclean_list, "src/pm/hydra/Makefile";
-}
-else {
-    push @realclean_list, "subsys_include.m4";
+push @realclean_list, "src/include/mpichconf.h";
+push @realclean_list, "Makefile";
+push @realclean_list, "src/pm/hydra/Makefile";
+if (!$opts{quick}) {
     push @realclean_list, "configure";
-    push @realclean_list, "Makefile";
     push @realclean_list, "mymake/Makefile.*";
-    push @realclean_list, "src/pm/hydra/mymake";
 }
+
+push @realclean_list, "mymake/mpl";
+if (-d "src/openpa") {
+    push @realclean_list, "mymake/openpa";
+}
+
+if (-d $opts{prefix}) {
+    push @realclean_list, "$opts{prefix}/lib/*";
+}
+
 foreach my $t (@realclean_list) {
     print "rm -rf $t\n";
     system "rm -rf $t";

@@ -217,6 +217,14 @@ if ($what eq "mpich") {
         my $subdir="\x24(MODS)/openpa";
         my $lib_la = "\x24(MODDIR)/openpa/src/libopa.la";
         my $config_h = "\x24(MODS)/openpa/src/opa_config.h";
+        push @extra_make_rules, "$config_h:";
+        push @extra_make_rules, "\t\x24(DO_config) opa && \x24(DO_makefile) opa";
+        push @extra_make_rules, "";
+        my @t = ("cd $subdir/src");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$lib_la: $config_h";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
     }
 
     if (!$opts{disable_romio}) {
@@ -322,14 +330,7 @@ if ($what eq "mpich") {
             $L_list .= " -lfabric";
         }
         if (!$opts{quick}) {
-            if ($opts{device}=~/ch3:nemesis:ofi/) {
-                my $flag;
-            }
-            else {
-                my $flag;
-            }
         }
-
     }
 
     if (!$opts{disable_cxx}) {
@@ -546,6 +547,25 @@ elsif ($what eq "mpl") {
     load_automake("mymake/mpl/Makefile.am", \%conds);
     @programs=();
     dump_makefile("mymake/mpl/Makefile");
+}
+elsif ($what eq "opa") {
+    if (!-d "$opts{moddir}/openpa") {
+        my $cmd = "cp -r src/openpa $opts{moddir}/openpa";
+        print "$cmd\n";
+        system $cmd;
+        if (!$opts{quick}) {
+            my $cmd = "cp -r confdb $opts{moddir}/openpa/";
+            print "$cmd\n";
+            system $cmd;
+        }
+    }
+    $autoconf_vars{OPALIBNAME} = "opa";
+    $make_vars{DEFAULT_INCLUDES} = "-I.";
+    my %conds;
+    $conds{EMBEDDED} = 1;
+    load_automake("mymake/openpa/src/Makefile.am", \%conds);
+    @programs=();
+    dump_makefile("mymake/openpa/src/Makefile");
 }
 elsif ($what eq "hydra") {
     if (!-d "$opts{moddir}/mpl") {
@@ -798,12 +818,12 @@ sub dump_makefile {
     print Out "INCLUDES = $t\n";
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
-    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa)\/\S+\s*//g;
+    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
     $t=~s/-I\S+\/json-c//g;
     print Out "AM_CPPFLAGS = $t\n";
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
-    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa)\/\S+\s*//g;
+    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
     $t=~s/-I\S+\/json-c//g;
     $t .= $I_list;
     print Out "CPPFLAGS = $t\n";
