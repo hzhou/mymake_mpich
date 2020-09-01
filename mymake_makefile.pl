@@ -639,7 +639,21 @@ elsif ($what eq "hydra") {
 elsif ($what eq "test") {
     my %conds;
     $autoconf_vars{threadlib} = "-lpthread";
-    foreach my $dir ("attr", "comm", "datatype", "pt2pt", "coll", "rma", "threads/pt2pt") {
+    my @all_am = glob("test/mpi/*/Makefile.am");
+    push @all_am, glob("test/mpi/threads/*/Makefile.am");
+    foreach my $a (@all_am) {
+        my $dir;
+        if ($a =~ /test\/mpi\/(.*)\/Makefile.am/) {
+            $dir = $1;
+            my @t = glob("test/mpi/$dir/*/Makefile.am");
+            if (@t) {
+                next;
+            }
+        }
+        else {
+            next;
+        }
+
         %make_vars = ();
         @ltlibs = ();
         @programs = ();

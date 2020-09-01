@@ -31,7 +31,7 @@ elsif ($0=~/^(.*)\//) {
     $opts{mymake} .= "$pwd/$1";
 }
 $opts{mymake} .="/mymake";
-if ($ARGV[0]=~/^(clean|errmsg|cvars|logs|hydra|testing|test|makefile|config|libtool)$/) {
+if ($ARGV[0]=~/^(clean|errmsg|cvars|log|logs|hydra|testing|test|makefile|config|libtool)$/) {
     shift @ARGV;
     system "perl $opts{mymake}_$1.pl @ARGV";
     exit(0);
