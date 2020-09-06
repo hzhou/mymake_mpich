@@ -3,6 +3,7 @@ use strict;
 
 our $mark = "/* MPIR_FUNC */";
 our %opts;
+our %exclusions;
 
 parse_args();
 if ($opts{clean}) {
@@ -14,6 +15,17 @@ else {
 
 # ---- subroutines --------------------------------------------
 sub parse_args {
+    if (-e "mymake_log.conf") {
+        open In, "mymake_log.conf" or die "Can't open mymake_log.conf: $!\n";
+        while(<In>){
+            if (/^exclude:\s*(.+)/) {
+                foreach my $a (split /\s+/, $1) {
+                    $exclusions{$a} = 1;
+                }
+            }
+        }
+        close In;
+    }
     my @un_recognized;
     foreach my $a (@ARGV) {
         if ($a=~/^-(\w+)=(.*)/) {
@@ -207,18 +219,28 @@ sub filter_func {
 
 sub log_enter {
     my ($funcname, $l) = @_;
-    push @$l, "    $mark printf(\"Entering $funcname \t\t(%s:%d)\\n\", __FILE__, __LINE__);\n";
+    if (!$exclusions{$funcname}) {
+        push @$l, "    $mark printf(\"Entering $funcname \t\t(%s:%d)\\n\", __FILE__, __LINE__);\n";
+    }
+    else {
+        print "Exclude $funcname\n";
+    }
 }
 
 sub log_exit {
     my ($funcname, $l, $sp, $ret, $add_brace) = @_;
-    if ($add_brace) {
-        push @$l, $sp."$mark {\n";
+    if (!$exclusions{$funcname}) {
+        if ($add_brace) {
+            push @$l, $sp."$mark {\n";
+        }
+        push @$l, $sp."$mark printf(\"Exit     $funcname\\n\");\n";
+        push @$l, $ret;
+        if ($add_brace) {
+            push @$l, $sp."$mark }\n";
+        }
     }
-    push @$l, $sp."$mark printf(\"Exit     $funcname\\n\");\n";
-    push @$l, $ret;
-    if ($add_brace) {
-        push @$l, $sp."$mark }\n";
+    else {
+        push @$l, $ret;
 
     }
 }

@@ -31,7 +31,7 @@ elsif ($0=~/^(.*)\//) {
     $opts{mymake} .= "$pwd/$1";
 }
 $opts{mymake} .="/mymake";
-if ($ARGV[0]=~/^(clean|errmsg|cvars|log|logs|hydra|testing|test|makefile|config|libtool)$/) {
+if ($ARGV[0]=~/^(clean|errmsg|cvars|log|log_show|logs|hydra|testing|test|makefile|config|libtool)$/) {
     shift @ARGV;
     system "perl $opts{mymake}_$1.pl @ARGV";
     exit(0);
@@ -369,7 +369,50 @@ print "device: $opts{device}\n";
 
 if ($opts{quick}) {
     if (!-f "libtool") {
-        system "perl $opts{mymake}_libtool.pl";
+        if (-f "mymake/libtool/libtool") {
+            my %need_patch;
+            my @lines;
+            {
+                open In, "mymake/libtool/libtool" or die "Can't open mymake/libtool/libtool.\n";
+                @lines=<In>;
+                close In;
+            }
+            open Out, ">libtool" or die "Can't write libtool: $!\n";
+            print "  --> [libtool]\n";
+            foreach my $l (@lines) {
+                if ($l=~/^AR_FLAGS=/) {
+                    $l = "AR_FLAGS=\"cr\"\n";
+                }
+                elsif ($l=~/^CC="(.*)"/) {
+                    my ($CC) = ($1);
+                    if ($CC =~ /^sun(f77|f9.|fortran)/) {
+                        $need_patch{pic_flag}=" -KPIC";
+                        $need_patch{wl}="-Qoption ld ";
+                        $need_patch{link_static_flag}=" -Bstatic";
+                        $need_patch{shared}="-G";
+                    }
+                    else {
+                        %need_patch=();
+                    }
+                }
+                elsif ($l=~/^(pic_flag|wl|link_static_flag)=/) {
+                    if ($need_patch{$1}) {
+                        $l = "$1='$need_patch{$1}'\n";
+                    }
+                }
+                elsif ($l=~/^(archive_cmds=|\s*\\\$CC\s+-shared )/) {
+                    if ($need_patch{shared}) {
+                        $l=~s/-shared /$need_patch{shared} /;
+                    }
+                }
+                print Out $l;
+            }
+            close Out;
+            system "chmod a+x libtool";
+        }
+        else {
+            system "perl $opts{mymake}_libtool.pl";
+        }
     }
     if (!-f "src/include/mpichconf.h") {
         system "perl $opts{mymake}_config.pl mpich";
