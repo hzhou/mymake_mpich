@@ -157,6 +157,11 @@ elsif (-e $mod_tarball) {
 else {
     die "moddir not set\n";
 }
+
+my $uname = `uname`;
+if ($uname=~/Darwin/) {
+    $opts{do_pmpi} = 1;
+}
 if (-f "mymake/CFLAGS") {
     open In, "mymake/CFLAGS" or die "Can't open mymake/CFLAGS: $!\n";
     while(<In>){
@@ -348,23 +353,16 @@ if (!-f "mymake/Makefile.orig") {
     }
     system "rm -f Makefile";
     system "./configure";
-    my @mod_list;
+    system "mv libtool mymake/";
     my %need_patch;
-    my $f = "libtool";
-    my $f_ = $f;
-    $f_=~s/[\.\/]/_/g;
-    my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-
-    system "mv $m[0] $m[1]";
     my @lines;
     {
-        open In, "$m[1]" or die "Can't open $m[1].\n";
+        open In, "mymake/libtool" or die "Can't open mymake/libtool.\n";
         @lines=<In>;
         close In;
     }
-    my $flag_skip=0;
-    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-    print "  --> [$m[2]]\n";
+    open Out, ">libtool" or die "Can't write libtool: $!\n";
+    print "  --> [libtool]\n";
     foreach my $l (@lines) {
         if ($l=~/^AR_FLAGS=/) {
             $l = "AR_FLAGS=\"cr\"\n";
@@ -391,17 +389,10 @@ if (!-f "mymake/Makefile.orig") {
                 $l=~s/-shared /$need_patch{shared} /;
             }
         }
-        if ($flag_skip) {
-            next;
-        }
         print Out $l;
     }
     close Out;
-    system "cp -v $m[2] $m[0]";
     system "chmod a+x libtool";
-    foreach my $m (@mod_list) {
-        system "cp $m->[1] $m->[0]";
-    }
     system "mv Makefile mymake/Makefile.orig";
 }
 

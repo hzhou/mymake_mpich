@@ -72,8 +72,6 @@ $make_vars{"PREFIX"} = "-";
 if ($what eq "mpich") {
     $make_vars{DEFAULT_INCLUDES} = ("-I. -I./src/include");
 
-    $opts{do_pmpi} = 0;
-
     push @extra_make_rules, "DO_stage = perl $opts{mymake}_stage.pl";
     push @extra_make_rules, "DO_clean = perl $opts{mymake}_clean.pl";
     push @extra_make_rules, "DO_errmsg = perl $opts{mymake}_errmsg.pl";
