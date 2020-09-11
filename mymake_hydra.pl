@@ -353,11 +353,11 @@ if (!-f "mymake/Makefile.orig") {
     }
     system "rm -f Makefile";
     system "./configure";
-    system "mv libtool mymake/";
+    system "mv libtool mymake/libtool.orig";
     my %need_patch;
     my @lines;
     {
-        open In, "mymake/libtool" or die "Can't open mymake/libtool.\n";
+        open In, "mymake/libtool.orig" or die "Can't open mymake/libtool.orig.\n";
         @lines=<In>;
         close In;
     }
