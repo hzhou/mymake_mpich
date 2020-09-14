@@ -1208,6 +1208,10 @@ elsif ($config eq "hydra") {
     $config_defines{HAVE_EXTERN_ENVIRON}=1;
     $config_defines{ENABLE_PROFILING}=1;
 
+    $config_defines{HYDRA_CXX}="\"$opts{CXX} \"";
+    $config_defines{HYDRA_F77}="\"$opts{F77} \"";
+    $config_defines{HYDRA_F90}="\"$opts{F90} \"";
+
     delete $config_defines{HAVE_ALLOCA};
     $config_defines{HAVE_FCNTL}=1;
     $config_defines{HAVE_GETIFADDRS}=1;
@@ -1246,7 +1250,7 @@ elsif ($config eq "hydra") {
     $config_defines{HYDRA_DEFAULT_RMK} = "\"$rmks[0]\"";
     $config_defines{HYDRA_AVAILABLE_TOPOLIBS} = "\"@topolibs\"";
     $config_defines{HYDRA_DEFAULT_TOPOLIB} = "\"$topolibs[0]\"";
-    $config_defines{HYDRA_AVAILABLE_CKPOINTLIBS}="";
+    $config_defines{HYDRA_AVAILABLE_CKPOINTLIBS}='""';
 }
 elsif ($config eq "test") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";

@@ -210,6 +210,15 @@
 /* C compiler */
 #undef HYDRA_CC
 
+/* CXX compiler */
+#undef HYDRA_CXX
+
+/* F77 compiler */
+#undef HYDRA_F77
+
+/* F90 compiler */
+#undef HYDRA_F90
+
 /* Configure arguments */
 #undef HYDRA_CONFIGURE_ARGS_CLEAN
 

@@ -613,6 +613,7 @@ elsif ($what eq "hydra") {
     my $config_h = "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
     my %conds;
     $conds{HYDRA_HAVE_HWLOC}=1;
+    $conds{hydra_have_hwloc}=1;
     $conds{hydra_bss_external}=1;
     $conds{hydra_bss_persist}=1;
     $conds{hydra_have_poll}=1;
