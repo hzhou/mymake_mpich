@@ -204,6 +204,9 @@
 /* Definition of enabled processor topology libraries */
 #undef HYDRA_AVAILABLE_TOPOLIBS
 
+/* Definition of enabled checkpoint libraries */
+#undef HYDRA_AVAILABLE_CKPOINTLIBS
+
 /* C compiler */
 #undef HYDRA_CC
 
