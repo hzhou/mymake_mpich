@@ -544,6 +544,32 @@ if ($config eq "mpich") {
             autoconf_file("src/mpid/ch4/shm/posix/posix_eager_array.c", \%confs);
             autoconf_file("src/mpid/ch4/shm/posix/eager/include/posix_eager_pre.h", \%confs);
         }
+        if (-f "src/mpid/ch4/include/coll_algo_params.h.in") {
+            my $net;
+            if ($opts{device}=~/ch4:ofi/) {
+                $net="ofi";
+            }
+            elsif ($opts{device}=~/ch4:ucx/) {
+                $net="ucx";
+            }
+            my $NET=uc($net);
+
+            my %confs;
+            $confs{ch4_netmod_coll_globals_default}="#include \"../netmod/${net}/${net}_coll_globals_default.c\"";
+            $confs{ch4_netmod_coll_params_include} ="#include \"../netmod/${net}/${net}_coll_params.h\"";
+            open In, "src/mpid/ch4/include/coll_algo_params.h.in" or die "Can't open src/mpid/ch4/include/coll_algo_params.h.in: $!\n";
+            while(<In>){
+                if (/\@ch4_netmod_(\w+)_params_decl\@/) {
+                    my $COLL=uc($1);
+                    my $key = "ch4_netmod_".$1."_params_decl";
+                    $confs{$key} = "MPIDI_${NET}_${COLL}_PARAMS_DECL;";
+                }
+            }
+            close In;
+
+            autoconf_file("src/mpid/ch4/include/coll_algo_params.h", \%confs);
+            autoconf_file("src/mpid/ch4/src/ch4_coll_globals_default.c", \%confs);
+        }
         my @net_list;
         if ($opts{device}=~/ch4:ofi/) {
             push @net_list, "ofi";
