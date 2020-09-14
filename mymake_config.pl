@@ -1246,6 +1246,7 @@ elsif ($config eq "hydra") {
     $config_defines{HYDRA_DEFAULT_RMK} = "\"$rmks[0]\"";
     $config_defines{HYDRA_AVAILABLE_TOPOLIBS} = "\"@topolibs\"";
     $config_defines{HYDRA_DEFAULT_TOPOLIB} = "\"$topolibs[0]\"";
+    $config_defines{HYDRA_AVAILABLE_CKPOINTLIBS}="";
 }
 elsif ($config eq "test") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
