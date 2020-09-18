@@ -1232,7 +1232,7 @@ elsif ($config eq "hydra") {
     $config_defines{HAVE_UNSETENV}=1;
     $config_defines{HAVE_USLEEP}=1;
 
-    delete $config_defines{HAVE_SLURM_SLURM_H};
+    delete $headers_hash{SLURM_SLURM_H};
     my @launchers=qw(ssh rsh fork slurm ll lsf sge manual persist);
     my @rmks=qw(user slurm ll lsf sge pbs cobalt);
     my @demuxes=qw(poll select);
