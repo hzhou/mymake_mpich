@@ -46,7 +46,7 @@ elsif ($config eq "hydra") {
 elsif ($config eq "test") {
     $config_in = "$mymake_dir/config_templates/mpitestconf.h";
     $config_out = "test/mpi/include/mpitestconf.h";
-    symlink "../../libtool", "test/mpi/libtool";
+    system "sed -e 's/\"gcc\"/\"mpicc\"/' libtool > test/mpi/libtool";
 }
 elsif ($config eq "dtpools") {
     $config_in = "$mymake_dir/config_templates/dtpoolsconf.h";
@@ -1231,6 +1231,8 @@ elsif ($config eq "hydra") {
     $config_defines{HAVE_TIME}=1;
     $config_defines{HAVE_UNSETENV}=1;
     $config_defines{HAVE_USLEEP}=1;
+
+    delete $config_defines{HAVE_SLURM_SLURM_H};
     my @launchers=qw(ssh rsh fork slurm ll lsf sge manual persist);
     my @rmks=qw(user slurm ll lsf sge pbs cobalt);
     my @demuxes=qw(poll select);
