@@ -525,9 +525,12 @@ if ($config eq "mpich") {
 
     if ($opts{device} =~ /ch4/) {
         if (-f "src/mpid/ch4/shm/posix/posix_eager_array.c.in") {
-            my $eager_modules="fbox";
+            my $eager_modules;
             if (-f "src/mpid/ch4/shm/posix/eager/iqueue/iqueue_pre.h") {
                 $eager_modules="iqueue";
+            }
+            else {
+                $eager_modules="fbox";
             }
             if ($opts{"with-ch4-posix-eager-modules"}) {
                 $eager_modules = $opts{"with-ch4-posix-eager-modules"};
@@ -967,7 +970,7 @@ if ($config eq "mpich") {
         if ($opts{enable_shm}) {
             $make_conds{BUILD_CH4_SHM} = 1;
             $make_conds{BUILD_SHM_POSIX} = 1;
-            if (1) {
+            if (-f "src/mpid/ch4/shm/posix/eager/iqueue/iqueue_pre.h") {
                 $make_conds{BUILD_CH4_SHM_POSIX_EAGER_IQUEUE} = 1;
             }
             else {
