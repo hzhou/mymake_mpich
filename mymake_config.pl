@@ -525,7 +525,10 @@ if ($config eq "mpich") {
 
     if ($opts{device} =~ /ch4/) {
         if (-f "src/mpid/ch4/shm/posix/posix_eager_array.c.in") {
-            my $eager_modules="iqueue";
+            my $eager_modules="fbox";
+            if (-d "src/mpid/ch4/shm/posix/eager/iqueue") {
+                $eager_modules="iqueue";
+            }
             if ($opts{"with-ch4-posix-eager-modules"}) {
                 $eager_modules = $opts{"with-ch4-posix-eager-modules"};
             }
