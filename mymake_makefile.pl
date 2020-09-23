@@ -1049,6 +1049,9 @@ sub dump_makefile {
             $deps .= " \x24($o)";
         }
         else {
+            foreach my $t (@t) {
+                print Out "$t: \x24(CONFIGS)\n";
+            }
             $deps .= " @t";
         }
         my $add = $a."_LIBADD";
@@ -1110,6 +1113,9 @@ sub dump_makefile {
                 $deps .= " \x24($add)";
             }
             else {
+                foreach my $t (@t) {
+                    print Out "$t: \x24(CONFIGS)\n";
+                }
                 $deps .= " @t";
             }
         }
@@ -1204,6 +1210,9 @@ sub dump_makefile {
             $deps .= " \x24($o)";
         }
         else {
+            foreach my $t (@t) {
+                print Out "$t: \x24(CONFIGS)\n";
+            }
             $deps .= " @t";
         }
         my $add = $a."_LDADD";
@@ -1265,6 +1274,9 @@ sub dump_makefile {
                 $deps .= " \x24($add)";
             }
             else {
+                foreach my $t (@t) {
+                    print Out "$t: \x24(CONFIGS)\n";
+                }
                 $deps .= " @t";
             }
         }
