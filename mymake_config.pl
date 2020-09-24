@@ -47,6 +47,7 @@ elsif ($config eq "test") {
     $config_in = "$mymake_dir/config_templates/mpitestconf.h";
     $config_out = "test/mpi/include/mpitestconf.h";
     system "sed -e 's/\"gcc\"/\"mpicc\"/' libtool > test/mpi/libtool";
+    system "chmod a+x test/mpi/libtool";
 }
 elsif ($config eq "dtpools") {
     $config_in = "$mymake_dir/config_templates/dtpoolsconf.h";

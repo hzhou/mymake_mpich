@@ -32,7 +32,7 @@ if (-d "src/openpa") {
 }
 
 if (-d $opts{prefix}) {
-    push @realclean_list, "$opts{prefix}/lib/*";
+    push @realclean_list, "$opts{prefix}/lib/libmpi*";
 }
 
 foreach my $t (@realclean_list) {

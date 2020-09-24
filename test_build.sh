@@ -202,7 +202,7 @@ if test -n $compiler ; then
                 CXX=sunCC
                 F77=sunf77
                 FC=sunf90
-                export CFLAGS="-errtags=yes -erroff=E_END_OF_LOOP_CODE_NOT_REACHED -erroff=E_STATEMENT_NOT_REACHED -erroff=E_ANONYMOUS_UNION_DECL -erroff=E_EMPTY_TRANSLATION_UNIT"
+                export CFLAGS="-errtags=yes -erroff=E_END_OF_LOOP_CODE_NOT_REACHED -erroff=E_STATEMENT_NOT_REACHED -erroff=E_ANONYMOUS_UNION_DECL -erroff=E_ANONYMOUS_STRUCT_DECL -erroff=E_EMPTY_TRANSLATION_UNIT"
                 ;;
             *)
                 echo "Unknown compiler suite"
