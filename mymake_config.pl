@@ -961,11 +961,11 @@ if ($config eq "mpich") {
             $make_conds{BUILD_CH4_NETMOD_OFI} = 1;
         }
         else {
-            $opts{enable_shm} = 0;
+            $opts{enable_shm} = 1;
             open In, "src/mpid/ch4/subconfigure.m4" or die "Can't open src/mpid/ch4/subconfigure.m4: $!\n";
             while(<In>){
-                if (/^ch4_shm=posix/) {
-                    $opts{enable_shm} = 1;
+                if (/AM_CONDITIONAL.*BUILD_CH4_SHM/) {
+                    $opts{enable_shm} = 0;
                     last;
                 }
             }
