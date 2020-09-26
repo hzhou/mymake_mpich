@@ -21,10 +21,10 @@ push @realclean_list, "src/include/mpir_cvars.h";
 push @realclean_list, "src/include/mpichconf.h";
 push @realclean_list, "Makefile";
 push @realclean_list, "src/pm/hydra/Makefile";
-if (!$opts{quick}) {
-    push @realclean_list, "configure";
-    push @realclean_list, "mymake/Makefile.*";
-}
+
+push @realclean_list, "configure";
+push @realclean_list, "mymake/t-*";
+push @realclean_list, "mymake/Makefile.*";
 
 push @realclean_list, "mymake/mpl";
 if (-d "src/openpa") {

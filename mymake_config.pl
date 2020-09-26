@@ -962,6 +962,14 @@ if ($config eq "mpich") {
         }
         else {
             $opts{enable_shm} = 0;
+            open In, "src/mpid/ch4/subconfigure.m4" or die "Can't open src/mpid/ch4/subconfigure.m4: $!\n";
+            while(<In>){
+                if (/^ch4_shm=posix/) {
+                    $opts{enable_shm} = 1;
+                    last;
+                }
+            }
+            close In;
             $make_conds{BUILD_CH4_NETMOD_UCX} = 1;
             if (0) {
                 $make_conds{BUILD_HCOLL} = 1;
@@ -1029,6 +1037,7 @@ if ($config eq "mpich") {
         print Out "$k: $make_conds{$k}\n";
     }
     close Out;
+
 
     $sizeof_hash{OPA_PTR_T} = 8;
 
@@ -1447,7 +1456,8 @@ sub get_cc_version {
 
 sub get_sizeof {
     my ($typelist, $headerlist) = @_;
-    open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
+    my $tname="t-$$";
+    open Out, ">mymake/$tname.c" or die "Can't write mymake/$tname.c: $!\n";
     foreach my $t (@$headerlist) {
         print Out "#include <$t>\n";
     }
@@ -1467,7 +1477,7 @@ sub get_sizeof {
     print Out "}\n";
     close Out;
 
-    my $t = `$opts{CC} mymake/t.c -o mymake/t.out 2>/dev/null && mymake/t.out`;
+    my $t = `$opts{CC} mymake/$tname.c -o mymake/$tname.out 2>/dev/null && mymake/$tname.out`;
     if ($? == 0) {
         while ($t=~/A(\d+):\s+(\d+)/g) {
             my $name = get_config_name($typelist->[$1]);
