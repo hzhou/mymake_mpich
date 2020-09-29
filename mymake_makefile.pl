@@ -126,7 +126,7 @@ if ($what eq "mpich") {
         if ($t=~/--enable-(g|strict)/) {
             $configure.=" $t";
         }
-        elsif ($t=~/--with-(mpl|thread-package|argobots|uti)/) {
+        elsif ($t=~/--with-(mpl|thread-package|argobots|uti|cuda)/) {
             $configure.=" $t";
         }
     }
@@ -591,7 +591,7 @@ elsif ($what eq "hydra") {
         if ($t=~/--enable-(g|strict)/) {
             $configure.=" $t";
         }
-        elsif ($t=~/--with-(mpl|thread-package|argobots|uti)/) {
+        elsif ($t=~/--with-(mpl|thread-package|argobots|uti|cuda)/) {
             $configure.=" $t";
         }
     }
