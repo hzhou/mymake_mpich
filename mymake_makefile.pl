@@ -845,6 +845,10 @@ sub dump_makefile {
     $t=~s/\@HWLOC_\S+\@\s*//;
     $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
     $t=~s/-I\S+\/json-c//g;
+    if ($opts{"with-cuda"}) {
+        my $p = $opts{"with-cuda"};
+        $I_list .= " -I$p/include";
+    }
     $t .= $I_list;
     print Out "CPPFLAGS = $t\n";
     my $t = get_make_var_unique("AM_CFLAGS");
