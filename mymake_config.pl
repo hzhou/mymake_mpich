@@ -1153,7 +1153,9 @@ elsif ($config eq "mpl") {
     $config_defines{HAVE_SLEEP}=1;
     $config_defines{HAVE_USLEEP}=1;
 
-    $config_defines{HAVE_LIBCUDA}=1;
+    if ($opts{"with-cuda"}) {
+        $config_defines{HAVE_CUDA}=1;
+    }
     $config_defines{HAVE_PTHREAD_MUTEXATTR_SETPSHARED} = 1;
 
     $config_defines{backtrace_size_t} = "int";

@@ -542,6 +542,13 @@ elsif ($what eq "mpl") {
 
     my %conds;
     $conds{MPL_EMBEDDED_MODE} = 1;
+    if ($opts{"with-cuda"}) {
+        my $p = $opts{"with-cuda"};
+        $conds{MPL_HAVE_CUDA} = 1;
+        $make_vars{CPPFLAGS} .= " -I$p/include";
+        $make_vars{LDFLAGS} .= " -L$p/lib64";
+        $make_vars{LIBS} .= " -lcudart -lcuda";
+    }
     load_automake("mymake/mpl/Makefile.am", \%conds);
     @programs=();
     dump_makefile("mymake/mpl/Makefile");
