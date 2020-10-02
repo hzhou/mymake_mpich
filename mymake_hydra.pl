@@ -39,8 +39,6 @@ if (!-f "maint/version.m4") {
     die "Not in top_srcdir.\n";
 }
 $opts{V}=0;
-$opts{ucx}="embedded";
-$opts{libfabric}="embedded";
 my $need_save_args;
 if (!@ARGV && -f "mymake/args") {
     my $t;
@@ -102,7 +100,7 @@ foreach my $a (@ARGV) {
             $opts{enable_izem}=1;
             push @config_args, $a;
         }
-        elsif ($a=~/--with-(ucx|libfabric|argobots)=(.*)/) {
+        elsif ($a=~/--with-(argobots)=(.*)/) {
             $opts{$1}=$2;
             push @config_args, $a;
         }
@@ -213,18 +211,11 @@ if (!-f "mymake/Makefile.orig") {
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines) {
-            if ($l=~/^PAC_CHECK_PREFIX\(hwloc\)/) {
-                $flag_skip=1;
+            if ($l=~/^\s*HWLOC_/) {
                 next;
             }
-            elsif ($l=~/^(HWLOC_DO_AM_CONDITIONALS)/) {
-                $flag_skip=0;
-                print Out $1, "have_hwloc=yes\n";
-                print Out $1, "hydra_use_embedded_hwloc=no\n";
+            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
                 next;
-            }
-            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/) {
-                $l = "$1: \x23 $2\n";
             }
             if ($flag_skip) {
                 next;
@@ -252,28 +243,11 @@ if (!-f "mymake/Makefile.orig") {
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines) {
-            if ($l=~/^\s*hwloc\)/) {
-                print Out $l;
-                $flag_skip=1;
+            if ($l=~/^\s*HWLOC_/) {
                 next;
             }
-            elsif ($flag_skip && $l=~/AC_MSG_RESULT/) {
-                $flag_skip=2;
-            }
-            elsif ($flag_skip==2 && $l=~/^(\s*)if test.*\$have_hwloc.*then/) {
-                print Out $1, "have_hwloc=yes\n";
-                print Out $1, "hydra_use_embedded_hwloc=no\n";
-                $flag_skip=0;
-            }
-            elsif ($l=~/^(HWLOC_DO_AM_CONDITIONALS)/) {
-                $l = "\x23 $1\n";
-            }
-            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR.*)/) {
-                $l = "$1: \x23 $2\n";
-            }
-            elsif ($l=~/^(\s*)PAC_SUBDIR_HWLOC/) {
-                $l = $1."AM_CONDITIONAL([HAVE_HWLOC], [true])\n";
-                $flag_skip=0;
+            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
+                next;
             }
             if ($flag_skip) {
                 next;
@@ -443,11 +417,6 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$lib_la: $config_h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-if (!-d "$opts{moddir}/hwloc") {
-    my $cmd = "cp -r src/hwloc $opts{moddir}/hwloc";
-    print "$cmd\n";
-    system $cmd;
-}
 push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
 $I_list .= " -I\x24(MODS)/hwloc/include";
 $L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
@@ -548,7 +517,7 @@ foreach my $p (@ltlibs) {
     $a=~s/[\.\/]/_/g;
     my $add = $a."_LIBADD";
     my $t = get_make_var($add);
-    $t=~s/\s*\S*\/libmpl.la//g;
+    $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
     $t=~s/-lhydra/libhydra.la/g;
     $t=~s/-lpm/libpm.la/g;
 
@@ -562,7 +531,7 @@ foreach my $p (@programs) {
     $a=~s/[\.\/]/_/g;
     my $add = $a."_LDADD";
     my $t = get_make_var($add);
-    $t=~s/\s*\S*\/libmpl.la//g;
+    $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
     $t=~s/-lhydra/libhydra.la/g;
     $t=~s/-lpm/libpm.la/g;
 
@@ -649,11 +618,13 @@ sub dump_makefile {
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+    $t=~s/-I\S+\/ucx\/src//g;
     $t=~s/-I\S+\/json-c//g;
     print Out "AM_CPPFLAGS = $t\n";
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+    $t=~s/-I\S+\/ucx\/src//g;
     $t=~s/-I\S+\/json-c//g;
     if ($opts{"with-cuda"}) {
         my $p = $opts{"with-cuda"};
@@ -870,8 +841,10 @@ sub dump_makefile {
             $deps .= " \x24($o)";
         }
         else {
-            foreach my $t (@t) {
-                print Out "$t: \x24(CONFIGS)\n";
+            if ($o=~/_OBJECTS/) {
+                foreach my $t (@t) {
+                    print Out "$t: \x24(CONFIGS)\n";
+                }
             }
             $deps .= " @t";
         }
@@ -934,8 +907,10 @@ sub dump_makefile {
                 $deps .= " \x24($add)";
             }
             else {
-                foreach my $t (@t) {
-                    print Out "$t: \x24(CONFIGS)\n";
+                if ($add=~/_OBJECTS/) {
+                    foreach my $t (@t) {
+                        print Out "$t: \x24(CONFIGS)\n";
+                    }
                 }
                 $deps .= " @t";
             }
@@ -1031,8 +1006,10 @@ sub dump_makefile {
             $deps .= " \x24($o)";
         }
         else {
-            foreach my $t (@t) {
-                print Out "$t: \x24(CONFIGS)\n";
+            if ($o=~/_OBJECTS/) {
+                foreach my $t (@t) {
+                    print Out "$t: \x24(CONFIGS)\n";
+                }
             }
             $deps .= " @t";
         }
@@ -1095,8 +1072,10 @@ sub dump_makefile {
                 $deps .= " \x24($add)";
             }
             else {
-                foreach my $t (@t) {
-                    print Out "$t: \x24(CONFIGS)\n";
+                if ($add=~/_OBJECTS/) {
+                    foreach my $t (@t) {
+                        print Out "$t: \x24(CONFIGS)\n";
+                    }
                 }
                 $deps .= " @t";
             }

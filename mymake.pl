@@ -82,8 +82,6 @@ $hash_define_vals{"MPIDI_CH4_VCI_METHOD"} = {
     "explicit" => "MPICH_VCI__EXPLICIT",
 };
 $opts{V}=0;
-$opts{ucx}="embedded";
-$opts{libfabric}="embedded";
 my $need_save_args;
 if (!@ARGV && -f "mymake/args") {
     my $t;
@@ -145,7 +143,7 @@ foreach my $a (@ARGV) {
             $opts{enable_izem}=1;
             push @config_args, $a;
         }
-        elsif ($a=~/--with-(ucx|libfabric|argobots)=(.*)/) {
+        elsif ($a=~/--with-(argobots)=(.*)/) {
             $opts{$1}=$2;
             push @config_args, $a;
         }
@@ -586,11 +584,6 @@ else {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-    if (!-d "$opts{moddir}/hwloc") {
-        my $cmd = "cp -r src/hwloc $opts{moddir}/hwloc";
-        print "$cmd\n";
-        system $cmd;
-    }
     push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
     $I_list .= " -I\x24(MODS)/hwloc/include";
     $L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
@@ -616,11 +609,6 @@ else {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-    if (!-d "$opts{moddir}/yaksa") {
-        my $cmd = "cp -r modules/yaksa $opts{moddir}/yaksa";
-        print "$cmd\n";
-        system $cmd;
-    }
     push @CONFIGS, "\x24(MODS)/yaksa/src/frontend/include/yaksa_config.h";
     $I_list .= " -I\x24(MODS)/yaksa/src/frontend/include";
     $L_list .= " \x24(MODDIR)/yaksa/libyaksa.la";
@@ -647,11 +635,6 @@ else {
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
     if (-f "maint/tuning/coll/json_gen.sh") {
-        if (!-d "$opts{moddir}/json-c") {
-            my $cmd = "cp -r modules/json-c $opts{moddir}/json-c";
-            print "$cmd\n";
-            system $cmd;
-        }
         system "bash maint/tuning/coll/json_gen.sh";
         push @CONFIGS, "\x24(MODS)/json-c/json.h";
         $I_list .= " -I\x24(MODS)/json-c";
@@ -680,11 +663,6 @@ else {
         push @extra_make_rules, "";
     }
     if ($opts{enable_izem}) {
-        if (!-d "$opts{moddir}/izem") {
-            my $cmd = "cp -r src/izem $opts{moddir}/izem";
-            print "$cmd\n";
-            system $cmd;
-        }
         push @CONFIGS, "\x24(MODS)/izem/src/include/zm_config.h";
         $I_list .= " -I\x24(MODS)/izem/src/include";
         $L_list .= " \x24(MODDIR)/izem/src/libzm.la";
@@ -791,7 +769,7 @@ else {
         $dst_hash{"src/mpi/romio/include/mpio.h"} = "$opts{prefix}/include";
         $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$opts{prefix}/include";
     }
-    if ($opts{device}=~/:ucx/) {
+    if ($opts{device}=~/:ucx/ and (!$opts{"with-ucx"} or $opts{"with-ucx"} eq "embedded")) {
         my $ucxdir="$opts{moddir}/ucx";
         if (-e "$ucxdir/need_sed") {
             print "Patch $ucxdir ...\n";
@@ -817,139 +795,99 @@ else {
         }
 
         if (!$opts{quick}) {
-            my @mod_list;
-            my $flag;
-            my $f = "src/mpid/ch4/netmod/ucx/subconfigure.m4";
-            my $f_ = $f;
-            $f_=~s/[\.\/]/_/g;
-            my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-            push @mod_list, \@m;
+        }
 
-            system "mv $m[0] $m[1]";
+        if ($ENV{compiler} =~ /pgi|sun/) {
             my @lines;
-            {
-                open In, "$m[1]" or die "Can't open $m[1].\n";
-                @lines=<In>;
-                close In;
+            open In, "$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't open $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
+            while(<In>){
+                s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
+                push @lines, $_;
             }
-            my $flag_skip=0;
-            open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-            print "  --> [$m[2]]\n";
-            foreach my $l (@lines) {
-                if ($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_UCX\]/) {
-                    $flag = 1;
-                    next;
-                }
-                elsif ($flag) {
-                    if ($l=~/^\]\)/) {
-                        $flag = 0;
-                        next;
-                    }
-                    elsif ($l=~/AC_DEFINE\(HAVE_UCP_\w+_NB,1/) {
-                    }
-                    else {
-                        next;
-                    }
-                }
-                if ($flag_skip) {
-                    next;
-                }
-                print Out $l;
-            }
+            close In;
+            open Out, ">$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't write $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
+            print Out @lines;
             close Out;
-            system "cp -v $m[2] $m[0]";
         }
-
-        if ($opts{ucx} eq "embedded") {
-            if (!-d "$opts{moddir}/ucx") {
-                my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $opts{moddir}/ucx";
-                print "$cmd\n";
-                system $cmd;
-            }
-            if ($ENV{compiler} =~ /pgi|sun/) {
-                my @lines;
-                open In, "$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't open $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
-                while(<In>){
-                    s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
-                    push @lines, $_;
-                }
-                close In;
-                open Out, ">$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't write $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
-                print Out @lines;
-                close Out;
-            }
-            push @CONFIGS, "\x24(MODS)/ucx/config.h";
-            $I_list .= " -I\x24(MODS)/ucx/src";
-            $L_list .= " \x24(PREFIX)/lib/libucp.la";
-            my $configure = "./configure --prefix=\x24(PREFIX) --disable-static";
-            my $subdir="\x24(MODS)/ucx";
-            my $lib_la = "\x24(MODDIR)/ucx/src/ucp/libucp.la";
-            my $config_h = "\x24(MODS)/ucx/config.h";
-            my @t = ("cd $subdir");
-            push @t, "\x24(DO_stage) Configure UCX";
-            if (-f "$opts{moddir}/ucx/autogen.sh") {
-                push @t, "sh autogen.sh";
-            }
-            else {
-                push @t, "autoreconf -ivf";
-            }
-            push @t, "$configure";
-            push @t, "cp $pwd/libtool .";
-            push @extra_make_rules, "$config_h: ";
-            push @extra_make_rules, "\t(".join(' && ', @t).")";
-            push @extra_make_rules, "";
-            my @t = ("cd $subdir");
-            push @t, "\x24(MAKE)";
-            push @extra_make_rules, "$lib_la: $config_h";
-            push @extra_make_rules, "\t(".join(' && ', @t).")";
-            push @extra_make_rules, "";
+        push @CONFIGS, "\x24(MODS)/ucx/config.h";
+        $I_list .= " -I\x24(MODS)/ucx/src";
+        $L_list .= " \x24(PREFIX)/lib/libucp.la";
+        my $configure = "./configure --prefix=\x24(PREFIX) --disable-static";
+        my $subdir="\x24(MODS)/ucx";
+        my $lib_la = "\x24(MODDIR)/ucx/src/ucp/libucp.la";
+        my $config_h = "\x24(MODS)/ucx/config.h";
+        my @t = ("cd $subdir");
+        push @t, "\x24(DO_stage) Configure UCX";
+        if (-f "$opts{moddir}/ucx/autogen.sh") {
+            push @t, "sh autogen.sh";
         }
         else {
-            $I_list .= " -I$opts{ucx}/include";
-            $L_list .= " -L$opts{ucx}/lib";
-            $L_list .= " -lucp -lucs";
+            push @t, "autoreconf -ivf";
         }
+        push @t, "$configure";
+        push @t, "cp $pwd/libtool .";
+        push @extra_make_rules, "$config_h: ";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
+        my @t = ("cd $subdir");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$lib_la: $config_h";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
     }
-    if ($opts{device}=~/:ofi/) {
-        if ($opts{libfabric} eq "embedded") {
-            if (!-d "$opts{moddir}/libfabric") {
-                my $cmd = "cp -r src/mpid/ch4/netmod/ofi/libfabric $opts{moddir}/libfabric";
-                print "$cmd\n";
-                system $cmd;
-            }
-            push @CONFIGS, "\x24(MODS)/libfabric/config.h";
-            $I_list .= " -I\x24(MODS)/libfabric/include";
-            $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
-            my $configure = "./configure --enable-embedded";
-            my $subdir="\x24(MODS)/libfabric";
-            my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
-            my $config_h = "\x24(MODS)/libfabric/config.h";
-            my @t = ("cd $subdir");
-            push @t, "\x24(DO_stage) Configure OFI";
-            if (-f "$opts{moddir}/libfabric/autogen.sh") {
-                push @t, "sh autogen.sh";
-            }
-            else {
-                push @t, "autoreconf -ivf";
-            }
-            push @t, "$configure";
-            push @t, "cp $pwd/libtool .";
-            push @extra_make_rules, "$config_h: ";
-            push @extra_make_rules, "\t(".join(' && ', @t).")";
-            push @extra_make_rules, "";
-            my @t = ("cd $subdir");
-            push @t, "\x24(MAKE)";
-            push @extra_make_rules, "$lib_la: $config_h";
-            push @extra_make_rules, "\t(".join(' && ', @t).")";
-            push @extra_make_rules, "";
+    elsif ($opts{device}=~/ch4:ofi/ and (!$opts{"with-libfabric"} or $opts{"with-libfabric"} eq "embedded")) {
+        push @CONFIGS, "\x24(MODS)/libfabric/config.h";
+        $I_list .= " -I\x24(MODS)/libfabric/include";
+        $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+        my $configure = "./configure --enable-embedded";
+        my $subdir="\x24(MODS)/libfabric";
+        my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
+        my $config_h = "\x24(MODS)/libfabric/config.h";
+        my @t = ("cd $subdir");
+        push @t, "\x24(DO_stage) Configure OFI";
+        if (-f "$opts{moddir}/libfabric/autogen.sh") {
+            push @t, "sh autogen.sh";
         }
         else {
-            $I_list .= " -I$opts{libfabric}/include";
-            $L_list .= " -L$opts{libfabric}/lib";
-            $L_list .= " -lfabric";
+            push @t, "autoreconf -ivf";
         }
-        if (!$opts{quick}) {
+        push @t, "$configure";
+        push @t, "cp $pwd/libtool .";
+        push @extra_make_rules, "$config_h: ";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
+        my @t = ("cd $subdir");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$lib_la: $config_h";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
+    }
+    elsif ($opts{device}=~/ch3.*:ofi/ and (!$opts{"with-ofi"} or $opts{"with-ofi"} eq "embedded")) {
+        push @CONFIGS, "\x24(MODS)/libfabric/config.h";
+        $I_list .= " -I\x24(MODS)/libfabric/include";
+        $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+        my $configure = "./configure --enable-embedded";
+        my $subdir="\x24(MODS)/libfabric";
+        my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
+        my $config_h = "\x24(MODS)/libfabric/config.h";
+        my @t = ("cd $subdir");
+        push @t, "\x24(DO_stage) Configure OFI";
+        if (-f "$opts{moddir}/libfabric/autogen.sh") {
+            push @t, "sh autogen.sh";
         }
+        else {
+            push @t, "autoreconf -ivf";
+        }
+        push @t, "$configure";
+        push @t, "cp $pwd/libtool .";
+        push @extra_make_rules, "$config_h: ";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
+        my @t = ("cd $subdir");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$lib_la: $config_h";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
     }
 
     if (!$opts{disable_cxx}) {
@@ -1119,6 +1057,7 @@ else {
     $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
     $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
 
+    my $ret=0;
     my $t = `uname -m`;
     if ($t=~/x86_64/) {
         $ENV{FORTRAN_MPI_OFFSET}="integer*8";
@@ -1204,50 +1143,85 @@ else {
         }
         close Out;
         system "cp -v $m[2] $m[0]";
-        my $flag;
-        my $f = "src/mpid/ch3/subconfigure.m4";
-        my $f_ = $f;
-        $f_=~s/[\.\/]/_/g;
-        my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-        push @mod_list, \@m;
+        if ($opts{device}=~/ch3/) {
+            my $flag;
+            my $f = "src/mpid/ch3/subconfigure.m4";
+            my $f_ = $f;
+            $f_=~s/[\.\/]/_/g;
+            my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+            push @mod_list, \@m;
 
-        system "mv $m[0] $m[1]";
-        my @lines;
-        {
-            open In, "$m[1]" or die "Can't open $m[1].\n";
-            @lines=<In>;
-            close In;
+            system "mv $m[0] $m[1]";
+            my @lines;
+            {
+                open In, "$m[1]" or die "Can't open $m[1].\n";
+                @lines=<In>;
+                close In;
+            }
+            my $flag_skip=0;
+            open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+            print "  --> [$m[2]]\n";
+            foreach my $l (@lines) {
+                if ($l=~/AC_MSG_CHECKING.*OpenPA/) {
+                    $flag=1;
+                }
+                elsif ($flag and $l=~/AC_C_BIGENDIAN/) {
+                    $flag=0;
+                }
+                elsif ($flag) {
+                    next;
+                }
+                if ($flag_skip) {
+                    next;
+                }
+                print Out $l;
+            }
+            close Out;
+            system "cp -v $m[2] $m[0]";
+            if ($opts{device}=~/ch3:nemesis:ofi/) {
+            }
         }
-        my $flag_skip=0;
-        open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-        print "  --> [$m[2]]\n";
-        foreach my $l (@lines) {
-            if ($l=~/AC_MSG_CHECKING.*OpenPA/) {
-                $flag=1;
-            }
-            elsif ($flag and $l=~/AC_C_BIGENDIAN/) {
-                $flag=0;
-            }
-            elsif ($flag) {
-                next;
-            }
-            if ($flag_skip) {
-                next;
-            }
-            print Out $l;
-        }
-        close Out;
-        system "cp -v $m[2] $m[0]";
+        else {
+            if (-f "src/mpid/ch4/shm/ipc/xpmem/subconfigure.m4") {
+                my $skip_xpmem=1;
+                foreach my $a (@config_args) {
+                    if ($a=~/--with-xpmem/) {
+                        $skip_xpmem = 0;
+                    }
+                }
+                if ($skip_xpmem) {
+                    my $f = "src/mpid/ch4/shm/ipc/xpmem/subconfigure.m4";
+                    my $f_ = $f;
+                    $f_=~s/[\.\/]/_/g;
+                    my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+                    push @mod_list, \@m;
 
-        if (-f "src/mpid/ch4/shm/ipc/xpmem/subconfigure.m4") {
-            my $skip_xpmem=1;
-            foreach my $a (@config_args) {
-                if ($a=~/--with-xpmem/) {
-                    $skip_xpmem = 0;
+                    system "mv $m[0] $m[1]";
+                    my @lines;
+                    {
+                        open In, "$m[1]" or die "Can't open $m[1].\n";
+                        @lines=<In>;
+                        close In;
+                    }
+                    my $flag_skip=0;
+                    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+                    print "  --> [$m[2]]\n";
+                    foreach my $l (@lines) {
+                        if ($l=~/AM_CONDITIONAL.*BUILD_SHM_IPC_XPMEM.*build_ch4_shm_ipc_xpmem/) {
+                            $l=~s/test .* ".*"/false/;
+                        }
+                        if ($flag_skip) {
+                            next;
+                        }
+                        print Out $l;
+                    }
+                    close Out;
+                    system "cp -v $m[2] $m[0]";
                 }
             }
-            if ($skip_xpmem) {
-                my $f = "src/mpid/ch4/shm/ipc/xpmem/subconfigure.m4";
+            if ($opts{device}=~/ch4:ofi/) {
+                my $flag;
+                my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
                 my $f_ = $f;
                 $f_=~s/[\.\/]/_/g;
                 my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
@@ -1264,8 +1238,8 @@ else {
                 open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
                 print "  --> [$m[2]]\n";
                 foreach my $l (@lines) {
-                    if ($l=~/AM_CONDITIONAL.*BUILD_SHM_IPC_XPMEM.*build_ch4_shm_ipc_xpmem/) {
-                        $l=~s/test .* ".*"/false/;
+                    if ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
+                        $l = "$1: \x23 $2\n";
                     }
                     if ($flag_skip) {
                         next;
@@ -1275,93 +1249,36 @@ else {
                 close Out;
                 system "cp -v $m[2] $m[0]";
             }
-        }
+            elsif ($opts{device}=~/ch4:ucx/) {
+                my $flag;
+                my $f = "src/mpid/ch4/netmod/ucx/subconfigure.m4";
+                my $f_ = $f;
+                $f_=~s/[\.\/]/_/g;
+                my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+                push @mod_list, \@m;
 
-        if ($opts{device}=~/ch3:nemesis:ofi/) {
-            my @mod_list;
-            my $flag;
-            my $f = "src/mpid/ch3/channels/nemesis/netmod/ofi/subconfigure.m4";
-            my $f_ = $f;
-            $f_=~s/[\.\/]/_/g;
-            my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-            push @mod_list, \@m;
-
-            system "mv $m[0] $m[1]";
-            my @lines;
-            {
-                open In, "$m[1]" or die "Can't open $m[1].\n";
-                @lines=<In>;
-                close In;
-            }
-            my $flag_skip=0;
-            open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-            print "  --> [$m[2]]\n";
-            foreach my $l (@lines) {
-                if ($l=~/^AM_COND_IF\(\[BUILD_NEMESIS_NETMOD_OFI\]/) {
-                    $flag = 1;
-                    next;
+                system "mv $m[0] $m[1]";
+                my @lines;
+                {
+                    open In, "$m[1]" or die "Can't open $m[1].\n";
+                    @lines=<In>;
+                    close In;
                 }
-                elsif ($flag) {
-                    if ($l=~/^\]\).*AM_COND_IF\(BUILD_NEMESIS_NETMOD_OFI/) {
-                        $flag = 0;
-                        print Out "    AC_DEFINE([ENABLE_COMM_OVERRIDES], [1], [Define to add per-vc function pointers to override send and recv functions])\n";
+                my $flag_skip=0;
+                open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+                print "  --> [$m[2]]\n";
+                foreach my $l (@lines) {
+                    if ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
+                        $l = "$1: \x23 $2\n";
                     }
-                    next;
-                }
-                if ($flag_skip) {
-                    next;
-                }
-                print Out $l;
-            }
-            close Out;
-            system "cp -v $m[2] $m[0]";
-        }
-        elsif ($opts{device}=~/ch4:ofi/) {
-            my @mod_list;
-            my $flag;
-            my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
-            my $f_ = $f;
-            $f_=~s/[\.\/]/_/g;
-            my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-            push @mod_list, \@m;
-
-            system "mv $m[0] $m[1]";
-            my @lines;
-            {
-                open In, "$m[1]" or die "Can't open $m[1].\n";
-                @lines=<In>;
-                close In;
-            }
-            my $flag_skip=0;
-            open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-            print "  --> [$m[2]]\n";
-            foreach my $l (@lines) {
-                if ($l=~/^AM_COND_IF\(\[BUILD_CH4_NETMOD_OFI\]/) {
-                    $flag = 1;
-                    next;
-                }
-                elsif ($flag) {
-                    if ($l=~/^\]\).*AM_COND_IF\(BUILD_CH4_NETMOD_OFI/) {
-                        $flag = 0;
-                        print Out "    AC_DEFINE([MPIDI_CH4_OFI_USE_SET_RUNTIME], [1], [Define to use runtime capability set])\n";
+                    if ($flag_skip) {
                         next;
                     }
-                    elsif ($l=~/AC_ARG_ENABLE/) {
-                        $flag=2;
-                    }
-                    elsif ($flag==2) {
-                    }
-                    else {
-                        next;
-                    }
+                    print Out $l;
                 }
-                if ($flag_skip) {
-                    next;
-                }
-                print Out $l;
+                close Out;
+                system "cp -v $m[2] $m[0]";
             }
-            close Out;
-            system "cp -v $m[2] $m[0]";
         }
         system "autoreconf -ivf";
         foreach my $m (@mod_list) {
@@ -1374,100 +1291,96 @@ else {
         print "---------------------------\n";
         system "rm -f Makefile";
         my $t = join ' ', @config_args;
-        system "./configure --with-pm=no $t";
-        system "mv Makefile mymake/Makefile.orig";
-        system "mv libtool mymake/libtool.orig";
-        my %need_patch;
-        my @lines;
-        {
-            open In, "mymake/libtool.orig" or die "Can't open mymake/libtool.orig.\n";
-            @lines=<In>;
-            close In;
+        if (!$ret) {
+            $ret = system "./configure --with-pm=no $t";
         }
-        open Out, ">libtool" or die "Can't write libtool: $!\n";
-        print "  --> [libtool]\n";
-        foreach my $l (@lines) {
-            if ($l=~/^AR_FLAGS=/) {
-                $l = "AR_FLAGS=\"cr\"\n";
-            }
-            elsif ($l=~/^CC="(.*)"/) {
-                my ($CC) = ($1);
-                if ($CC =~ /^sun(f77|f9.|fortran)/) {
-                    $need_patch{pic_flag}=" -KPIC";
-                    $need_patch{wl}="-Qoption ld ";
-                    $need_patch{link_static_flag}=" -Bstatic";
-                    $need_patch{shared}="-G";
-                }
-                else {
-                    %need_patch=();
-                }
-            }
-            elsif ($l=~/^(pic_flag|wl|link_static_flag)=/) {
-                if ($need_patch{$1}) {
-                    $l = "$1='$need_patch{$1}'\n";
-                }
-            }
-            elsif ($l=~/^(archive_cmds=|\s*\\\$CC\s+-shared )/) {
-                if ($need_patch{shared}) {
-                    $l=~s/-shared /$need_patch{shared} /;
-                }
-            }
-            print Out $l;
+        if (!$ret) {
+            $ret = system "mv Makefile mymake/Makefile.orig";
         }
-        close Out;
-        system "chmod a+x libtool";
+        if (!$ret) {
+            $ret = system "mv libtool mymake/libtool.orig";
+        }
+        if (!$ret) {
+            my %need_patch;
+            my @lines;
+            {
+                open In, "mymake/libtool.orig" or die "Can't open mymake/libtool.orig.\n";
+                @lines=<In>;
+                close In;
+            }
+            open Out, ">libtool" or die "Can't write libtool: $!\n";
+            print "  --> [libtool]\n";
+            foreach my $l (@lines) {
+                if ($l=~/^AR_FLAGS=/) {
+                    $l = "AR_FLAGS=\"cr\"\n";
+                }
+                elsif ($l=~/^CC="(.*)"/) {
+                    my ($CC) = ($1);
+                    if ($CC =~ /^sun(f77|f9.|fortran)/) {
+                        $need_patch{pic_flag}=" -KPIC";
+                        $need_patch{wl}="-Qoption ld ";
+                        $need_patch{link_static_flag}=" -Bstatic";
+                        $need_patch{shared}="-G";
+                    }
+                    else {
+                        %need_patch=();
+                    }
+                }
+                elsif ($l=~/^(pic_flag|wl|link_static_flag)=/) {
+                    if ($need_patch{$1}) {
+                        $l = "$1='$need_patch{$1}'\n";
+                    }
+                }
+                elsif ($l=~/^(archive_cmds=|\s*\\\$CC\s+-shared )/) {
+                    if ($need_patch{shared}) {
+                        $l=~s/-shared /$need_patch{shared} /;
+                    }
+                }
+                print Out $l;
+            }
+            close Out;
+            system "chmod a+x libtool";
+        }
     }
 
-    open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
-    while(<In>){
-        if (/^#define\s+HAVE_.*WEAK.* 1/) {
-            $opts{have_weak}=1;
-        }
-    }
-    close In;
-    open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
-    while(<In>){
-        if (/libmpi_so_version_m4.*\[([\d:]*)\]/) {
-            $opts{so_version}=$1;
-        }
-    }
-    close In;
-    open In, "config.status" or die "Can't open config.status: $!\n";
-    while(<In>){
-        if (/S\["WRAPPER_LIBS"\]="(.*)"/) {
-            $opts{WRAPPER_LIBS}=$1;
-        }
-    }
-    close In;
 
-    if ($opts{argobots}) {
-        $I_list .= " -I$opts{argobots}/include";
-    }
-    %objects=();
-    my $tlist;
-    open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
-    while(<In>){
-        if (/^(\w+)\s*=\s*(.*)/) {
-            my ($a, $b) = ($1, $2);
-            $tlist=[];
-            $objects{$a} = $tlist;
-
-            my $done=1;
-            if ($b=~/\\$/) {
-                $done = 0;
-                $b=~s/\s*\\$//;
-            }
-
-            if ($b) {
-                push @$tlist, split /\s+/, $b;
-            }
-            if ($done) {
-                undef $tlist;
+    if ($ret == 0) {
+        open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
+        while(<In>){
+            if (/^#define\s+HAVE_.*WEAK.* 1/) {
+                $opts{have_weak}=1;
             }
         }
-        elsif ($tlist) {
-            if (/\s*(.*)/) {
-                my ($b) = ($1);
+        close In;
+        open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
+        while(<In>){
+            if (/libmpi_so_version_m4.*\[([\d:]*)\]/) {
+                $opts{so_version}=$1;
+            }
+        }
+        close In;
+        open In, "config.status" or die "Can't open config.status: $!\n";
+        while(<In>){
+            if (/S\["WRAPPER_LIBS"\]="(.*)"/) {
+                $opts{WRAPPER_LIBS}=$1;
+            }
+        }
+        close In;
+    }
+
+    if ($ret == 0) {
+        if ($opts{argobots}) {
+            $I_list .= " -I$opts{argobots}/include";
+        }
+        %objects=();
+        my $tlist;
+        open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
+        while(<In>){
+            if (/^(\w+)\s*=\s*(.*)/) {
+                my ($a, $b) = ($1, $2);
+                $tlist=[];
+                $objects{$a} = $tlist;
+
                 my $done=1;
                 if ($b=~/\\$/) {
                     $done = 0;
@@ -1481,293 +1394,315 @@ else {
                     undef $tlist;
                 }
             }
+            elsif ($tlist) {
+                if (/\s*(.*)/) {
+                    my ($b) = ($1);
+                    my $done=1;
+                    if ($b=~/\\$/) {
+                        $done = 0;
+                        $b=~s/\s*\\$//;
+                    }
+
+                    if ($b) {
+                        push @$tlist, split /\s+/, $b;
+                    }
+                    if ($done) {
+                        undef $tlist;
+                    }
+                }
+            }
         }
-    }
-    close In;
-    $objects{MODS}="-";
-    $objects{MODDIR}="-";
-    $objects{PREFIX}="-";
+        close In;
+        $objects{MODS}="-";
+        $objects{MODDIR}="-";
+        $objects{PREFIX}="-";
 
-    my $tlist = get_list("lib_LTLIBRARIES");
-    foreach my $t (@$tlist) {
-        $dst_hash{$t} = "\x24(PREFIX)/lib";
-    }
-    my $tlist = get_list("bin_PROGRAMS");
-    foreach my $t (@$tlist) {
-        if ($t=~/mpichversion/) {
-            next;
+        my $tlist = get_list("lib_LTLIBRARIES");
+        foreach my $t (@$tlist) {
+            $dst_hash{$t} = "\x24(PREFIX)/lib";
         }
-        elsif ($t=~/mpivars/) {
-            next;
+        my $tlist = get_list("bin_PROGRAMS");
+        foreach my $t (@$tlist) {
+            if ($t=~/mpichversion/) {
+                next;
+            }
+            elsif ($t=~/mpivars/) {
+                next;
+            }
+            $dst_hash{$t} = "\x24(PREFIX)/bin";
         }
-        $dst_hash{$t} = "\x24(PREFIX)/bin";
-    }
-    my $tlist = get_list("PROGRAMS");
-    foreach my $t (@$tlist) {
-        if ($t=~/mpichversion/) {
-            next;
+        my $tlist = get_list("PROGRAMS");
+        foreach my $t (@$tlist) {
+            if ($t=~/mpichversion/) {
+                next;
+            }
+            elsif ($t=~/mpivars/) {
+                next;
+            }
+            push @programs, $t;
         }
-        elsif ($t=~/mpivars/) {
-            next;
+
+        my $tlist = get_list("LTLIBRARIES");
+        foreach my $t (@$tlist) {
+            push @ltlibs, $t;
         }
-        push @programs, $t;
-    }
 
-    my $tlist = get_list("LTLIBRARIES");
-    foreach my $t (@$tlist) {
-        push @ltlibs, $t;
-    }
+        foreach my $p (@ltlibs) {
+            my $a = $p;
+            $a=~s/[\.\/]/_/g;
+            my $add = $a."_LIBADD";
+            my $t = get_make_var($add);
+            $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
+            $t=~s/\@ucxlib\@\s*//g;
+            $t=~s/\@ofilib\@\s*//g;
 
-    foreach my $p (@ltlibs) {
-        my $a = $p;
-        $a=~s/[\.\/]/_/g;
-        my $add = $a."_LIBADD";
-        my $t = get_make_var($add);
-        $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
-        $t=~s/\@ucxlib\@\s*//g;
-        $t=~s/\@ofilib\@\s*//g;
-
-        if (($add=~/libmpi_la_/ && $opts{have_weak}) or ($add=~/libpmpi_la_/)) {
-            $t.= $L_list;
+            if (($add=~/libmpi_la_/ && $opts{have_weak}) or ($add=~/libpmpi_la_/)) {
+                $t.= $L_list;
+            }
+            $objects{$add} = $t;
         }
-        $objects{$add} = $t;
+        foreach my $p (@programs) {
+            my $a = $p;
+            $a=~s/[\.\/]/_/g;
+            my $add = $a."_LDADD";
+            my $t = get_make_var($add);
+            $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
+            $t=~s/\@ucxlib\@\s*//g;
+            $t=~s/\@ofilib\@\s*//g;
+
+            $objects{$add} = $t;
+        }
+        dump_makefile("mymake/Makefile.custom");
+
+        system "rm -f Makefile";
+        system "ln -s mymake/Makefile.custom Makefile";
     }
-    foreach my $p (@programs) {
-        my $a = $p;
-        $a=~s/[\.\/]/_/g;
-        my $add = $a."_LDADD";
-        my $t = get_make_var($add);
-        $t=~s/\S+\/(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
-        $t=~s/\@ucxlib\@\s*//g;
-        $t=~s/\@ofilib\@\s*//g;
 
-        $objects{$add} = $t;
-    }
-    dump_makefile("mymake/Makefile.custom");
-
-    system "rm -f Makefile";
-    system "ln -s mymake/Makefile.custom Makefile";
-
-    open In, "mymake/Makefile.custom" or die "Can't open mymake/Makefile.custom: $!\n";
-    while(<In>){
-        if (/^CFLAGS *= *(.*)/) {
-            $opts{CFLAGS}=$1;
-            open Out, ">mymake/CFLAGS" or die "Can't write mymake/CFLAGS: $!\n";
-            print "  --> [mymake/CFLAGS]\n";
-            print Out "$1\n";
+    if ($ret == 0) {
+        open In, "mymake/Makefile.custom" or die "Can't open mymake/Makefile.custom: $!\n";
+        while(<In>){
+            if (/^CFLAGS *= *(.*)/) {
+                $opts{CFLAGS}=$1;
+                open Out, ">mymake/CFLAGS" or die "Can't write mymake/CFLAGS: $!\n";
+                print "  --> [mymake/CFLAGS]\n";
+                print Out "$1\n";
+                close Out;
+            }
+        }
+        close In;
+        if (-f "src/env/mpicc.bash") {
+            my @lines;
+            {
+                open In, "src/env/mpicc.bash" or die "Can't open src/env/mpicc.bash.\n";
+                @lines=<In>;
+                close In;
+            }
+            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
+            open Out, ">mymake/mpicc" or die "Can't write mymake/mpicc: $!\n";
+            print "  --> [mymake/mpicc]\n";
+            foreach my $l (@lines) {
+                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
+                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+                }
+                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
+                    my ($c, $flags) = ($1, $2);
+                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+                    }
+                }
+                print Out $l;
+            }
             close Out;
         }
-    }
-    close In;
-    if (-f "src/env/mpicc.bash") {
-        my @lines;
-        {
-            open In, "src/env/mpicc.bash" or die "Can't open src/env/mpicc.bash.\n";
-            @lines=<In>;
-            close In;
-        }
-        my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-        open Out, ">mymake/mpicc" or die "Can't write mymake/mpicc: $!\n";
-        print "  --> [mymake/mpicc]\n";
-        foreach my $l (@lines) {
-            if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
-                $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+        if (-f "src/env/mpicxx.bash") {
+            my @lines;
+            {
+                open In, "src/env/mpicxx.bash" or die "Can't open src/env/mpicxx.bash.\n";
+                @lines=<In>;
+                close In;
             }
-            elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
-                my ($c, $flags) = ($1, $2);
-                if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                    $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
+            open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx: $!\n";
+            print "  --> [mymake/mpicxx]\n";
+            foreach my $l (@lines) {
+                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
+                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
                 }
-            }
-            print Out $l;
-        }
-        close Out;
-    }
-    if (-f "src/env/mpicxx.bash") {
-        my @lines;
-        {
-            open In, "src/env/mpicxx.bash" or die "Can't open src/env/mpicxx.bash.\n";
-            @lines=<In>;
-            close In;
-        }
-        my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-        open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx: $!\n";
-        print "  --> [mymake/mpicxx]\n";
-        foreach my $l (@lines) {
-            if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
-                $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-            }
-            elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
-                my ($c, $flags) = ($1, $2);
-                if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                    $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
+                    my ($c, $flags) = ($1, $2);
+                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+                    }
                 }
+                print Out $l;
             }
-            print Out $l;
+            close Out;
         }
-        close Out;
-    }
-    if (-f "src/env/mpif77.bash") {
-        my @lines;
-        {
-            open In, "src/env/mpif77.bash" or die "Can't open src/env/mpif77.bash.\n";
-            @lines=<In>;
-            close In;
-        }
-        my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-        open Out, ">mymake/mpif77" or die "Can't write mymake/mpif77: $!\n";
-        print "  --> [mymake/mpif77]\n";
-        foreach my $l (@lines) {
-            if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
-                $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+        if (-f "src/env/mpif77.bash") {
+            my @lines;
+            {
+                open In, "src/env/mpif77.bash" or die "Can't open src/env/mpif77.bash.\n";
+                @lines=<In>;
+                close In;
             }
-            elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
-                my ($c, $flags) = ($1, $2);
-                if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                    $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
+            open Out, ">mymake/mpif77" or die "Can't write mymake/mpif77: $!\n";
+            print "  --> [mymake/mpif77]\n";
+            foreach my $l (@lines) {
+                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
+                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
                 }
-            }
-            print Out $l;
-        }
-        close Out;
-    }
-    if (-f "src/env/mpifort.bash") {
-        my @lines;
-        {
-            open In, "src/env/mpifort.bash" or die "Can't open src/env/mpifort.bash.\n";
-            @lines=<In>;
-            close In;
-        }
-        my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-        open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
-        print "  --> [mymake/mpifort]\n";
-        foreach my $l (@lines) {
-            if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
-                $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-            }
-            elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
-                my ($c, $flags) = ($1, $2);
-                if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                    $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
+                    my ($c, $flags) = ($1, $2);
+                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+                    }
                 }
+                print Out $l;
             }
-            print Out $l;
+            close Out;
         }
-        close Out;
+        if (-f "src/env/mpifort.bash") {
+            my @lines;
+            {
+                open In, "src/env/mpifort.bash" or die "Can't open src/env/mpifort.bash.\n";
+                @lines=<In>;
+                close In;
+            }
+            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
+            open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
+            print "  --> [mymake/mpifort]\n";
+            foreach my $l (@lines) {
+                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
+                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+                }
+                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
+                    my ($c, $flags) = ($1, $2);
+                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+                    }
+                }
+                print Out $l;
+            }
+            close Out;
+        }
+
+        $ENV{CFLAGS}=$opts{CFLAGS};
+        my $t="mymake/mpl/include/mplconfig.h";
+        if (-d "src/openpa") {
+            $t.=" mymake/openpa/src/opa_config.h";
+        }
+        $t=~s/$pwd\///g;
+
+        $ret = system "make $t";
     }
 
-    $ENV{CFLAGS}=$opts{CFLAGS};
-    my $t="mymake/mpl/include/mplconfig.h";
-    if (-d "src/openpa") {
-        $t.=" mymake/openpa/src/opa_config.h";
-    }
-    $t=~s/$pwd\///g;
-    system "make $t";
+    if ($ret == 0) {
+        if (-f "src/mpl/include/mpl_atomic.h") {
+            open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
+            print Out "#include \"mpl_atomic.h\"\n";
+            print Out "#include <pthread.h>\n";
+            print Out "pthread_mutex_t MPL_emulation_lock;\n";
+            print Out "int main() { return sizeof(MPL_atomic_ptr_t); }\n";
+            close Out;
 
-    if (-f "src/mpl/include/mpl_atomic.h") {
-        open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
-        print Out "#include \"mpl_atomic.h\"\n";
-        print Out "#include <pthread.h>\n";
-        print Out "pthread_mutex_t MPL_emulation_lock;\n";
-        print Out "int main() { return sizeof(MPL_atomic_ptr_t); }\n";
-        close Out;
+            my $CC = get_make_var("CC");
+            system "$CC -Imymake/mpl/include mymake/t.c -o mymake/t";
+            system "mymake/t";
+            my $ret = $? >> 8;
 
-        my $CC = get_make_var("CC");
-        system "$CC -Imymake/mpl/include mymake/t.c -o mymake/t";
-        system "mymake/t";
-        my $ret = $? >> 8;
-
-        $config_defines{SIZEOF_MPL_ATOMIC_PTR_T} = $ret;
-    }
-    $config_defines{SIZEOF_OPA_PTR_T} = 8;
-    my $lock_based_atomics;
-    open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
-    while(<In>){
-        if (/^#define MPL_USE_LOCK_BASED_PRIMITIVES/) {
-            $lock_based_atomics = 1;
-            last;
+            $config_defines{SIZEOF_MPL_ATOMIC_PTR_T} = $ret;
         }
-    }
-    close In;
-    if ($lock_based_atomics) {
-        $config_defines{ENABLE_NO_LOCAL} = 1;
-    }
-    if (%config_defines) {
-        my (@lines, $cnt);
+        $config_defines{SIZEOF_OPA_PTR_T} = 8;
+        my $lock_based_atomics;
         open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
         while(<In>){
-            if (/^\/\* #undef (\w+)/ && exists $config_defines{$1}) {
-                if (defined $config_defines{$1}) {
-                    print "  -- define $1 $config_defines{$1}\n";
-                    push @lines, "#define $1 $config_defines{$1}\n";
-                }
-                else {
-                    print "  -- undef $1\n";
-                    push @lines, "\x2f* #undef $1 */\n";
-                }
-                $cnt++;
-            }
-            elsif (/^#define (\w+) (.*)/ && exists $config_defines{$1}) {
-                if (defined $config_defines{$1}) {
-                    print "  -- define $1 $config_defines{$1}\n";
-                    push @lines, "#define $1 $config_defines{$1}\n";
-                }
-                else {
-                    print "  -- undef $1\n";
-                    push @lines, "\x2f* #undef $1 */\n";
-                }
-                $cnt++;
-            }
-            else {
-                push @lines, $_;
+            if (/^#define MPL_USE_LOCK_BASED_PRIMITIVES/) {
+                $lock_based_atomics = 1;
+                last;
             }
         }
         close In;
-
-        if ($cnt>0) {
-            open Out, ">mymake/mpl/include/mplconfig.h" or die "Can't write mymake/mpl/include/mplconfig.h: $!\n";
-            foreach my $l (@lines) {
-                print Out $l;
-            }
-            close Out;
+        if ($lock_based_atomics) {
+            $config_defines{ENABLE_NO_LOCAL} = 1;
         }
-        my (@lines, $cnt);
-        open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
-        while(<In>){
-            if (/^\/\* #undef (\w+)/ && exists $config_defines{$1}) {
-                if (defined $config_defines{$1}) {
-                    print "  -- define $1 $config_defines{$1}\n";
-                    push @lines, "#define $1 $config_defines{$1}\n";
+        if (%config_defines) {
+            my (@lines, $cnt);
+            open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
+            while(<In>){
+                if (/^\/\* #undef (\w+)/ && exists $config_defines{$1}) {
+                    if (defined $config_defines{$1}) {
+                        print "  -- define $1 $config_defines{$1}\n";
+                        push @lines, "#define $1 $config_defines{$1}\n";
+                    }
+                    else {
+                        print "  -- undef $1\n";
+                        push @lines, "\x2f* #undef $1 */\n";
+                    }
+                    $cnt++;
+                }
+                elsif (/^#define (\w+) (.*)/ && exists $config_defines{$1}) {
+                    if (defined $config_defines{$1}) {
+                        print "  -- define $1 $config_defines{$1}\n";
+                        push @lines, "#define $1 $config_defines{$1}\n";
+                    }
+                    else {
+                        print "  -- undef $1\n";
+                        push @lines, "\x2f* #undef $1 */\n";
+                    }
+                    $cnt++;
                 }
                 else {
-                    print "  -- undef $1\n";
-                    push @lines, "\x2f* #undef $1 */\n";
+                    push @lines, $_;
                 }
-                $cnt++;
             }
-            elsif (/^#define (\w+) (.*)/ && exists $config_defines{$1}) {
-                if (defined $config_defines{$1}) {
-                    print "  -- define $1 $config_defines{$1}\n";
-                    push @lines, "#define $1 $config_defines{$1}\n";
+            close In;
+
+            if ($cnt>0) {
+                open Out, ">mymake/mpl/include/mplconfig.h" or die "Can't write mymake/mpl/include/mplconfig.h: $!\n";
+                foreach my $l (@lines) {
+                    print Out $l;
+                }
+                close Out;
+            }
+            my (@lines, $cnt);
+            open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
+            while(<In>){
+                if (/^\/\* #undef (\w+)/ && exists $config_defines{$1}) {
+                    if (defined $config_defines{$1}) {
+                        print "  -- define $1 $config_defines{$1}\n";
+                        push @lines, "#define $1 $config_defines{$1}\n";
+                    }
+                    else {
+                        print "  -- undef $1\n";
+                        push @lines, "\x2f* #undef $1 */\n";
+                    }
+                    $cnt++;
+                }
+                elsif (/^#define (\w+) (.*)/ && exists $config_defines{$1}) {
+                    if (defined $config_defines{$1}) {
+                        print "  -- define $1 $config_defines{$1}\n";
+                        push @lines, "#define $1 $config_defines{$1}\n";
+                    }
+                    else {
+                        print "  -- undef $1\n";
+                        push @lines, "\x2f* #undef $1 */\n";
+                    }
+                    $cnt++;
                 }
                 else {
-                    print "  -- undef $1\n";
-                    push @lines, "\x2f* #undef $1 */\n";
+                    push @lines, $_;
                 }
-                $cnt++;
             }
-            else {
-                push @lines, $_;
-            }
-        }
-        close In;
+            close In;
 
-        if ($cnt>0) {
-            open Out, ">src/include/mpichconf.h" or die "Can't write src/include/mpichconf.h: $!\n";
-            foreach my $l (@lines) {
-                print Out $l;
+            if ($cnt>0) {
+                open Out, ">src/include/mpichconf.h" or die "Can't write src/include/mpichconf.h: $!\n";
+                foreach my $l (@lines) {
+                    print Out $l;
+                }
+                close Out;
             }
-            close Out;
         }
     }
 
@@ -1844,11 +1779,13 @@ sub dump_makefile {
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+    $t=~s/-I\S+\/ucx\/src//g;
     $t=~s/-I\S+\/json-c//g;
     print Out "AM_CPPFLAGS = $t\n";
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+    $t=~s/-I\S+\/ucx\/src//g;
     $t=~s/-I\S+\/json-c//g;
     if ($opts{"with-cuda"}) {
         my $p = $opts{"with-cuda"};
@@ -2087,8 +2024,10 @@ sub dump_makefile {
             $deps .= " \x24($o)";
         }
         else {
-            foreach my $t (@t) {
-                print Out "$t: \x24(CONFIGS)\n";
+            if ($o=~/_OBJECTS/) {
+                foreach my $t (@t) {
+                    print Out "$t: \x24(CONFIGS)\n";
+                }
             }
             $deps .= " @t";
         }
@@ -2173,8 +2112,10 @@ sub dump_makefile {
                 $deps .= " \x24($add)";
             }
             else {
-                foreach my $t (@t) {
-                    print Out "$t: \x24(CONFIGS)\n";
+                if ($add=~/_OBJECTS/) {
+                    foreach my $t (@t) {
+                        print Out "$t: \x24(CONFIGS)\n";
+                    }
                 }
                 $deps .= " @t";
             }
@@ -2292,8 +2233,10 @@ sub dump_makefile {
             $deps .= " \x24($o)";
         }
         else {
-            foreach my $t (@t) {
-                print Out "$t: \x24(CONFIGS)\n";
+            if ($o=~/_OBJECTS/) {
+                foreach my $t (@t) {
+                    print Out "$t: \x24(CONFIGS)\n";
+                }
             }
             $deps .= " @t";
         }
@@ -2378,8 +2321,10 @@ sub dump_makefile {
                 $deps .= " \x24($add)";
             }
             else {
-                foreach my $t (@t) {
-                    print Out "$t: \x24(CONFIGS)\n";
+                if ($add=~/_OBJECTS/) {
+                    foreach my $t (@t) {
+                        print Out "$t: \x24(CONFIGS)\n";
+                    }
                 }
                 $deps .= " @t";
             }

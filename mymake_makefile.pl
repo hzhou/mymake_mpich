@@ -141,11 +141,6 @@ if ($what eq "mpich") {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-    if (!-d "$opts{moddir}/hwloc") {
-        my $cmd = "cp -r src/hwloc $opts{moddir}/hwloc";
-        print "$cmd\n";
-        system $cmd;
-    }
     push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
     $I_list .= " -I\x24(MODS)/hwloc/include";
     $L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
@@ -153,11 +148,6 @@ if ($what eq "mpich") {
     my $subdir="\x24(MODS)/hwloc";
     my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
     my $config_h = "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
-    if (!-d "$opts{moddir}/yaksa") {
-        my $cmd = "cp -r modules/yaksa $opts{moddir}/yaksa";
-        print "$cmd\n";
-        system $cmd;
-    }
     push @CONFIGS, "\x24(MODS)/yaksa/src/frontend/include/yaksa_config.h";
     $I_list .= " -I\x24(MODS)/yaksa/src/frontend/include";
     $L_list .= " \x24(MODDIR)/yaksa/libyaksa.la";
@@ -166,11 +156,6 @@ if ($what eq "mpich") {
     my $lib_la = "\x24(MODDIR)/yaksa/libyaksa.la";
     my $config_h = "\x24(MODS)/yaksa/src/frontend/include/yaksa_config.h";
     if (-f "maint/tuning/coll/json_gen.sh") {
-        if (!-d "$opts{moddir}/json-c") {
-            my $cmd = "cp -r modules/json-c $opts{moddir}/json-c";
-            print "$cmd\n";
-            system $cmd;
-        }
         system "bash maint/tuning/coll/json_gen.sh";
         push @CONFIGS, "\x24(MODS)/json-c/json.h";
         $I_list .= " -I\x24(MODS)/json-c";
@@ -181,11 +166,6 @@ if ($what eq "mpich") {
         my $config_h = "\x24(MODS)/json-c/json.h";
     }
     if ($opts{enable_izem}) {
-        if (!-d "$opts{moddir}/izem") {
-            my $cmd = "cp -r src/izem $opts{moddir}/izem";
-            print "$cmd\n";
-            system $cmd;
-        }
         push @CONFIGS, "\x24(MODS)/izem/src/include/zm_config.h";
         $I_list .= " -I\x24(MODS)/izem/src/include";
         $L_list .= " \x24(MODDIR)/izem/src/libzm.la";
@@ -246,7 +226,7 @@ if ($what eq "mpich") {
         $dst_hash{"src/mpi/romio/include/mpio.h"} = "$opts{prefix}/include";
         $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$opts{prefix}/include";
     }
-    if ($opts{device}=~/:ucx/) {
+    if ($opts{device}=~/:ucx/ and (!$opts{"with-ucx"} or $opts{"with-ucx"} eq "embedded")) {
         my $ucxdir="$opts{moddir}/ucx";
         if (-e "$ucxdir/need_sed") {
             print "Patch $ucxdir ...\n";
@@ -272,63 +252,45 @@ if ($what eq "mpich") {
         }
 
         if (!$opts{quick}) {
-            my $flag;
         }
 
-        if ($opts{ucx} eq "embedded") {
-            if (!-d "$opts{moddir}/ucx") {
-                my $cmd = "cp -r src/mpid/ch4/netmod/ucx/ucx $opts{moddir}/ucx";
-                print "$cmd\n";
-                system $cmd;
+        if ($ENV{compiler} =~ /pgi|sun/) {
+            my @lines;
+            open In, "$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't open $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
+            while(<In>){
+                s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
+                push @lines, $_;
             }
-            if ($ENV{compiler} =~ /pgi|sun/) {
-                my @lines;
-                open In, "$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't open $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
-                while(<In>){
-                    s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
-                    push @lines, $_;
-                }
-                close In;
-                open Out, ">$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't write $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
-                print Out @lines;
-                close Out;
-            }
-            push @CONFIGS, "\x24(MODS)/ucx/config.h";
-            $I_list .= " -I\x24(MODS)/ucx/src";
-            $L_list .= " \x24(PREFIX)/lib/libucp.la";
-            my $configure = "./configure --prefix=\x24(PREFIX) --disable-static";
-            my $subdir="\x24(MODS)/ucx";
-            my $lib_la = "\x24(MODDIR)/ucx/src/ucp/libucp.la";
-            my $config_h = "\x24(MODS)/ucx/config.h";
+            close In;
+            open Out, ">$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't write $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
+            print Out @lines;
+            close Out;
         }
-        else {
-            $I_list .= " -I$opts{ucx}/include";
-            $L_list .= " -L$opts{ucx}/lib";
-            $L_list .= " -lucp -lucs";
-        }
+        push @CONFIGS, "\x24(MODS)/ucx/config.h";
+        $I_list .= " -I\x24(MODS)/ucx/src";
+        $L_list .= " \x24(PREFIX)/lib/libucp.la";
+        my $configure = "./configure --prefix=\x24(PREFIX) --disable-static";
+        my $subdir="\x24(MODS)/ucx";
+        my $lib_la = "\x24(MODDIR)/ucx/src/ucp/libucp.la";
+        my $config_h = "\x24(MODS)/ucx/config.h";
     }
-    if ($opts{device}=~/:ofi/) {
-        if ($opts{libfabric} eq "embedded") {
-            if (!-d "$opts{moddir}/libfabric") {
-                my $cmd = "cp -r src/mpid/ch4/netmod/ofi/libfabric $opts{moddir}/libfabric";
-                print "$cmd\n";
-                system $cmd;
-            }
-            push @CONFIGS, "\x24(MODS)/libfabric/config.h";
-            $I_list .= " -I\x24(MODS)/libfabric/include";
-            $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
-            my $configure = "./configure --enable-embedded";
-            my $subdir="\x24(MODS)/libfabric";
-            my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
-            my $config_h = "\x24(MODS)/libfabric/config.h";
-        }
-        else {
-            $I_list .= " -I$opts{libfabric}/include";
-            $L_list .= " -L$opts{libfabric}/lib";
-            $L_list .= " -lfabric";
-        }
-        if (!$opts{quick}) {
-        }
+    elsif ($opts{device}=~/ch4:ofi/ and (!$opts{"with-libfabric"} or $opts{"with-libfabric"} eq "embedded")) {
+        push @CONFIGS, "\x24(MODS)/libfabric/config.h";
+        $I_list .= " -I\x24(MODS)/libfabric/include";
+        $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+        my $configure = "./configure --enable-embedded";
+        my $subdir="\x24(MODS)/libfabric";
+        my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
+        my $config_h = "\x24(MODS)/libfabric/config.h";
+    }
+    elsif ($opts{device}=~/ch3.*:ofi/ and (!$opts{"with-ofi"} or $opts{"with-ofi"} eq "embedded")) {
+        push @CONFIGS, "\x24(MODS)/libfabric/config.h";
+        $I_list .= " -I\x24(MODS)/libfabric/include";
+        $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+        my $configure = "./configure --enable-embedded";
+        my $subdir="\x24(MODS)/libfabric";
+        my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
+        my $config_h = "\x24(MODS)/libfabric/config.h";
     }
 
     if (!$opts{disable_cxx}) {
@@ -606,11 +568,6 @@ elsif ($what eq "hydra") {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-    if (!-d "$opts{moddir}/hwloc") {
-        my $cmd = "cp -r src/hwloc $opts{moddir}/hwloc";
-        print "$cmd\n";
-        system $cmd;
-    }
     push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
     $I_list .= " -I\x24(MODS)/hwloc/include";
     $L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
@@ -839,11 +796,13 @@ sub dump_makefile {
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+    $t=~s/-I\S+\/ucx\/src//g;
     $t=~s/-I\S+\/json-c//g;
     print Out "AM_CPPFLAGS = $t\n";
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+    $t=~s/-I\S+\/ucx\/src//g;
     $t=~s/-I\S+\/json-c//g;
     if ($opts{"with-cuda"}) {
         my $p = $opts{"with-cuda"};
@@ -1060,8 +1019,10 @@ sub dump_makefile {
             $deps .= " \x24($o)";
         }
         else {
-            foreach my $t (@t) {
-                print Out "$t: \x24(CONFIGS)\n";
+            if ($o=~/_OBJECTS/) {
+                foreach my $t (@t) {
+                    print Out "$t: \x24(CONFIGS)\n";
+                }
             }
             $deps .= " @t";
         }
@@ -1124,8 +1085,10 @@ sub dump_makefile {
                 $deps .= " \x24($add)";
             }
             else {
-                foreach my $t (@t) {
-                    print Out "$t: \x24(CONFIGS)\n";
+                if ($add=~/_OBJECTS/) {
+                    foreach my $t (@t) {
+                        print Out "$t: \x24(CONFIGS)\n";
+                    }
                 }
                 $deps .= " @t";
             }
@@ -1221,8 +1184,10 @@ sub dump_makefile {
             $deps .= " \x24($o)";
         }
         else {
-            foreach my $t (@t) {
-                print Out "$t: \x24(CONFIGS)\n";
+            if ($o=~/_OBJECTS/) {
+                foreach my $t (@t) {
+                    print Out "$t: \x24(CONFIGS)\n";
+                }
             }
             $deps .= " @t";
         }
@@ -1285,8 +1250,10 @@ sub dump_makefile {
                 $deps .= " \x24($add)";
             }
             else {
-                foreach my $t (@t) {
-                    print Out "$t: \x24(CONFIGS)\n";
+                if ($add=~/_OBJECTS/) {
+                    foreach my $t (@t) {
+                        print Out "$t: \x24(CONFIGS)\n";
+                    }
                 }
                 $deps .= " @t";
             }
