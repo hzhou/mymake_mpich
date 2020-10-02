@@ -1452,7 +1452,7 @@ else {
             $a=~s/[\.\/]/_/g;
             my $add = $a."_LIBADD";
             my $t = get_make_var($add);
-            $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
+            $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
             $t=~s/\@ucxlib\@\s*//g;
             $t=~s/\@ofilib\@\s*//g;
 
@@ -1466,7 +1466,7 @@ else {
             $a=~s/[\.\/]/_/g;
             my $add = $a."_LDADD";
             my $t = get_make_var($add);
-            $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric)\/\S+\.la\s*//g;
+            $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
             $t=~s/\@ucxlib\@\s*//g;
             $t=~s/\@ofilib\@\s*//g;
 
