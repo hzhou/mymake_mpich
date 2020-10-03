@@ -1074,6 +1074,41 @@ else {
         print "-     Autoconf MPICH\n";
         print "---------------------------\n";
         my @mod_list;
+        my $flag;
+        my $f = "confdb/aclocal_subcfg.m4";
+        my $f_ = $f;
+        $f_=~s/[\.\/]/_/g;
+        my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+        push @mod_list, \@m;
+
+        system "mv $m[0] $m[1]";
+        my @lines;
+        {
+            open In, "$m[1]" or die "Can't open $m[1].\n";
+            @lines=<In>;
+            close In;
+        }
+        my $flag_skip=0;
+        open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+        print "  --> [$m[2]]\n";
+        foreach my $l (@lines) {
+            if ($l=~/^AC_DEFUN\(\[PAC_CONFIG_SUBDIR_ARGS/) {
+                $flag=1;
+            }
+            elsif ($flag and $l=~/^\]\)/) {
+                $l = ":])";
+                $flag=0;
+            }
+            elsif ($flag) {
+                next;
+            }
+            if ($flag_skip) {
+                next;
+            }
+            print Out $l;
+        }
+        close Out;
+        system "cp -v $m[2] $m[0]";
         my $f = "configure.ac";
         my $f_ = $f;
         $f_=~s/[\.\/]/_/g;
@@ -1096,18 +1131,6 @@ else {
             }
             elsif ($l=~/^\s*HWLOC_/) {
                 next;
-            }
-            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
-                $l = "$1: \x23 $2\n";
-            }
-            elsif ($l=~/^(\s*PAC_SUBDIR_MPL)/) {
-                $l = "$1([mpl])";
-            }
-            elsif ($l=~/^(\s*PAC_SUBDIR_OPA)/) {
-                $l = "$1([openpa])";
-            }
-            elsif ($l=~/^(\s*PAC_SUBDIR_HWLOC)/) {
-                $l = "$1([hwloc])";
             }
             if ($flag_skip) {
                 next;
@@ -1178,8 +1201,6 @@ else {
             }
             close Out;
             system "cp -v $m[2] $m[0]";
-            if ($opts{device}=~/ch3:nemesis:ofi/) {
-            }
         }
         else {
             if (-f "src/mpid/ch4/shm/ipc/xpmem/subconfigure.m4") {
@@ -1218,66 +1239,6 @@ else {
                     close Out;
                     system "cp -v $m[2] $m[0]";
                 }
-            }
-            if ($opts{device}=~/ch4:ofi/) {
-                my $flag;
-                my $f = "src/mpid/ch4/netmod/ofi/subconfigure.m4";
-                my $f_ = $f;
-                $f_=~s/[\.\/]/_/g;
-                my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-                push @mod_list, \@m;
-
-                system "mv $m[0] $m[1]";
-                my @lines;
-                {
-                    open In, "$m[1]" or die "Can't open $m[1].\n";
-                    @lines=<In>;
-                    close In;
-                }
-                my $flag_skip=0;
-                open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-                print "  --> [$m[2]]\n";
-                foreach my $l (@lines) {
-                    if ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
-                        $l = "$1: \x23 $2\n";
-                    }
-                    if ($flag_skip) {
-                        next;
-                    }
-                    print Out $l;
-                }
-                close Out;
-                system "cp -v $m[2] $m[0]";
-            }
-            elsif ($opts{device}=~/ch4:ucx/) {
-                my $flag;
-                my $f = "src/mpid/ch4/netmod/ucx/subconfigure.m4";
-                my $f_ = $f;
-                $f_=~s/[\.\/]/_/g;
-                my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-                push @mod_list, \@m;
-
-                system "mv $m[0] $m[1]";
-                my @lines;
-                {
-                    open In, "$m[1]" or die "Can't open $m[1].\n";
-                    @lines=<In>;
-                    close In;
-                }
-                my $flag_skip=0;
-                open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-                print "  --> [$m[2]]\n";
-                foreach my $l (@lines) {
-                    if ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
-                        $l = "$1: \x23 $2\n";
-                    }
-                    if ($flag_skip) {
-                        next;
-                    }
-                    print Out $l;
-                }
-                close Out;
-                system "cp -v $m[2] $m[0]";
             }
         }
         system "autoreconf -ivf";
