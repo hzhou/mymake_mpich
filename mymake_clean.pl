@@ -20,6 +20,7 @@ push @realclean_list, "src/mpi/errhan/defmsg.h";
 push @realclean_list, "src/include/mpir_cvars.h";
 push @realclean_list, "src/include/mpichconf.h";
 push @realclean_list, "Makefile";
+push @realclean_list, "src/pm/hydra/mymake";
 push @realclean_list, "src/pm/hydra/Makefile";
 
 push @realclean_list, "configure";
