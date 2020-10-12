@@ -503,7 +503,7 @@ if ($config eq "mpich") {
             else {
                 $temp{MPIDI_CH4_OFI_USE_SET_RUNTIME}=1;
             }
-            if (1) {
+            if (!$temp{MPIDI_CH4_DIRECT_NETMOD}) {
                 $temp{MPIDI_CH4_SHM_ENABLE_GPU}=1;
                 $make_conds{BUILD_SHM_IPC_GPU} = 1;
             }
