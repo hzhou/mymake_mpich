@@ -3,6 +3,9 @@
 /* Defined the keyword for thread-local storage. */
 #undef COMPILER_TLS
 
+/* Define cache-line size. */
+#undef CACHELINE_SIZE
+
 /* Define to 1 if MPL enables MPL_aligned_alloc. */
 #undef DEFINE_ALIGNED_ALLOC
 
