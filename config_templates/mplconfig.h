@@ -1,7 +1,7 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define cache-line size. */
-#undef CACHELINE_SIZE
+/* Define if force compiler to always inline functions with MPL_STATIC_INLINE_PREFIX|SUFFIX] */
+#undef ALWAYS_INLINE
 
 /* Defined the keyword for thread-local storage. */
 #undef COMPILER_TLS
