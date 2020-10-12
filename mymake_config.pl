@@ -218,6 +218,9 @@ foreach my $a (@tlist, @ARGV) {
         elsif ($g=~/no|none/) {
             $config_cflags{O} = 0;
         }
+        elsif ($g=~/alwaysinline/) {
+            $config_defines{MPL_ENABLE_ALWAYS_INLINE} = 1;
+        }
     }
     elsif ($a=~/--enable-strict/) {
         $config_cflags{"-Wall"} = 1;
