@@ -1,13 +1,13 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define if force compiler to always inline functions with MPL_STATIC_INLINE_PREFIX|SUFFIX] */
-#undef ALWAYS_INLINE
-
 /* Defined the keyword for thread-local storage. */
 #undef COMPILER_TLS
 
 /* Define to 1 if MPL enables MPL_aligned_alloc. */
 #undef DEFINE_ALIGNED_ALLOC
+
+/* Define if force compiler to always inline functions with MPL_STATIC_INLINE_PREFIX|SUFFIX] */
+#undef ENABLE_ALWAYS_INLINE
 
 /* Define to 1 if you have the `aligned_alloc' function. */
 #undef HAVE_ALIGNED_ALLOC
