@@ -472,6 +472,9 @@ if ($config eq "mpich") {
     $temp{FALSE} = 0;
 
     if ($opts{device}=~/ch4/) {
+        if ($opts{"without-ch4-shmmods"}) {
+            $temp{MPIDI_CH4_DIRECT_NETMOD} = 1;
+        }
         $temp{MPIDI_BUILD_CH4_LOCALITY_INFO}=1;
         $temp{MPIDI_CH4U_USE_PER_COMM_QUEUE}=1;
         $temp{MPIDI_CH4_MAX_VCIS}=1;
