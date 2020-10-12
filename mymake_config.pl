@@ -964,6 +964,12 @@ if ($config eq "mpich") {
             $make_conds{BUILD_CH4_NETMOD_OFI} = 1;
         }
         else {
+            $make_conds{BUILD_CH4_NETMOD_UCX} = 1;
+            if (0) {
+                $make_conds{BUILD_HCOLL} = 1;
+            }
+        }
+        if ($opts{"without-ch4-shmmods"} or $opts{device}=~/ch4:ucx/) {
             $opts{enable_shm} = 1;
             open In, "src/mpid/ch4/subconfigure.m4" or die "Can't open src/mpid/ch4/subconfigure.m4: $!\n";
             while(<In>){
@@ -973,10 +979,6 @@ if ($config eq "mpich") {
                 }
             }
             close In;
-            $make_conds{BUILD_CH4_NETMOD_UCX} = 1;
-            if (0) {
-                $make_conds{BUILD_HCOLL} = 1;
-            }
         }
 
         if ($opts{enable_shm}) {
