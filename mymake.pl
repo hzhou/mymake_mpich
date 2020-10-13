@@ -373,6 +373,9 @@ print "moddir: $opts{moddir}\n";
 print "prefix: $opts{prefix}\n";
 print "device: $opts{device}\n";
 
+if (-f "maint/gen_ch4_api.pl") {
+    system "perl maint/gen_ch4_api.pl";
+}
 if ($opts{quick}) {
     if (!-f "libtool") {
         if (-f "mymake/libtool/libtool") {
