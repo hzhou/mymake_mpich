@@ -60,7 +60,16 @@ foreach my $a (@ARGV) {
         $opts{quick}=1;
     }
     elsif ($a=~/^--(.*?)=(.*)/) {
+        my ($o, $v) = ($1, $2);
         $opts{$1}=$2;
+        if ($v eq "no") {
+            if ($o=~/^with-(.*)/) {
+                $opts{"without-$1"} = 1;
+            }
+            elsif ($o=~/^enable-(.*)/) {
+                $opts{"disable-$1"} = 1;
+            }
+        }
     }
     elsif ($a=~/^--(.*)/) {
         $opts{$1}=1;

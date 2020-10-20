@@ -103,7 +103,16 @@ foreach my $a (@ARGV) {
         $opts{quick}=1;
     }
     elsif ($a=~/^--(.*?)=(.*)/) {
+        my ($o, $v) = ($1, $2);
         $opts{$1}=$2;
+        if ($v eq "no") {
+            if ($o=~/^with-(.*)/) {
+                $opts{"without-$1"} = 1;
+            }
+            elsif ($o=~/^enable-(.*)/) {
+                $opts{"disable-$1"} = 1;
+            }
+        }
     }
     elsif ($a=~/^--(.*)/) {
         $opts{$1}=1;
@@ -373,9 +382,13 @@ print "moddir: $opts{moddir}\n";
 print "prefix: $opts{prefix}\n";
 print "device: $opts{device}\n";
 
-if (-f "maint/gen_ch4_api.pl") {
+if (-f "maint/gen_ch4_api.pl" and !-f "src/mpid/ch4/netmod/include/netmod.h") {
     system "perl maint/gen_ch4_api.pl";
 }
+if (-f "maint/gen_binding_c.pl" and !-f "src/mpi/pt2pt/send.c") {
+    system "perl maint/gen_binding_c.pl";
+}
+
 if ($opts{quick}) {
     if (!-f "libtool") {
         if (-f "mymake/libtool/libtool") {

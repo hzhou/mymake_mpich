@@ -464,11 +464,13 @@ if ($what eq "mpich") {
     $autoconf_vars{MPICXXLIBNAME} = "mpicxx";
     $autoconf_vars{VISIBILITY_CFLAGS} = "-fvisibility=hidden";
 
-    if ($opts{device} =~/ch4:ofi/) {
-        $make_vars{CPPFLAGS} = "-DNETMOD_INLINE=__netmod_inline_ofi__ ";
-    }
-    elsif ($opts{device} =~/ch4:ucx/) {
-        $make_vars{CPPFLAGS} = "-DNETMOD_INLINE=__netmod_inline_ucx__ ";
+    if (!$opts{"disable-ch4-netmod-inline"}) {
+        if ($opts{device} =~/ch4:ofi/) {
+            $make_vars{CPPFLAGS} = "-DNETMOD_INLINE=__netmod_inline_ofi__ ";
+        }
+        elsif ($opts{device} =~/ch4:ucx/) {
+            $make_vars{CPPFLAGS} = "-DNETMOD_INLINE=__netmod_inline_ucx__ ";
+        }
     }
 
     $make_vars{CPPFLAGS}.="-D_REENTRANT ";
