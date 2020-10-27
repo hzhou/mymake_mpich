@@ -1696,10 +1696,10 @@ else {
 
 # ---- subroutines --------------------------------------------
 sub find_python3 {
-    if (`python -V` =~ /Python\s*3/) {
+    if (`python -V 2>1` =~ /Python\s*3/) {
         return "python";
     }
-    if (`python3 -V` =~ /Python\s*3/) {
+    if (`python3 -V 2>1` =~ /Python\s*3/) {
         return "python3";
     }
 }
