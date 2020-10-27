@@ -385,8 +385,14 @@ print "device: $opts{device}\n";
 if (-f "maint/gen_ch4_api.pl" and !-f "src/mpid/ch4/netmod/include/netmod.h") {
     system "perl maint/gen_ch4_api.pl";
 }
-if (-f "maint/gen_binding_c.pl" and !-f "src/mpi/pt2pt/send.c") {
-    system "perl maint/gen_binding_c.pl";
+if (!-f "src/mpi/pt2pt/send.c") {
+    if (-f "maint/gen_binding_c.pl") {
+        system "perl maint/gen_binding_c.pl";
+    }
+    elsif (-f "maint/gen_binding_c.py") {
+        my $python = find_python3();
+        system "$python maint/gen_binding_c.py";
+    }
 }
 
 if ($opts{quick}) {
@@ -1689,6 +1695,15 @@ else {
 }
 
 # ---- subroutines --------------------------------------------
+sub find_python3 {
+    if (`python -V` =~ /Python\s*3/) {
+        return "python";
+    }
+    if (`python3 -V` =~ /Python\s*3/) {
+        return "python3";
+    }
+}
+
 sub get_list {
     my ($key) = @_;
     my @t;
