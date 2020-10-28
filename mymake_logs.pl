@@ -7,6 +7,8 @@ our %opts;
 my $pwd=getcwd();
 my $mymake_dir = Cwd::abs_path($0);
 $mymake_dir=~s/\/[^\/]+$//;
+
+
 open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
 while(<In>){
     if (/^(\S+): (.*)/) {
@@ -17,6 +19,8 @@ close In;
 my (@timer_states, %state_funcnames, %state_colors);
 my @files;
 foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)) {
+
+
     open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |: $!\n";
     while(<In>){
         chomp;
@@ -26,6 +30,8 @@ foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)) {
 }
 foreach my $f (@files) {
     my $funcname;
+
+
     open In, "$f" or die "Can't open $f: $!\n";
     while(<In>){
         if (/^\w[^(]* \*?(\w+)\s*\(/) {
@@ -60,6 +66,7 @@ foreach my $f (@files) {
 
 my @timer_states = sort @timer_states;
 my $n = @timer_states;
+
 open Out, ">src/include/mpiallstates.h" or die "Can't write src/include/mpiallstates.h: $!\n";
 print "  --> [src/include/mpiallstates.h]\n";
 print Out "#ifndef MPIALLSTATES_H_INCLUDED\n";
@@ -74,6 +81,7 @@ print Out "     MPID_NUM_TIMER_STATES\n";
 print Out "};\n";
 print Out "#endif /* MPIALLSTATES_H_INCLUDED */\n";
 close Out;
+
 
 open Out, ">src/util/logging/common/state_names.h" or die "Can't write src/util/logging/common/state_names.h: $!\n";
 print "  --> [src/util/logging/common/state_names.h]\n";

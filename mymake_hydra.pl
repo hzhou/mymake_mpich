@@ -170,6 +170,8 @@ if ($uname=~/Darwin/) {
     $opts{do_pmpi} = 1;
 }
 if (-f "mymake/CFLAGS") {
+
+
     open In, "mymake/CFLAGS" or die "Can't open mymake/CFLAGS: $!\n";
     while(<In>){
         if (/(.+)/) {
@@ -217,6 +219,7 @@ if (!-f "mymake/Makefile.orig") {
             close In;
         }
         my $flag_skip=0;
+
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines) {
@@ -249,6 +252,7 @@ if (!-f "mymake/Makefile.orig") {
             close In;
         }
         my $flag_skip=0;
+
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines) {
@@ -280,6 +284,7 @@ if (!-f "mymake/Makefile.orig") {
         close In;
     }
     my $flag_skip=0;
+
     open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines) {
@@ -312,6 +317,7 @@ if (!-f "mymake/Makefile.orig") {
         close In;
     }
     my $flag_skip=0;
+
     open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
     print "  --> [$m[2]]\n";
     foreach my $l (@lines) {
@@ -337,6 +343,8 @@ if (!-f "mymake/Makefile.orig") {
     system "rm -f Makefile";
     system "./configure";
     my (@lines, $flag);
+
+
     open In, "include/hydra_config.h" or die "Can't open include/hydra_config.h: $!\n";
     while(<In>){
         if (/#define HYDRA_DEFAULT_TOPOLIB NULL/) {
@@ -349,6 +357,7 @@ if (!-f "mymake/Makefile.orig") {
     }
     close In;
     if ($flag) {
+
         open Out, ">include/hydra_config.h" or die "Can't write include/hydra_config.h: $!\n";
         print "  --> [include/hydra_config.h]\n";
         foreach my $l (@lines) {
@@ -364,6 +373,7 @@ if (!-f "mymake/Makefile.orig") {
         @lines=<In>;
         close In;
     }
+
     open Out, ">libtool" or die "Can't write libtool: $!\n";
     print "  --> [libtool]\n";
     foreach my $l (@lines) {
@@ -480,6 +490,8 @@ if ($opts{argobots}) {
 }
 %objects=();
 my $tlist;
+
+
 open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
 while(<In>){
     if (/^(\w+)\s*=\s*(.*)/) {
@@ -621,6 +633,7 @@ sub dump_makefile {
     if (!$opts{V}) {
         $lt_opt = "--quiet";
     }
+
 
     open Out, ">$makefile" or die "Can't write $makefile: $!\n";
     print "  --> [$makefile]\n";

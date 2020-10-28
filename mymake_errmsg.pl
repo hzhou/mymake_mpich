@@ -11,6 +11,8 @@ our %generic_index;
 my $pwd=getcwd();
 my $mymake_dir = Cwd::abs_path($0);
 $mymake_dir=~s/\/[^\/]+$//;
+
+
 open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
 while(<In>){
     if (/^(\S+): (.*)/) {
@@ -19,6 +21,8 @@ while(<In>){
 }
 close In;
 my (@classnames, %generics);
+
+
 open In, "src/mpi/errhan/baseerrnames.txt" or die "Can't open src/mpi/errhan/baseerrnames.txt: $!\n";
 while(<In>){
     if (/^(MPI\S+)\s*(\d+)\s*(.*)/) {
@@ -30,6 +34,8 @@ while(<In>){
 }
 close In;
 my @files;
+
+
 open In, "find . -name 'errnames.txt' |" or die "Can't open find . -name 'errnames.txt' |: $!\n";
 while(<In>){
     chomp;
@@ -37,6 +43,8 @@ while(<In>){
 }
 close In;
 foreach my $f (@files) {
+
+
     open In, "$f" or die "Can't open $f: $!\n";
     while(<In>){
         if (/^(\*\*[^:]+):(.*)/) {
@@ -107,6 +115,8 @@ my %KnownErrRoutines = (
 );
 my @files;
 foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)) {
+
+
     open In, "find src/$dir -name '*.[ch]' |" or die "Can't open find src/$dir -name '*.[ch]' |: $!\n";
     while(<In>){
         chomp;
@@ -115,6 +125,8 @@ foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)) {
     close In;
 }
 foreach my $f (@files) {
+
+
     open In, "$f" or die "Can't open $f: $!\n";
     while(<In>){
         if (/\/\*\s+--BEGIN ERROR MACROS--/) {
@@ -166,6 +178,7 @@ $generics{"**notfstatignore"}++;
 
 my @sorted_generics=sort keys %generics;
 my @sorted_specifics=sort keys %specifics;
+
 open Out, ">src/mpi/errhan/defmsg.h" or die "Can't write src/mpi/errhan/defmsg.h: $!\n";
 print "  --> [src/mpi/errhan/defmsg.h]\n";
 print Out "#if MPICH_ERROR_MSG_LEVEL > MPICH_ERROR_MSG__CLASS\n";
