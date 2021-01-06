@@ -364,12 +364,10 @@ if (!-f $cvars_c) {
 
 if ($need_save_args) {
     my $t = join(' ', @ARGV);
-
     open Out, ">mymake/args" or die "Can't write mymake/args: $!\n";
     print Out $t, "\n";
     close Out;
     $opts{config_args} = join(' ', @config_args);
-
     open Out, ">mymake/opts" or die "Can't write mymake/opts: $!\n";
     foreach my $k (sort keys %opts) {
         print Out "$k: $opts{$k}\n";
@@ -412,7 +410,6 @@ if ($opts{quick}) {
                 @lines=<In>;
                 close In;
             }
-
             open Out, ">libtool" or die "Can't write libtool: $!\n";
             print "  --> [libtool]\n";
             foreach my $l (@lines) {
@@ -814,8 +811,6 @@ else {
             }
             my @tlist = glob("$ucxdir/modules/*.la");
             foreach my $m (@tlist) {
-
-
                 open In, "$m" or die "Can't open $m: $!\n";
                 while(<In>){
                     if (/relink_command="\(cd \S+ucx.src.uct.(\S+);/) {
@@ -834,15 +829,12 @@ else {
 
         if ($ENV{compiler} =~ /pgi|sun/) {
             my @lines;
-
-
             open In, "$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't open $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
             while(<In>){
                 s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
                 push @lines, $_;
             }
             close In;
-
             open Out, ">$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't write $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
             print Out @lines;
             close Out;
@@ -1127,7 +1119,6 @@ else {
             close In;
         }
         my $flag_skip=0;
-
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines) {
@@ -1162,7 +1153,6 @@ else {
             close In;
         }
         my $flag_skip=0;
-
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines) {
@@ -1193,7 +1183,6 @@ else {
             close In;
         }
         my $flag_skip=0;
-
         open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
         print "  --> [$m[2]]\n";
         foreach my $l (@lines) {
@@ -1223,7 +1212,6 @@ else {
                 close In;
             }
             my $flag_skip=0;
-
             open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
             print "  --> [$m[2]]\n";
             foreach my $l (@lines) {
@@ -1267,7 +1255,6 @@ else {
                         close In;
                     }
                     my $flag_skip=0;
-
                     open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
                     print "  --> [$m[2]]\n";
                     foreach my $l (@lines) {
@@ -1312,7 +1299,6 @@ else {
                 @lines=<In>;
                 close In;
             }
-
             open Out, ">libtool" or die "Can't write libtool: $!\n";
             print "  --> [libtool]\n";
             foreach my $l (@lines) {
@@ -1350,8 +1336,6 @@ else {
 
 
     if ($ret == 0) {
-
-
         open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
         while(<In>){
             if (/^#define\s+HAVE_.*WEAK.* 1/) {
@@ -1359,8 +1343,6 @@ else {
             }
         }
         close In;
-
-
         open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
         while(<In>){
             if (/libmpi_so_version_m4.*\[([\d:]*)\]/) {
@@ -1368,8 +1350,6 @@ else {
             }
         }
         close In;
-
-
         open In, "config.status" or die "Can't open config.status: $!\n";
         while(<In>){
             if (/S\["WRAPPER_LIBS"\]="(.*)"/) {
@@ -1385,8 +1365,6 @@ else {
         }
         %objects=();
         my $tlist;
-
-
         open In, "mymake/Makefile.orig" or die "Can't open mymake/Makefile.orig: $!\n";
         while(<In>){
             if (/^(\w+)\s*=\s*(.*)/) {
@@ -1492,13 +1470,10 @@ else {
     }
 
     if ($ret == 0) {
-
-
         open In, "mymake/Makefile.custom" or die "Can't open mymake/Makefile.custom: $!\n";
         while(<In>){
             if (/^CFLAGS *= *(.*)/) {
                 $opts{CFLAGS}=$1;
-
                 open Out, ">mymake/CFLAGS" or die "Can't write mymake/CFLAGS: $!\n";
                 print "  --> [mymake/CFLAGS]\n";
                 print Out "$1\n";
@@ -1514,7 +1489,6 @@ else {
                 close In;
             }
             my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-
             open Out, ">mymake/mpicc" or die "Can't write mymake/mpicc: $!\n";
             print "  --> [mymake/mpicc]\n";
             foreach my $l (@lines) {
@@ -1539,7 +1513,6 @@ else {
                 close In;
             }
             my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-
             open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx: $!\n";
             print "  --> [mymake/mpicxx]\n";
             foreach my $l (@lines) {
@@ -1564,7 +1537,6 @@ else {
                 close In;
             }
             my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-
             open Out, ">mymake/mpif77" or die "Can't write mymake/mpif77: $!\n";
             print "  --> [mymake/mpif77]\n";
             foreach my $l (@lines) {
@@ -1589,7 +1561,6 @@ else {
                 close In;
             }
             my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-
             open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
             print "  --> [mymake/mpifort]\n";
             foreach my $l (@lines) {
@@ -1619,7 +1590,6 @@ else {
 
     if ($ret == 0) {
         if (-f "src/mpl/include/mpl_atomic.h") {
-
             open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
             print Out "#include \"mpl_atomic.h\"\n";
             print Out "#include <pthread.h>\n";
@@ -1636,8 +1606,6 @@ else {
         }
         $config_defines{SIZEOF_OPA_PTR_T} = 8;
         my $lock_based_atomics;
-
-
         open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
         while(<In>){
             if (/^#define MPL_USE_LOCK_BASED_PRIMITIVES/) {
@@ -1651,8 +1619,6 @@ else {
         }
         if (%config_defines) {
             my (@lines, $cnt);
-
-
             open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
             while(<In>){
                 if (/^\/\* #undef (\w+)/ && exists $config_defines{$1}) {
@@ -1684,7 +1650,6 @@ else {
             close In;
 
             if ($cnt>0) {
-
                 open Out, ">mymake/mpl/include/mplconfig.h" or die "Can't write mymake/mpl/include/mplconfig.h: $!\n";
                 foreach my $l (@lines) {
                     print Out $l;
@@ -1692,8 +1657,6 @@ else {
                 close Out;
             }
             my (@lines, $cnt);
-
-
             open In, "src/include/mpichconf.h" or die "Can't open src/include/mpichconf.h: $!\n";
             while(<In>){
                 if (/^\/\* #undef (\w+)/ && exists $config_defines{$1}) {
@@ -1725,7 +1688,6 @@ else {
             close In;
 
             if ($cnt>0) {
-
                 open Out, ">src/include/mpichconf.h" or die "Can't write src/include/mpichconf.h: $!\n";
                 foreach my $l (@lines) {
                     print Out $l;
@@ -1739,10 +1701,10 @@ else {
 
 # ---- subroutines --------------------------------------------
 sub find_python3 {
-    if (`python -V 2>1` =~ /Python\s*3/) {
+    if (`python -V 2>&1` =~ /Python\s*3/) {
         return "python";
     }
-    if (`python3 -V 2>1` =~ /Python\s*3/) {
+    if (`python3 -V 2>&1` =~ /Python\s*3/) {
         return "python3";
     }
 }
@@ -1796,7 +1758,6 @@ sub dump_makefile {
     if (!$opts{V}) {
         $lt_opt = "--quiet";
     }
-
 
     open Out, ">$makefile" or die "Can't write $makefile: $!\n";
     print "  --> [$makefile]\n";

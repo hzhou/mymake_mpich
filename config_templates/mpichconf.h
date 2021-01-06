@@ -777,6 +777,9 @@
 /* Method for local large message transfers. */
 #undef MPID_NEM_LOCAL_LMT_IMPL
 
+/* always enabled since 2020-02 */
+#define MPID_NEM_USE_LOCK_FREE_QUEUES 1
+
 /* Define if a port may be used to communicate with the processes */
 #undef MPIEXEC_ALLOW_PORT
 

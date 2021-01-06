@@ -12,8 +12,6 @@ if (!-f "$pwd/maint/extractcvars.in") {
 }
 
 my $dirs;
-
-
 open In, "maint/cvardirs.in" or die "Can't open maint/cvardirs.in: $!\n";
 while(<In>){
     chomp;
@@ -23,11 +21,8 @@ while(<In>){
 }
 close In;
 
-
 open Out, ">mymake/extractcvars.pl" or die "Can't write mymake/extractcvars.pl: $!\n";
 print "  --> [mymake/extractcvars.pl]\n";
-
-
 open In, "maint/extractcvars.in" or die "Can't open maint/extractcvars.in: $!\n";
 while(<In>){
     s/\@abs_srcdir\@/$pwd\/maint/g;

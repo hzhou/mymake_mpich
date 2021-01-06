@@ -606,6 +606,7 @@ elsif ($what eq "test") {
     $autoconf_vars{threadlib} = "-lpthread";
     my @all_am = glob("test/mpi/*/Makefile.am");
     push @all_am, glob("test/mpi/threads/*/Makefile.am");
+    push @all_am, glob("test/mpi/errors/*/Makefile.am");
     foreach my $a (@all_am) {
         my $dir;
         if ($a =~ /test\/mpi\/(.*)\/Makefile.am/) {

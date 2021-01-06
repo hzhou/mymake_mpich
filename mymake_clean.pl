@@ -7,15 +7,16 @@ our %opts;
 my $pwd=getcwd();
 my $mymake_dir = Cwd::abs_path($0);
 $mymake_dir=~s/\/[^\/]+$//;
-
-
-open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
-while(<In>){
-    if (/^(\S+): (.*)/) {
-        $opts{$1} = $2;
+if (-f "mymake/opts") {
+    open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
+    while(<In>){
+        if (/^(\S+): (.*)/) {
+            $opts{$1} = $2;
+        }
     }
+    close In;
 }
-close In;
+
 my @realclean_list;
 push @realclean_list, "subsys_include.m4";
 push @realclean_list, "src/mpi/errhan/defmsg.h";
@@ -37,6 +38,8 @@ if (-d "src/openpa") {
 if (-d $opts{prefix}) {
     push @realclean_list, "$opts{prefix}/lib/libmpi*";
 }
+
+push @realclean_list, "src/binding/c/*/*.c";
 
 foreach my $t (@realclean_list) {
     print "rm -rf $t\n";
