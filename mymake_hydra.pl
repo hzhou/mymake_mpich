@@ -56,8 +56,8 @@ elsif (@ARGV) {
     $need_save_args = 1;
 }
 foreach my $a (@ARGV) {
-    if ($a=~/^-quick/) {
-        $opts{quick}=1;
+    if ($a=~/^-(quick|f08|noclean)/) {
+        $opts{$1}=1;
     }
     elsif ($a=~/^--(.*?)=(.*)/) {
         my ($o, $v) = ($1, $2);
@@ -1212,7 +1212,7 @@ sub dump_makefile {
     if (@$t1 or @$t2 or @$t3) {
         foreach my $t (@$t1, @$t2, @$t3) {
             $t=~s/use_mpi_f08/use_mpi/;
-            $dst_hash{$t} = "$opts{prefix}/include";
+            $dst_hash{$t} = "\x24(PREFIX)/include";
         }
     }
 

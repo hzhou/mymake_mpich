@@ -332,6 +332,7 @@ if ($config eq "mpich") {
     $config_defines{SIZEOF_WCHAR_T}=0;
 
     $config_defines{MAX_ALIGNMENT} = 16;
+    $config_defines{MPIR_Ufint} = "unsigned int";
     my $MPI_AINT;
     if ($sizeof_hash{LONG} == $sizeof_hash{LONG_LONG}) {
         $MPI_AINT = "long";
@@ -350,25 +351,6 @@ if ($config eq "mpich") {
     $config_defines{HAVE_LONG_LONG_INT} = 1;
 
     get_sizeof_bsend_status($MPI_AINT);
-
-    foreach my $n (1,2,4,8) {
-        foreach my $type ("char", "short", "int", "long", "long long") {
-            my $a = get_config_name($type);
-            if ($sizeof_hash{$a} == $n) {
-                $config_defines{"MPIR_INTEGER${n}_CTYPE"} = $type;
-                last;
-            }
-        }
-    }
-    foreach my $n (4,8,16) {
-        foreach my $type ("float", "double", "__float128") {
-            my $a = get_config_name($type);
-            if ($sizeof_hash{$a} == $n) {
-                $config_defines{"MPIR_REAL${n}_CTYPE"} = $type;
-                last;
-            }
-        }
-    }
 }
 my @header_list;
 open In, "$config_in" or die "Can't open $config_in: $!\n";
@@ -525,11 +507,6 @@ if ($config eq "mpich") {
         }
     }
 
-    if (1) {
-        $temp{HAVE_F08_BINDING} = 0;
-        $temp{HAVE_NO_FORTRAN_MPI_TYPES_IN_C} = 1;
-    }
-
     if ($opts{device} =~ /ch4/) {
         if (-f "src/mpid/ch4/shm/posix/posix_eager_array.c.in") {
             my $eager_modules;
@@ -634,7 +611,15 @@ if ($config eq "mpich") {
     }
 
     $temp{MPIF_STATUS_SIZE} = $sizeof_hash{MPI_STATUS};
-
+    if (!$opts{disable_fortran}) {
+        $temp{HAVE_NO_FORTRAN_MPI_TYPES_IN_C} = 1;
+        $temp{HAVE_FORTRAN_BINDING} = 1;
+        if ($sizeof_hash{VOID_P} > $sizeof_hash{INT}) {
+            $temp{HAVE_AINT_LARGER_THAN_FINT} = 1;
+        }
+        $temp{MPIR_FC_REAL_CTYPE} = "float";
+        $temp{MPIR_FC_DOUBLE_CTYPE} = "double";
+    }
     if (0) {
         $temp{HAVE_NAMESPACES}=1;
         $temp{HAVE_NAMESPACE_STD}=1;
@@ -796,8 +781,11 @@ if ($config eq "mpich") {
     $sizeof_hash{"C_FLOAT_COMPLEX"} = $sizeof_hash{"FLOAT__COMPLEX"};
     $sizeof_hash{"C_DOUBLE_COMPLEX"} = $sizeof_hash{"DOUBLE__COMPLEX"};
     $sizeof_hash{"C_LONG_DOUBLE_COMPLEX"} = $sizeof_hash{"LONG_DOUBLE__COMPLEX"};
+    $sizeof_hash{CHARACTER} = $sizeof_hash{CHAR};
+    $sizeof_hash{INTEGER} = $sizeof_hash{INT};
+    $sizeof_hash{REAL} = $sizeof_hash{FLOAT};
+    $sizeof_hash{DOUBLE_PRECISION} = $sizeof_hash{DOUBLE};
 
-    my $idx = 1;
     $confs{MPI_CHAR} = sprintf("0x4c00%02x01", $sizeof_hash{"CHAR"});
     $confs{MPI_UNSIGNED_CHAR} = sprintf("0x4c00%02x02", $sizeof_hash{"UNSIGNED_CHAR"});
     $confs{MPI_SHORT} = sprintf("0x4c00%02x03", $sizeof_hash{"SHORT"});
@@ -815,14 +803,16 @@ if ($config eq "mpich") {
     $confs{MPI_PACKED} = sprintf("0x4c00%02x0f", $sizeof_hash{"PACKED"});
     $confs{MPI_LB} = sprintf("0x4c00%02x10", $sizeof_hash{"LB"});
     $confs{MPI_UB} = sprintf("0x4c00%02x11", $sizeof_hash{"UB"});
+    $confs{MPI_2INT} = sprintf("0x4c00%02x16", $sizeof_hash{"2INT"});
+    $confs{MPI_SIGNED_CHAR} = sprintf("0x4c00%02x18", $sizeof_hash{"SIGNED_CHAR"});
+    $confs{MPI_UNSIGNED_LONG_LONG} = sprintf("0x4c00%02x19", $sizeof_hash{"UNSIGNED_LONG_LONG"});
+
     $confs{MPI_FLOAT_INT} = "0x8c000000";
     $confs{MPI_DOUBLE_INT} = "0x8c000001";
     $confs{MPI_LONG_INT} = "0x8c000002";
     $confs{MPI_SHORT_INT} = "0x8c000003";
     $confs{MPI_LONG_DOUBLE_INT} = "0x8c000004";
-    $confs{MPI_2INT} = sprintf("0x4c00%02x16", $sizeof_hash{"2INT"});
-    $confs{MPI_SIGNED_CHAR} = sprintf("0x4c00%02x18", $sizeof_hash{"SIGNED_CHAR"});
-    $confs{MPI_UNSIGNED_LONG_LONG} = sprintf("0x4c00%02x19", $sizeof_hash{"UNSIGNED_LONG_LONG"});
+
     if (!$opts{disable_fortran}) {
         $confs{MPI_CHARACTER} = sprintf("0x4c00%02x1a", $sizeof_hash{"CHARACTER"});
         $confs{MPI_INTEGER} = sprintf("0x4c00%02x1b", $sizeof_hash{"INTEGER"});
@@ -836,6 +826,35 @@ if ($config eq "mpich") {
         $confs{MPI_2DOUBLE_PRECISION} = sprintf("0x4c00%02x23", $sizeof_hash{"2DOUBLE_PRECISION"});
         $confs{MPI_2COMPLEX} = sprintf("0x4c00%02x24", $sizeof_hash{"2COMPLEX"});
         $confs{MPI_2DOUBLE_COMPLEX} = sprintf("0x4c00%02x25", $sizeof_hash{"2DOUBLE_COMPLEX"});
+        $confs{MPI_REAL4} = sprintf("0x4c00%02x27", 4);
+        $confs{MPI_COMPLEX8} = sprintf("0x4c00%02x28", 8);
+        $confs{MPI_REAL8} = sprintf("0x4c00%02x29", 8);
+        $confs{MPI_COMPLEX16} = sprintf("0x4c00%02x2a", 16);
+        $confs{MPI_REAL16} = sprintf("0x4c00%02x2b", 16);
+        $confs{MPI_COMPLEX32} = sprintf("0x4c00%02x2c", 32);
+        $confs{MPI_INTEGER1} = sprintf("0x4c00%02x2d", 1);
+        $confs{MPI_INTEGER2} = sprintf("0x4c00%02x2f", 2);
+        $confs{MPI_INTEGER4} = sprintf("0x4c00%02x30", 4);
+        $confs{MPI_INTEGER8} = sprintf("0x4c00%02x31", 8);
+        $confs{MPI_INTEGER16} = sprintf("0x4c00%02x32", 16);
+        foreach my $n (1,2,4,8) {
+            foreach my $type ("char", "short", "int", "long", "long long") {
+                my $a = get_config_name($type);
+                if ($sizeof_hash{$a} == $n) {
+                    $config_defines{"MPIR_INTEGER${n}_CTYPE"} = $type;
+                    last;
+                }
+            }
+        }
+        foreach my $n (4,8,16) {
+            foreach my $type ("float", "double", "__float128") {
+                my $a = get_config_name($type);
+                if ($sizeof_hash{$a} == $n) {
+                    $config_defines{"MPIR_REAL${n}_CTYPE"} = $type;
+                    last;
+                }
+            }
+        }
     }
     else {
         $confs{MPI_CHARACTER} = "MPI_DATATYPE_NULL";
@@ -850,19 +869,19 @@ if ($config eq "mpich") {
         $confs{MPI_2DOUBLE_PRECISION} = "MPI_DATATYPE_NULL";
         $confs{MPI_2COMPLEX} = "MPI_DATATYPE_NULL";
         $confs{MPI_2DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+        $confs{MPI_REAL4} = "MPI_DATATYPE_NULL";
+        $confs{MPI_COMPLEX8} = "MPI_DATATYPE_NULL";
+        $confs{MPI_REAL8} = "MPI_DATATYPE_NULL";
+        $confs{MPI_COMPLEX16} = "MPI_DATATYPE_NULL";
+        $confs{MPI_REAL16} = "MPI_DATATYPE_NULL";
+        $confs{MPI_COMPLEX32} = "MPI_DATATYPE_NULL";
+        $confs{MPI_INTEGER1} = "MPI_DATATYPE_NULL";
+        $confs{MPI_INTEGER2} = "MPI_DATATYPE_NULL";
+        $confs{MPI_INTEGER4} = "MPI_DATATYPE_NULL";
+        $confs{MPI_INTEGER8} = "MPI_DATATYPE_NULL";
+        $confs{MPI_INTEGER16} = "MPI_DATATYPE_NULL";
     }
 
-    $confs{MPI_REAL4} = sprintf("0x4c00%02x27", 4);
-    $confs{MPI_COMPLEX8} = sprintf("0x4c00%02x28", 8);
-    $confs{MPI_REAL8} = sprintf("0x4c00%02x29", 8);
-    $confs{MPI_COMPLEX16} = sprintf("0x4c00%02x2a", 16);
-    $confs{MPI_REAL16} = sprintf("0x4c00%02x2b", 16);
-    $confs{MPI_COMPLEX32} = sprintf("0x4c00%02x2c", 32);
-    $confs{MPI_INTEGER1} = sprintf("0x4c00%02x2d", 1);
-    $confs{MPI_INTEGER2} = sprintf("0x4c00%02x2f", 2);
-    $confs{MPI_INTEGER4} = sprintf("0x4c00%02x30", 4);
-    $confs{MPI_INTEGER8} = sprintf("0x4c00%02x31", 8);
-    $confs{MPI_INTEGER16} = sprintf("0x4c00%02x32", 16);
     if (!$opts{disable_cxx}) {
         $confs{MPIR_CXX_BOOL} = sprintf("0x4c00%02x33", $sizeof_hash{"CXX_BOOL"});
         $confs{MPIR_CXX_COMPLEX} = sprintf("0x4c00%02x34", $sizeof_hash{"CXX_COMPLEX"});
@@ -895,6 +914,7 @@ if ($config eq "mpich") {
 
     $confs{MPIX_C_FLOAT16} = sprintf("0x4c00%02x46", $sizeof_hash{"C_FLOAT16"});
     autoconf_file("src/include/mpi.h", \%confs);
+    my $mpi_h_confs = \%confs;
     my %confs;
     $confs{HAVE_ERROR_CHECKING} = 1;
     autoconf_file("src/include/mpir_ext.h", \%confs);
@@ -926,6 +946,2167 @@ if ($config eq "mpich") {
         $confs{MPIR_CXX_LONG_DOUBLE_COMPLEX} = sprintf("0x4c00%02x36", $sizeof_hash{"CXX_LONG_DOUBLE_COMPLEX"});
 
         autoconf_file("src/binding/cxx/mpicxx.h", \%confs);
+    }
+    if (!$opts{disable_fortran}) {
+        my %mpidef;
+        my (@mpidef_list, %mpidef_type);
+        push @mpidef_list, "MPI_SUCCESS";
+        open In, "src/include/mpi.h" or die "Can't open src/include/mpi.h: $!\n";
+        while(<In>){
+            if (/^\s*#\s*define\s+(MPIX?_[A-Z_]+)\s+(.*)/) {
+                my ($name, $t) = ($1, $2);
+                my $val;
+                if ($t=~/\(\(\w+\)\s*(\S+)\)/) {
+                    $val = $1;
+                }
+                elsif ($t=~/^(\S+)/) {
+                    $val = $1;
+                }
+
+                if (defined $mpidef{$name}) {
+                    print "duplicated define - $name, was $mpidef{$name}, new $val\n";
+                }
+                else {
+                    $mpidef{$name} = $val;
+                    if ($name=~/MPI_ERR_\w+/) {
+                        push @mpidef_list, $name;
+                    }
+                }
+            }
+
+            elsif (/^(?:typedef\s+)?enum\s+\w*\s*{\s*(.*)/) {
+                my ($enum_line) = ($1);
+                while ($enum_line !~ /}/) {
+                    my $l = <In>;
+                    chomp $l;
+                    $enum_line .= $l;
+                }
+
+                while ($enum_line=~/\s*(MPIX?_\w+)\s*=\s*([a-fx0-9]*)/g) {
+                    $mpidef{$1} = $2;
+                }
+            }
+        }
+        close In;
+
+        foreach my $k (keys %mpidef) {
+            if ($mpidef{$k} =~ /0x(\w+)/) {
+                $mpidef{$k} = hex($1);
+            }
+        }
+
+        my $v = hex $mpi_h_confs->{MPI_AINT_DATATYPE};
+        $mpidef{MPI_AINT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        my $v = hex $mpi_h_confs->{MPI_OFFSET_DATATYPE};
+        $mpidef{MPI_OFFSET} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        my $v = hex $mpi_h_confs->{MPI_COUNT_DATATYPE};
+        $mpidef{MPI_COUNT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        $mpidef{MPI_INTEGER_KIND} = $sizeof_hash{INT};
+        $mpidef{MPI_ADDRESS_KIND} = $sizeof_hash{AINT};
+        $mpidef{MPI_AINT_KIND} = $sizeof_hash{AINT};
+        $mpidef{MPI_COUNT_KIND} = $sizeof_hash{COUNT};
+        $mpidef{MPI_OFFSET_KIND} = $sizeof_hash{OFFSET};
+        push @mpidef_list, "MPI_IDENT";
+        push @mpidef_list, "MPI_CONGRUENT";
+        push @mpidef_list, "MPI_SIMILAR";
+        push @mpidef_list, "MPI_UNEQUAL";
+        push @mpidef_list, "MPI_WIN_FLAVOR_CREATE";
+        push @mpidef_list, "MPI_WIN_FLAVOR_ALLOCATE";
+        push @mpidef_list, "MPI_WIN_FLAVOR_DYNAMIC";
+        push @mpidef_list, "MPI_WIN_FLAVOR_SHARED";
+        push @mpidef_list, "MPI_WIN_SEPARATE";
+        push @mpidef_list, "MPI_WIN_UNIFIED";
+        push @mpidef_list, "MPI_MAX";
+        $mpidef_type{MAX} = "Op";
+        push @mpidef_list, "MPI_MIN";
+        $mpidef_type{MIN} = "Op";
+        push @mpidef_list, "MPI_SUM";
+        $mpidef_type{SUM} = "Op";
+        push @mpidef_list, "MPI_PROD";
+        $mpidef_type{PROD} = "Op";
+        push @mpidef_list, "MPI_LAND";
+        $mpidef_type{LAND} = "Op";
+        push @mpidef_list, "MPI_BAND";
+        $mpidef_type{BAND} = "Op";
+        push @mpidef_list, "MPI_LOR";
+        $mpidef_type{LOR} = "Op";
+        push @mpidef_list, "MPI_BOR";
+        $mpidef_type{BOR} = "Op";
+        push @mpidef_list, "MPI_LXOR";
+        $mpidef_type{LXOR} = "Op";
+        push @mpidef_list, "MPI_BXOR";
+        $mpidef_type{BXOR} = "Op";
+        push @mpidef_list, "MPI_MINLOC";
+        $mpidef_type{MINLOC} = "Op";
+        push @mpidef_list, "MPI_MAXLOC";
+        $mpidef_type{MAXLOC} = "Op";
+        push @mpidef_list, "MPI_REPLACE";
+        $mpidef_type{REPLACE} = "Op";
+        push @mpidef_list, "MPI_NO_OP";
+        $mpidef_type{NO_OP} = "Op";
+        push @mpidef_list, "MPI_COMM_NULL";
+        $mpidef_type{COMM_NULL} = "Comm";
+        push @mpidef_list, "MPI_WIN_NULL";
+        $mpidef_type{WIN_NULL} = "Win";
+        push @mpidef_list, "MPI_FILE_NULL";
+        $mpidef_type{FILE_NULL} = "File";
+        push @mpidef_list, "MPI_GROUP_NULL";
+        $mpidef_type{GROUP_NULL} = "Group";
+        push @mpidef_list, "MPI_OP_NULL";
+        $mpidef_type{OP_NULL} = "Op";
+        push @mpidef_list, "MPI_DATATYPE_NULL";
+        $mpidef_type{DATATYPE_NULL} = "Datatype";
+        push @mpidef_list, "MPI_REQUEST_NULL";
+        $mpidef_type{REQUEST_NULL} = "Request";
+        push @mpidef_list, "MPI_INFO_NULL";
+        $mpidef_type{INFO_NULL} = "Info";
+        push @mpidef_list, "MPI_ERRHANDLER_NULL";
+        $mpidef_type{ERRHANDLER_NULL} = "Errhandler";
+        push @mpidef_list, "MPI_MESSAGE_NULL";
+        $mpidef_type{MESSAGE_NULL} = "Message";
+        push @mpidef_list, "MPI_COMM_WORLD";
+        $mpidef_type{COMM_WORLD} = "Comm";
+        push @mpidef_list, "MPI_COMM_SELF";
+        $mpidef_type{COMM_SELF} = "Comm";
+        push @mpidef_list, "MPI_GROUP_EMPTY";
+        $mpidef_type{GROUP_EMPTY} = "Group";
+        push @mpidef_list, "MPI_INFO_ENV";
+        $mpidef_type{INFO_ENV} = "Info";
+        push @mpidef_list, "MPI_MESSAGE_NO_PROC";
+        $mpidef_type{MESSAGE_NO_PROC} = "Message";
+        push @mpidef_list, "MPI_ERRORS_ARE_FATAL";
+        $mpidef_type{ERRORS_ARE_FATAL} = "MPI_Errhandler";
+        push @mpidef_list, "MPI_ERRORS_RETURN";
+        $mpidef_type{ERRORS_RETURN} = "MPI_Errhandler";
+
+        push @mpidef_list, "MPI_TAG_UB";
+        $mpidef{MPI_TAG_UB} += 1;
+        push @mpidef_list, "MPI_HOST";
+        $mpidef{MPI_HOST} += 1;
+        push @mpidef_list, "MPI_IO";
+        $mpidef{MPI_IO} += 1;
+        push @mpidef_list, "MPI_WTIME_IS_GLOBAL";
+        $mpidef{MPI_WTIME_IS_GLOBAL} += 1;
+        push @mpidef_list, "MPI_UNIVERSE_SIZE";
+        $mpidef{MPI_UNIVERSE_SIZE} += 1;
+        push @mpidef_list, "MPI_LASTUSEDCODE";
+        $mpidef{MPI_LASTUSEDCODE} += 1;
+        push @mpidef_list, "MPI_APPNUM";
+        $mpidef{MPI_APPNUM} += 1;
+        push @mpidef_list, "MPI_WIN_BASE";
+        $mpidef{MPI_WIN_BASE} += 1;
+        push @mpidef_list, "MPI_WIN_SIZE";
+        $mpidef{MPI_WIN_SIZE} += 1;
+        push @mpidef_list, "MPI_WIN_DISP_UNIT";
+        $mpidef{MPI_WIN_DISP_UNIT} += 1;
+        push @mpidef_list, "MPI_WIN_CREATE_FLAVOR";
+        $mpidef{MPI_WIN_CREATE_FLAVOR} += 1;
+        push @mpidef_list, "MPI_WIN_MODEL";
+        $mpidef{MPI_WIN_MODEL} += 1;
+        push @mpidef_list, "MPI_MAX_ERROR_STRING";
+        $mpidef{MPI_MAX_ERROR_STRING} -= 1;
+        push @mpidef_list, "MPI_MAX_PORT_NAME";
+        $mpidef{MPI_MAX_PORT_NAME} -= 1;
+        push @mpidef_list, "MPI_MAX_OBJECT_NAME";
+        $mpidef{MPI_MAX_OBJECT_NAME} -= 1;
+        push @mpidef_list, "MPI_MAX_INFO_KEY";
+        $mpidef{MPI_MAX_INFO_KEY} -= 1;
+        push @mpidef_list, "MPI_MAX_INFO_VAL";
+        $mpidef{MPI_MAX_INFO_VAL} -= 1;
+        push @mpidef_list, "MPI_MAX_PROCESSOR_NAME";
+        $mpidef{MPI_MAX_PROCESSOR_NAME} -= 1;
+        push @mpidef_list, "MPI_MAX_DATAREP_STRING";
+        $mpidef{MPI_MAX_DATAREP_STRING} -= 1;
+        push @mpidef_list, "MPI_MAX_LIBRARY_VERSION_STRING";
+        $mpidef{MPI_MAX_LIBRARY_VERSION_STRING} -= 1;
+        push @mpidef_list, "MPI_UNDEFINED";
+        push @mpidef_list, "MPI_KEYVAL_INVALID";
+        push @mpidef_list, "MPI_BSEND_OVERHEAD";
+        push @mpidef_list, "MPI_PROC_NULL";
+        push @mpidef_list, "MPI_ANY_SOURCE";
+        push @mpidef_list, "MPI_ANY_TAG";
+        push @mpidef_list, "MPI_ROOT";
+        push @mpidef_list, "MPI_GRAPH";
+        push @mpidef_list, "MPI_CART";
+        push @mpidef_list, "MPI_DIST_GRAPH";
+        push @mpidef_list, "MPI_VERSION";
+        push @mpidef_list, "MPI_SUBVERSION";
+        push @mpidef_list, "MPI_LOCK_EXCLUSIVE";
+        push @mpidef_list, "MPI_LOCK_SHARED";
+
+        my $v = hex $mpi_h_confs->{MPI_CHAR};
+        if ($v == 0) {
+            $mpidef{MPI_CHAR} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_CHAR} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_CHAR";
+        $mpidef_type{"CHAR"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UNSIGNED_CHAR};
+        if ($v == 0) {
+            $mpidef{MPI_UNSIGNED_CHAR} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UNSIGNED_CHAR} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UNSIGNED_CHAR";
+        $mpidef_type{"UNSIGNED_CHAR"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_SHORT};
+        if ($v == 0) {
+            $mpidef{MPI_SHORT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_SHORT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_SHORT";
+        $mpidef_type{"SHORT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UNSIGNED_SHORT};
+        if ($v == 0) {
+            $mpidef{MPI_UNSIGNED_SHORT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UNSIGNED_SHORT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UNSIGNED_SHORT";
+        $mpidef_type{"UNSIGNED_SHORT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INT};
+        if ($v == 0) {
+            $mpidef{MPI_INT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INT";
+        $mpidef_type{"INT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UNSIGNED_INT};
+        if ($v == 0) {
+            $mpidef{MPI_UNSIGNED_INT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UNSIGNED_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UNSIGNED_INT";
+        $mpidef_type{"UNSIGNED_INT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_LONG};
+        if ($v == 0) {
+            $mpidef{MPI_LONG} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_LONG} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_LONG";
+        $mpidef_type{"LONG"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UNSIGNED_LONG};
+        if ($v == 0) {
+            $mpidef{MPI_UNSIGNED_LONG} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UNSIGNED_LONG} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UNSIGNED_LONG";
+        $mpidef_type{"UNSIGNED_LONG"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_LONG_LONG};
+        if ($v == 0) {
+            $mpidef{MPI_LONG_LONG} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_LONG_LONG} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_LONG_LONG";
+        $mpidef_type{"LONG_LONG"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_FLOAT};
+        if ($v == 0) {
+            $mpidef{MPI_FLOAT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_FLOAT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_FLOAT";
+        $mpidef_type{"FLOAT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_DOUBLE};
+        if ($v == 0) {
+            $mpidef{MPI_DOUBLE} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_DOUBLE} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_DOUBLE";
+        $mpidef_type{"DOUBLE"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_LONG_DOUBLE};
+        if ($v == 0) {
+            $mpidef{MPI_LONG_DOUBLE} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_LONG_DOUBLE} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_LONG_DOUBLE";
+        $mpidef_type{"LONG_DOUBLE"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_BYTE};
+        if ($v == 0) {
+            $mpidef{MPI_BYTE} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_BYTE} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_BYTE";
+        $mpidef_type{"BYTE"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_WCHAR};
+        if ($v == 0) {
+            $mpidef{MPI_WCHAR} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_WCHAR} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_WCHAR";
+        $mpidef_type{"WCHAR"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_PACKED};
+        if ($v == 0) {
+            $mpidef{MPI_PACKED} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_PACKED} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_PACKED";
+        $mpidef_type{"PACKED"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_LB};
+        if ($v == 0) {
+            $mpidef{MPI_LB} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_LB} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_LB";
+        $mpidef_type{"LB"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UB};
+        if ($v == 0) {
+            $mpidef{MPI_UB} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UB} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UB";
+        $mpidef_type{"UB"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_2INT};
+        if ($v == 0) {
+            $mpidef{MPI_2INT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_2INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_2INT";
+        $mpidef_type{"2INT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_SIGNED_CHAR};
+        if ($v == 0) {
+            $mpidef{MPI_SIGNED_CHAR} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_SIGNED_CHAR} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_SIGNED_CHAR";
+        $mpidef_type{"SIGNED_CHAR"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UNSIGNED_LONG_LONG};
+        if ($v == 0) {
+            $mpidef{MPI_UNSIGNED_LONG_LONG} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UNSIGNED_LONG_LONG} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UNSIGNED_LONG_LONG";
+        $mpidef_type{"UNSIGNED_LONG_LONG"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_CHARACTER};
+        if ($v == 0) {
+            $mpidef{MPI_CHARACTER} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_CHARACTER} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_CHARACTER";
+        $mpidef_type{"CHARACTER"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INTEGER};
+        if ($v == 0) {
+            $mpidef{MPI_INTEGER} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INTEGER} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INTEGER";
+        $mpidef_type{"INTEGER"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_REAL};
+        if ($v == 0) {
+            $mpidef{MPI_REAL} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_REAL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_REAL";
+        $mpidef_type{"REAL"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_LOGICAL};
+        if ($v == 0) {
+            $mpidef{MPI_LOGICAL} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_LOGICAL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_LOGICAL";
+        $mpidef_type{"LOGICAL"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_COMPLEX";
+        $mpidef_type{"COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_DOUBLE_PRECISION};
+        if ($v == 0) {
+            $mpidef{MPI_DOUBLE_PRECISION} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_DOUBLE_PRECISION} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_DOUBLE_PRECISION";
+        $mpidef_type{"DOUBLE_PRECISION"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_2INTEGER};
+        if ($v == 0) {
+            $mpidef{MPI_2INTEGER} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_2INTEGER} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_2INTEGER";
+        $mpidef_type{"2INTEGER"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_2REAL};
+        if ($v == 0) {
+            $mpidef{MPI_2REAL} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_2REAL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_2REAL";
+        $mpidef_type{"2REAL"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_DOUBLE_COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_DOUBLE_COMPLEX";
+        $mpidef_type{"DOUBLE_COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_2DOUBLE_PRECISION};
+        if ($v == 0) {
+            $mpidef{MPI_2DOUBLE_PRECISION} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_2DOUBLE_PRECISION} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_2DOUBLE_PRECISION";
+        $mpidef_type{"2DOUBLE_PRECISION"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_2COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_2COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_2COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_2COMPLEX";
+        $mpidef_type{"2COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_2DOUBLE_COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_2DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_2DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_2DOUBLE_COMPLEX";
+        $mpidef_type{"2DOUBLE_COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_REAL4};
+        if ($v == 0) {
+            $mpidef{MPI_REAL4} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_REAL4} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_REAL4";
+        $mpidef_type{"REAL4"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_COMPLEX8};
+        if ($v == 0) {
+            $mpidef{MPI_COMPLEX8} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_COMPLEX8} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_COMPLEX8";
+        $mpidef_type{"COMPLEX8"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_REAL8};
+        if ($v == 0) {
+            $mpidef{MPI_REAL8} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_REAL8} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_REAL8";
+        $mpidef_type{"REAL8"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_COMPLEX16};
+        if ($v == 0) {
+            $mpidef{MPI_COMPLEX16} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_COMPLEX16} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_COMPLEX16";
+        $mpidef_type{"COMPLEX16"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_REAL16};
+        if ($v == 0) {
+            $mpidef{MPI_REAL16} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_REAL16} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_REAL16";
+        $mpidef_type{"REAL16"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_COMPLEX32};
+        if ($v == 0) {
+            $mpidef{MPI_COMPLEX32} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_COMPLEX32} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_COMPLEX32";
+        $mpidef_type{"COMPLEX32"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INTEGER1};
+        if ($v == 0) {
+            $mpidef{MPI_INTEGER1} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INTEGER1} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INTEGER1";
+        $mpidef_type{"INTEGER1"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INTEGER2};
+        if ($v == 0) {
+            $mpidef{MPI_INTEGER2} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INTEGER2} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INTEGER2";
+        $mpidef_type{"INTEGER2"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INTEGER4};
+        if ($v == 0) {
+            $mpidef{MPI_INTEGER4} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INTEGER4} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INTEGER4";
+        $mpidef_type{"INTEGER4"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INTEGER8};
+        if ($v == 0) {
+            $mpidef{MPI_INTEGER8} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INTEGER8} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INTEGER8";
+        $mpidef_type{"INTEGER8"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INTEGER16};
+        if ($v == 0) {
+            $mpidef{MPI_INTEGER16} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INTEGER16} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INTEGER16";
+        $mpidef_type{"INTEGER16"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_CXX_BOOL};
+        if ($v == 0) {
+            $mpidef{MPI_CXX_BOOL} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_CXX_BOOL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_CXX_BOOL";
+        $mpidef_type{"CXX_BOOL"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_CXX_COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_CXX_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_CXX_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_CXX_COMPLEX";
+        $mpidef_type{"CXX_COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_CXX_DOUBLE_COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_CXX_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_CXX_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_CXX_DOUBLE_COMPLEX";
+        $mpidef_type{"CXX_DOUBLE_COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_CXX_LONG_DOUBLE_COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_CXX_LONG_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_CXX_LONG_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_CXX_LONG_DOUBLE_COMPLEX";
+        $mpidef_type{"CXX_LONG_DOUBLE_COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INT8_T};
+        if ($v == 0) {
+            $mpidef{MPI_INT8_T} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INT8_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INT8_T";
+        $mpidef_type{"INT8_T"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INT16_T};
+        if ($v == 0) {
+            $mpidef{MPI_INT16_T} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INT16_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INT16_T";
+        $mpidef_type{"INT16_T"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INT32_T};
+        if ($v == 0) {
+            $mpidef{MPI_INT32_T} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INT32_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INT32_T";
+        $mpidef_type{"INT32_T"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_INT64_T};
+        if ($v == 0) {
+            $mpidef{MPI_INT64_T} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_INT64_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_INT64_T";
+        $mpidef_type{"INT64_T"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UINT8_T};
+        if ($v == 0) {
+            $mpidef{MPI_UINT8_T} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UINT8_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UINT8_T";
+        $mpidef_type{"UINT8_T"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UINT16_T};
+        if ($v == 0) {
+            $mpidef{MPI_UINT16_T} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UINT16_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UINT16_T";
+        $mpidef_type{"UINT16_T"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UINT32_T};
+        if ($v == 0) {
+            $mpidef{MPI_UINT32_T} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UINT32_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UINT32_T";
+        $mpidef_type{"UINT32_T"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_UINT64_T};
+        if ($v == 0) {
+            $mpidef{MPI_UINT64_T} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_UINT64_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_UINT64_T";
+        $mpidef_type{"UINT64_T"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_C_BOOL};
+        if ($v == 0) {
+            $mpidef{MPI_C_BOOL} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_C_BOOL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_C_BOOL";
+        $mpidef_type{"C_BOOL"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_C_FLOAT_COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_C_FLOAT_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_C_FLOAT_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_C_FLOAT_COMPLEX";
+        $mpidef_type{"C_FLOAT_COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_C_DOUBLE_COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_C_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_C_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_C_DOUBLE_COMPLEX";
+        $mpidef_type{"C_DOUBLE_COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_C_LONG_DOUBLE_COMPLEX};
+        if ($v == 0) {
+            $mpidef{MPI_C_LONG_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_C_LONG_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_C_LONG_DOUBLE_COMPLEX";
+        $mpidef_type{"C_LONG_DOUBLE_COMPLEX"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_AINT_DATATYPE};
+        if ($v == 0) {
+            $mpidef{MPI_AINT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_AINT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_AINT";
+        $mpidef_type{"AINT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_OFFSET_DATATYPE};
+        if ($v == 0) {
+            $mpidef{MPI_OFFSET} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_OFFSET} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_OFFSET";
+        $mpidef_type{"OFFSET"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_COUNT_DATATYPE};
+        if ($v == 0) {
+            $mpidef{MPI_COUNT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_COUNT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_COUNT";
+        $mpidef_type{"COUNT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_C_FLOAT16};
+        if ($v == 0) {
+            $mpidef{MPI_C_FLOAT16} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_C_FLOAT16} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_C_FLOAT16";
+        $mpidef_type{"C_FLOAT16"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_FLOAT_INT};
+        if ($v == 0) {
+            $mpidef{MPI_FLOAT_INT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_FLOAT_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_FLOAT_INT";
+        $mpidef_type{"FLOAT_INT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_DOUBLE_INT};
+        if ($v == 0) {
+            $mpidef{MPI_DOUBLE_INT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_DOUBLE_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_DOUBLE_INT";
+        $mpidef_type{"DOUBLE_INT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_LONG_INT};
+        if ($v == 0) {
+            $mpidef{MPI_LONG_INT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_LONG_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_LONG_INT";
+        $mpidef_type{"LONG_INT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_SHORT_INT};
+        if ($v == 0) {
+            $mpidef{MPI_SHORT_INT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_SHORT_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_SHORT_INT";
+        $mpidef_type{"SHORT_INT"} = "Datatype";
+        my $v = hex $mpi_h_confs->{MPI_LONG_DOUBLE_INT};
+        if ($v == 0) {
+            $mpidef{MPI_LONG_DOUBLE_INT} = "MPI_DATATYPE_NULL";
+        }
+        else {
+            $mpidef{MPI_LONG_DOUBLE_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        }
+        push @mpidef_list, "MPI_LONG_DOUBLE_INT";
+        $mpidef_type{"LONG_DOUBLE_INT"} = "Datatype";
+
+        push @mpidef_list, "MPI_ADDRESS_KIND";
+        push @mpidef_list, "MPI_OFFSET_KIND";
+        push @mpidef_list, "MPI_COUNT_KIND";
+        push @mpidef_list, "MPI_INTEGER_KIND";
+        push @mpidef_list, "MPI_COMBINER_NAMED";
+        push @mpidef_list, "MPI_COMBINER_DUP";
+        push @mpidef_list, "MPI_COMBINER_CONTIGUOUS";
+        push @mpidef_list, "MPI_COMBINER_VECTOR";
+        push @mpidef_list, "MPI_COMBINER_HVECTOR_INTEGER";
+        push @mpidef_list, "MPI_COMBINER_HVECTOR";
+        push @mpidef_list, "MPI_COMBINER_INDEXED";
+        push @mpidef_list, "MPI_COMBINER_HINDEXED_INTEGER";
+        push @mpidef_list, "MPI_COMBINER_HINDEXED";
+        push @mpidef_list, "MPI_COMBINER_INDEXED_BLOCK";
+        push @mpidef_list, "MPI_COMBINER_STRUCT_INTEGER";
+        push @mpidef_list, "MPI_COMBINER_STRUCT";
+        push @mpidef_list, "MPI_COMBINER_SUBARRAY";
+        push @mpidef_list, "MPI_COMBINER_DARRAY";
+        push @mpidef_list, "MPI_COMBINER_F90_REAL";
+        push @mpidef_list, "MPI_COMBINER_F90_COMPLEX";
+        push @mpidef_list, "MPI_COMBINER_F90_INTEGER";
+        push @mpidef_list, "MPI_COMBINER_RESIZED";
+        push @mpidef_list, "MPI_COMBINER_HINDEXED_BLOCK";
+        push @mpidef_list, "MPI_TYPECLASS_REAL";
+        push @mpidef_list, "MPI_TYPECLASS_INTEGER";
+        push @mpidef_list, "MPI_TYPECLASS_COMPLEX";
+        push @mpidef_list, "MPI_MODE_NOCHECK";
+        push @mpidef_list, "MPI_MODE_NOSTORE";
+        push @mpidef_list, "MPI_MODE_NOPUT";
+        push @mpidef_list, "MPI_MODE_NOPRECEDE";
+        push @mpidef_list, "MPI_MODE_NOSUCCEED";
+        push @mpidef_list, "MPI_COMM_TYPE_SHARED";
+        push @mpidef_list, "MPI_THREAD_SINGLE";
+        push @mpidef_list, "MPI_THREAD_FUNNELED";
+        push @mpidef_list, "MPI_THREAD_SERIALIZED";
+        push @mpidef_list, "MPI_THREAD_MULTIPLE";
+
+        if (!$opts{disable_romio}) {
+            push @mpidef_list, "MPI_MODE_RDONLY";
+            push @mpidef_list, "MPI_MODE_RDWR";
+            push @mpidef_list, "MPI_MODE_WRONLY";
+            push @mpidef_list, "MPI_MODE_DELETE_ON_CLOSE";
+            push @mpidef_list, "MPI_MODE_UNIQUE_OPEN";
+            push @mpidef_list, "MPI_MODE_CREATE";
+            push @mpidef_list, "MPI_MODE_EXCL";
+            push @mpidef_list, "MPI_MODE_APPEND";
+            push @mpidef_list, "MPI_MODE_SEQUENTIAL";
+            push @mpidef_list, "MPI_SEEK_SET";
+            push @mpidef_list, "MPI_SEEK_CUR";
+            push @mpidef_list, "MPI_SEEK_END";
+            push @mpidef_list, "MPI_ORDER_C";
+            push @mpidef_list, "MPI_ORDER_FORTRAN";
+            push @mpidef_list, "MPI_DISTRIBUTE_BLOCK";
+            push @mpidef_list, "MPI_DISTRIBUTE_CYCLIC";
+            push @mpidef_list, "MPI_DISTRIBUTE_NONE";
+            push @mpidef_list, "MPI_DISTRIBUTE_DFLT_DARG";
+            $mpidef{MPI_DISPLACEMENT_CURRENT} = -54278278;
+            push @mpidef_list, "MPI_MPI_DISPLACEMENT_CURRENT";
+        }
+
+        my $dir="src/binding/fortran/mpif_h";
+        open Out, ">$dir/mpif.h" or die "Can't write $dir/mpif.h: $!\n";
+        print "  --> [$dir/mpif.h]\n";
+        my $sp = ' ' x 6;
+        print Out "!      \n";
+        print Out "!      Copyright (C) by Argonne National Laboratory\n";
+        print Out "!          See COPYRIGHT in top-level directory\n";
+        print Out "!      \n";
+        print Out "!      DO NOT EDIT\n";
+        print Out "!      This file created by buildiface\n";
+        print Out "!      \n";
+        my $n = $sizeof_hash{MPI_STATUS} / $sizeof_hash{INT};
+        if ($n != 5) {
+            warn "MPI_STATUS has wrong size!\n";
+        }
+        print Out "       INTEGER MPI_SOURCE, MPI_TAG, MPI_ERROR\n";
+        print Out "       PARAMETER (MPI_SOURCE=3,MPI_TAG=4,MPI_ERROR=5)\n";
+
+        print Out "       INTEGER MPI_STATUS_SIZE\n";
+        print Out "       PARAMETER (MPI_STATUS_SIZE=$n)\n";
+        print Out "       INTEGER MPI_STATUS_IGNORE($n)\n";
+        print Out "       INTEGER MPI_STATUSES_IGNORE($n,1)\n";
+
+        print Out "       INTEGER MPI_ERRCODES_IGNORE(1)\n";
+
+        print Out "       CHARACTER*1 MPI_ARGVS_NULL(1,1)\n";
+        print Out "       CHARACTER*1 MPI_ARGV_NULL(1)\n";
+
+        print Out "       INTEGER MPI_BOTTOM, MPI_IN_PLACE, MPI_UNWEIGHTED\n";
+        print Out "       INTEGER MPI_WEIGHTS_EMPTY\n";
+        foreach my $k (@mpidef_list) {
+            if (!defined $mpidef{$k}) {
+                warn "mpif.h: $k missing\n";
+            }
+            print Out "$sp INTEGER $k\n";
+            print Out "$sp PARAMETER ($k=$mpidef{$k})\n";
+        }
+        foreach my $a ("SUBARRAYS_SUPPORTED", "ASYNC_PROTECTS_NONBLOCKING") {
+            print Out "       LOGICAL MPI_$a\n";
+            print Out "       PARAMETER(MPI_$a=.FALSE.)\n";
+        }
+
+        print Out "       EXTERNAL MPI_DUP_FN, MPI_NULL_DELETE_FN, MPI_NULL_COPY_FN\n";
+        print Out "       EXTERNAL MPI_WTIME, MPI_WTICK\n";
+        print Out "       EXTERNAL PMPI_WTIME, PMPI_WTICK\n";
+        print Out "       EXTERNAL MPI_COMM_DUP_FN, MPI_COMM_NULL_DELETE_FN\n";
+        print Out "       EXTERNAL MPI_COMM_NULL_COPY_FN\n";
+        print Out "       EXTERNAL MPI_WIN_DUP_FN, MPI_WIN_NULL_DELETE_FN\n";
+        print Out "       EXTERNAL MPI_WIN_NULL_COPY_FN\n";
+        print Out "       EXTERNAL MPI_TYPE_DUP_FN, MPI_TYPE_NULL_DELETE_FN\n";
+        print Out "       EXTERNAL MPI_TYPE_NULL_COPY_FN\n";
+        print Out "       EXTERNAL MPI_CONVERSION_FN_NULL\n";
+        print Out "       DOUBLE PRECISION MPI_WTIME, MPI_WTICK\n";
+        print Out "       DOUBLE PRECISION PMPI_WTIME, PMPI_WTICK\n";
+        print Out "$sp COMMON /MPIFCMB5/ MPI_UNWEIGHTED\n";
+        print Out "$sp COMMON /MPIFCMB9/ MPI_WEIGHTS_EMPTY\n";
+        print Out "$sp SAVE /MPIFCMB5/\n";
+        print Out "$sp SAVE /MPIFCMB9/\n";
+
+        print Out "$sp COMMON /MPIPRIV1/ MPI_BOTTOM, MPI_IN_PLACE, MPI_STATUS_IGNORE\n";
+
+        print Out "$sp COMMON /MPIPRIV2/ MPI_STATUSES_IGNORE, MPI_ERRCODES_IGNORE\n";
+        print Out "$sp SAVE /MPIPRIV1/,/MPIPRIV2/\n";
+
+        print Out "$sp COMMON /MPIPRIVC/ MPI_ARGVS_NULL, MPI_ARGV_NULL\n";
+        print Out "$sp SAVE   /MPIPRIVC/\n";
+        close Out;
+        my $dir="src/binding/fortran/use_mpi";
+        open Out, ">src/binding/fortran/use_mpi/mpif90model.h" or die "Can't write src/binding/fortran/use_mpi/mpif90model.h: $!\n";
+        print "  --> [src/binding/fortran/use_mpi/mpif90model.h]\n";
+        print Out "#ifndef MPIR_F90MODEL_INCLUDED\n";
+        print Out "#define MPIR_F90MODEL_INCLUDED\n";
+        print Out "#define MPIR_F90_REAL_MODEL    6, 37\n";
+        print Out "#define MPIR_F90_DOUBLE_MODEL 15, 307\n";
+        print Out "#define MPIR_F90_INTEGER_MODEL 9\n";
+        print Out "#define MPIR_F90_ALL_INTEGER_MODELS 2, 1, 4, 2, 9, 4, 18, 8,\n";
+        print Out "#define MPIR_F90_INTEGER_MODEL_MAP {2, 1, 1}, {4, 2, 2}, {9, 4, 4}, {18, 8, 8},\n";
+        print Out "#endif\n";
+        close Out;
+        open Out, ">$dir/mpi_constants.f90" or die "Can't write $dir/mpi_constants.f90: $!\n";
+        print "  --> [$dir/mpi_constants.f90]\n";
+        print Out "MODULE MPI_CONSTANTS\n";
+        print Out "IMPLICIT NONE\n";
+        print Out "include 'mpifnoext.h'\n";
+        my $sp = '    ';
+        print Out "${sp}TYPE :: MPI_Status\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: count_lo\n";
+        print Out "${sp}INTEGER :: count_hi_and_cancelled\n";
+        print Out "${sp}INTEGER :: MPI_SOURCE\n";
+        print Out "${sp}INTEGER :: MPI_TAG\n";
+        print Out "${sp}INTEGER :: MPI_ERROR\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Status\n";
+        print Out "${sp}TYPE :: MPI_Comm\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Comm\n";
+        print Out "${sp}TYPE :: MPI_Win\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Win\n";
+        print Out "${sp}TYPE :: MPI_File\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_File\n";
+        print Out "${sp}TYPE :: MPI_Group\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Group\n";
+        print Out "${sp}TYPE :: MPI_Op\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Op\n";
+        print Out "${sp}TYPE :: MPI_Datatype\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Datatype\n";
+        print Out "${sp}TYPE :: MPI_Request\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Request\n";
+        print Out "${sp}TYPE :: MPI_Info\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Info\n";
+        print Out "${sp}TYPE :: MPI_Errhandler\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Errhandler\n";
+        print Out "${sp}TYPE :: MPI_Message\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Message\n";
+        print Out "${sp}INTERFACE OPERATOR(.EQ.)\n";
+        $sp .= '    ';
+        print Out "${sp}MODULE PROCEDURE commeq\n";
+        print Out "${sp}MODULE PROCEDURE wineq\n";
+        print Out "${sp}MODULE PROCEDURE fileeq\n";
+        print Out "${sp}MODULE PROCEDURE groupeq\n";
+        print Out "${sp}MODULE PROCEDURE opeq\n";
+        print Out "${sp}MODULE PROCEDURE datatypeeq\n";
+        print Out "${sp}MODULE PROCEDURE requesteq\n";
+        print Out "${sp}MODULE PROCEDURE infoeq\n";
+        print Out "${sp}MODULE PROCEDURE errhandlereq\n";
+        print Out "${sp}MODULE PROCEDURE messageeq\n";
+        $sp =~s/^    //;
+        print Out "${sp}END INTERFACE\n";
+        print Out "${sp}INTERFACE OPERATOR(.NE.)\n";
+        $sp .= '    ';
+        print Out "${sp}MODULE PROCEDURE commne\n";
+        print Out "${sp}MODULE PROCEDURE winne\n";
+        print Out "${sp}MODULE PROCEDURE filene\n";
+        print Out "${sp}MODULE PROCEDURE groupne\n";
+        print Out "${sp}MODULE PROCEDURE opne\n";
+        print Out "${sp}MODULE PROCEDURE datatypene\n";
+        print Out "${sp}MODULE PROCEDURE requestne\n";
+        print Out "${sp}MODULE PROCEDURE infone\n";
+        print Out "${sp}MODULE PROCEDURE errhandlerne\n";
+        print Out "${sp}MODULE PROCEDURE messagene\n";
+        $sp =~s/^    //;
+        print Out "${sp}END INTERFACE\n";
+        print Out "${sp}CONTAINS\n";
+        print Out "${sp}LOGICAL FUNCTION Commeq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Comm), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Commeq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Commne(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Comm), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Commne = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Wineq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Win), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Wineq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Winne(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Win), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Winne = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Fileeq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_File), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Fileeq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Filene(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_File), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Filene = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Groupeq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Group), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Groupeq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Groupne(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Group), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Groupne = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Opeq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Op), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Opeq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Opne(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Op), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Opne = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Datatypeeq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Datatype), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Datatypeeq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Datatypene(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Datatype), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Datatypene = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Requesteq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Request), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Requesteq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Requestne(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Request), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Requestne = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Infoeq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Info), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Infoeq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Infone(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Info), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Infone = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Errhandlereq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Errhandler), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Errhandlereq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Errhandlerne(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Errhandler), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Errhandlerne = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Messageeq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Message), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Messageeq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Messagene(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Message), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Messagene = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "END MODULE MPI_CONSTANTS\n";
+        close Out;
+
+        my %confs;
+        $confs{WTIME_DOUBLE_TYPE} = "REAL*8";
+        $confs{SIZEOF_FC_INTEGER} = $sizeof_hash{INTEGER};
+        $confs{SIZEOF_FC_REAL} = $sizeof_hash{REAL};
+        $confs{SIZEOF_FC_DOUBLE_PRECISION} = $sizeof_hash{DOUBLE_PRECISION};
+        $confs{SIZEOF_FC_CHARACTER} = $sizeof_hash{CHARACTER};
+        autoconf_file("$dir/mpi_sizeofs.f90", \%confs);
+        autoconf_file("$dir/mpi_base.f90", \%confs);
+        my $dir="src/binding/fortran/use_mpi_f08";
+        open Out, ">$dir/mpi_f08_types.f90" or die "Can't write $dir/mpi_f08_types.f90: $!\n";
+        print "  --> [$dir/mpi_f08_types.f90]\n";
+        print Out "!      \n";
+        print Out "!      Copyright (C) by Argonne National Laboratory\n";
+        print Out "!          See COPYRIGHT in top-level directory\n";
+        print Out "!      \n";
+        print Out "!      DO NOT EDIT\n";
+        print Out "!      This file created by buildiface\n";
+        print Out "!      \n";
+        print Out "module MPI_f08_types\n";
+        print Out "\n";
+        print Out "use,intrinsic :: iso_c_binding, only: c_int\n";
+        print Out "use:: mpi_c_interface_types, only: c_Count, c_Status\n";
+        print Out "implicit none\n";
+        print Out "type, bind(C) :: MPI_Comm\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Comm\n";
+        print Out "type, bind(C) :: MPI_Win\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Win\n";
+        print Out "type, bind(C) :: MPI_File\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_File\n";
+        print Out "type, bind(C) :: MPI_Group\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Group\n";
+        print Out "type, bind(C) :: MPI_Op\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Op\n";
+        print Out "type, bind(C) :: MPI_Datatype\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Datatype\n";
+        print Out "type, bind(C) :: MPI_Request\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Request\n";
+        print Out "type, bind(C) :: MPI_Info\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Info\n";
+        print Out "type, bind(C) :: MPI_Errhandler\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Errhandler\n";
+        print Out "type, bind(C) :: MPI_Message\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Message\n";
+        print Out "type, bind(C) :: MPI_Status\n";
+        print Out "    integer :: count_lo\n";
+        print Out "    integer :: count_hi_and_cancelled\n";
+        print Out "    integer :: MPI_SOURCE\n";
+        print Out "    integer :: MPI_TAG\n";
+        print Out "    integer :: MPI_ERROR\n";
+        print Out "end type MPI_Status\n";
+        print Out "integer,parameter :: MPI_SOURCE = 3\n";
+        print Out "integer,parameter :: MPI_TAG = 4\n";
+        print Out "integer,parameter :: MPI_ERROR = 5\n";
+        print Out "integer,parameter :: MPI_STATUS_SIZE = 5\n";
+        print Out "interface assignment(=)\n";
+        my $sp = "    ";
+        print Out "${sp}module procedure MPI_Status_f08_assign_c\n";
+        print Out "${sp}module procedure MPI_Status_c_assign_f08\n";
+        print Out "end interface\n";
+        print Out "private:: MPI_Status_f08_assign_c\n";
+        print Out "private:: MPI_Status_c_assign_f08\n";
+        print Out "private:: MPI_Status_f_assign_c\n";
+        print Out "private:: MPI_Status_c_assign_f\n";
+        print Out "interface operator(==)\n";
+        print Out "    module procedure MPI_Comm_eq\n";
+        print Out "    module procedure MPI_Comm_f08_eq_f\n";
+        print Out "    module procedure MPI_Comm_f_eq_f08\n";
+        print Out "    module procedure MPI_Win_eq\n";
+        print Out "    module procedure MPI_Win_f08_eq_f\n";
+        print Out "    module procedure MPI_Win_f_eq_f08\n";
+        print Out "    module procedure MPI_File_eq\n";
+        print Out "    module procedure MPI_File_f08_eq_f\n";
+        print Out "    module procedure MPI_File_f_eq_f08\n";
+        print Out "    module procedure MPI_Group_eq\n";
+        print Out "    module procedure MPI_Group_f08_eq_f\n";
+        print Out "    module procedure MPI_Group_f_eq_f08\n";
+        print Out "    module procedure MPI_Op_eq\n";
+        print Out "    module procedure MPI_Op_f08_eq_f\n";
+        print Out "    module procedure MPI_Op_f_eq_f08\n";
+        print Out "    module procedure MPI_Datatype_eq\n";
+        print Out "    module procedure MPI_Datatype_f08_eq_f\n";
+        print Out "    module procedure MPI_Datatype_f_eq_f08\n";
+        print Out "    module procedure MPI_Request_eq\n";
+        print Out "    module procedure MPI_Request_f08_eq_f\n";
+        print Out "    module procedure MPI_Request_f_eq_f08\n";
+        print Out "    module procedure MPI_Info_eq\n";
+        print Out "    module procedure MPI_Info_f08_eq_f\n";
+        print Out "    module procedure MPI_Info_f_eq_f08\n";
+        print Out "    module procedure MPI_Errhandler_eq\n";
+        print Out "    module procedure MPI_Errhandler_f08_eq_f\n";
+        print Out "    module procedure MPI_Errhandler_f_eq_f08\n";
+        print Out "    module procedure MPI_Message_eq\n";
+        print Out "    module procedure MPI_Message_f08_eq_f\n";
+        print Out "    module procedure MPI_Message_f_eq_f08\n";
+        print Out "end interface\n";
+        print Out "private:: MPI_Comm_eq\n";
+        print Out "private:: MPI_Comm_f08_eq_f\n";
+        print Out "private:: MPI_Comm_f_eq_f08\n";
+        print Out "private:: MPI_Win_eq\n";
+        print Out "private:: MPI_Win_f08_eq_f\n";
+        print Out "private:: MPI_Win_f_eq_f08\n";
+        print Out "private:: MPI_File_eq\n";
+        print Out "private:: MPI_File_f08_eq_f\n";
+        print Out "private:: MPI_File_f_eq_f08\n";
+        print Out "private:: MPI_Group_eq\n";
+        print Out "private:: MPI_Group_f08_eq_f\n";
+        print Out "private:: MPI_Group_f_eq_f08\n";
+        print Out "private:: MPI_Op_eq\n";
+        print Out "private:: MPI_Op_f08_eq_f\n";
+        print Out "private:: MPI_Op_f_eq_f08\n";
+        print Out "private:: MPI_Datatype_eq\n";
+        print Out "private:: MPI_Datatype_f08_eq_f\n";
+        print Out "private:: MPI_Datatype_f_eq_f08\n";
+        print Out "private:: MPI_Request_eq\n";
+        print Out "private:: MPI_Request_f08_eq_f\n";
+        print Out "private:: MPI_Request_f_eq_f08\n";
+        print Out "private:: MPI_Info_eq\n";
+        print Out "private:: MPI_Info_f08_eq_f\n";
+        print Out "private:: MPI_Info_f_eq_f08\n";
+        print Out "private:: MPI_Errhandler_eq\n";
+        print Out "private:: MPI_Errhandler_f08_eq_f\n";
+        print Out "private:: MPI_Errhandler_f_eq_f08\n";
+        print Out "private:: MPI_Message_eq\n";
+        print Out "private:: MPI_Message_f08_eq_f\n";
+        print Out "private:: MPI_Message_f_eq_f08\n";
+        print Out "interface operator(/=)\n";
+        print Out "    module procedure MPI_Comm_neq\n";
+        print Out "    module procedure MPI_Comm_f08_neq_f\n";
+        print Out "    module procedure MPI_Comm_f_neq_f08\n";
+        print Out "    module procedure MPI_Win_neq\n";
+        print Out "    module procedure MPI_Win_f08_neq_f\n";
+        print Out "    module procedure MPI_Win_f_neq_f08\n";
+        print Out "    module procedure MPI_File_neq\n";
+        print Out "    module procedure MPI_File_f08_neq_f\n";
+        print Out "    module procedure MPI_File_f_neq_f08\n";
+        print Out "    module procedure MPI_Group_neq\n";
+        print Out "    module procedure MPI_Group_f08_neq_f\n";
+        print Out "    module procedure MPI_Group_f_neq_f08\n";
+        print Out "    module procedure MPI_Op_neq\n";
+        print Out "    module procedure MPI_Op_f08_neq_f\n";
+        print Out "    module procedure MPI_Op_f_neq_f08\n";
+        print Out "    module procedure MPI_Datatype_neq\n";
+        print Out "    module procedure MPI_Datatype_f08_neq_f\n";
+        print Out "    module procedure MPI_Datatype_f_neq_f08\n";
+        print Out "    module procedure MPI_Request_neq\n";
+        print Out "    module procedure MPI_Request_f08_neq_f\n";
+        print Out "    module procedure MPI_Request_f_neq_f08\n";
+        print Out "    module procedure MPI_Info_neq\n";
+        print Out "    module procedure MPI_Info_f08_neq_f\n";
+        print Out "    module procedure MPI_Info_f_neq_f08\n";
+        print Out "    module procedure MPI_Errhandler_neq\n";
+        print Out "    module procedure MPI_Errhandler_f08_neq_f\n";
+        print Out "    module procedure MPI_Errhandler_f_neq_f08\n";
+        print Out "    module procedure MPI_Message_neq\n";
+        print Out "    module procedure MPI_Message_f08_neq_f\n";
+        print Out "    module procedure MPI_Message_f_neq_f08\n";
+        print Out "end interface\n";
+        print Out "private:: MPI_Comm_neq\n";
+        print Out "private:: MPI_Comm_f08_neq_f\n";
+        print Out "private:: MPI_Comm_f_neq_f08\n";
+        print Out "private:: MPI_Win_neq\n";
+        print Out "private:: MPI_Win_f08_neq_f\n";
+        print Out "private:: MPI_Win_f_neq_f08\n";
+        print Out "private:: MPI_File_neq\n";
+        print Out "private:: MPI_File_f08_neq_f\n";
+        print Out "private:: MPI_File_f_neq_f08\n";
+        print Out "private:: MPI_Group_neq\n";
+        print Out "private:: MPI_Group_f08_neq_f\n";
+        print Out "private:: MPI_Group_f_neq_f08\n";
+        print Out "private:: MPI_Op_neq\n";
+        print Out "private:: MPI_Op_f08_neq_f\n";
+        print Out "private:: MPI_Op_f_neq_f08\n";
+        print Out "private:: MPI_Datatype_neq\n";
+        print Out "private:: MPI_Datatype_f08_neq_f\n";
+        print Out "private:: MPI_Datatype_f_neq_f08\n";
+        print Out "private:: MPI_Request_neq\n";
+        print Out "private:: MPI_Request_f08_neq_f\n";
+        print Out "private:: MPI_Request_f_neq_f08\n";
+        print Out "private:: MPI_Info_neq\n";
+        print Out "private:: MPI_Info_f08_neq_f\n";
+        print Out "private:: MPI_Info_f_neq_f08\n";
+        print Out "private:: MPI_Errhandler_neq\n";
+        print Out "private:: MPI_Errhandler_f08_neq_f\n";
+        print Out "private:: MPI_Errhandler_f_neq_f08\n";
+        print Out "private:: MPI_Message_neq\n";
+        print Out "private:: MPI_Message_f08_neq_f\n";
+        print Out "private:: MPI_Message_f_neq_f08\n";
+        print Out "interface MPI_Sizeof\n";
+        print Out "    module procedure MPI_Sizeof_character\n";
+        print Out "    module procedure MPI_Sizeof_logical\n";
+        print Out "    module procedure MPI_Sizeof_xint8\n";
+        print Out "    module procedure MPI_Sizeof_xint16\n";
+        print Out "    module procedure MPI_Sizeof_xint32\n";
+        print Out "    module procedure MPI_Sizeof_xint64\n";
+        print Out "    module procedure MPI_Sizeof_xreal32\n";
+        print Out "    module procedure MPI_Sizeof_xreal64\n";
+        print Out "    module procedure MPI_Sizeof_xreal128\n";
+        print Out "    module procedure MPI_Sizeof_xcomplex32\n";
+        print Out "    module procedure MPI_Sizeof_xcomplex64\n";
+        print Out "    module procedure MPI_Sizeof_xcomplex128\n";
+        print Out "end interface\n";
+        print Out "private:: MPI_Sizeof_character\n";
+        print Out "private:: MPI_Sizeof_logical\n";
+        print Out "private:: MPI_Sizeof_xint8\n";
+        print Out "private:: MPI_Sizeof_xint16\n";
+        print Out "private:: MPI_Sizeof_xint32\n";
+        print Out "private:: MPI_Sizeof_xint64\n";
+        print Out "private:: MPI_Sizeof_xreal32\n";
+        print Out "private:: MPI_Sizeof_xreal64\n";
+        print Out "private:: MPI_Sizeof_xreal128\n";
+        print Out "private:: MPI_Sizeof_xcomplex32\n";
+        print Out "private:: MPI_Sizeof_xcomplex64\n";
+        print Out "private:: MPI_Sizeof_xcomplex128\n";
+
+        print Out "contains\n";
+        print Out "subroutine MPI_Sizeof_character(x, size, ierror)\n";
+        print Out "    character,dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_logical(x, size, ierror)\n";
+        print Out "    logical,dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xint8(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: int8\n";
+        print Out "    integer(int8),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xint16(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: int16\n";
+        print Out "    integer(int16),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xint32(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: int32\n";
+        print Out "    integer(int32),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xint64(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: int64\n";
+        print Out "    integer(int64),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xreal32(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: real32\n";
+        print Out "    real(real32),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xreal64(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: real64\n";
+        print Out "    real(real64),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xreal128(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: real128\n";
+        print Out "    real(real128),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xcomplex32(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: real32\n";
+        print Out "    complex(real32),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xcomplex64(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: real64\n";
+        print Out "    complex(real64),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Sizeof_xcomplex128(x, size, ierror)\n";
+        print Out "    use,intrinsic :: iso_fortran_env, only: real128\n";
+        print Out "    complex(real128),dimension(..) :: x\n";
+        print Out "    integer,intent(out) :: size\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    size = storage_size(x) / 8\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Status_f2f08(status_f, status_f08, ierror)\n";
+        print Out "    integer,intent(in) :: status_f(MPI_STATUS_SIZE)\n";
+        print Out "    type(MPI_Status),intent(out) :: status_f08\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    status_f08%count_lo = status_f(1)\n";
+        print Out "    status_f08%count_hi_and_cancelled = status_f(2)\n";
+        print Out "    status_f08%MPI_SOURCE = status_f(3)\n";
+        print Out "    status_f08%MPI_TAG = status_f(4)\n";
+        print Out "    status_f08%MPI_ERROR = status_f(5)\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Status_f082f(status_f08, status_f, ierror)\n";
+        print Out "    type(MPI_Status),intent(in) :: status_f08\n";
+        print Out "    integer,intent(out) :: status_f(MPI_STATUS_SIZE)\n";
+        print Out "    integer,optional, intent(out) :: ierror\n";
+        print Out "    status_f(1) = status_f08%count_lo\n";
+        print Out "    status_f(2) = status_f08%count_hi_and_cancelled\n";
+        print Out "    status_f(3) = status_f08%MPI_SOURCE\n";
+        print Out "    status_f(4) = status_f08%MPI_TAG\n";
+        print Out "    status_f(5) = status_f08%MPI_ERROR\n";
+        print Out "    if (present(ierror)) ierror = 0\n";
+        print Out "end subroutine\n";
+        print Out "elemental subroutine MPI_Status_f08_assign_c(status_f08, status_c)\n";
+        print Out "    type(c_Status),intent(in) :: status_c\n";
+        print Out "    type(MPI_Status),intent(out) :: status_f08\n";
+        print Out "    status_f08%count_lo = status_c%count_lo\n";
+        print Out "    status_f08%count_hi_and_cancelled = status_c%count_hi_and_cancelled\n";
+        print Out "    status_f08%MPI_SOURCE = status_c%MPI_SOURCE\n";
+        print Out "    status_f08%MPI_TAG = status_c%MPI_TAG\n";
+        print Out "    status_f08%MPI_ERROR = status_c%MPI_ERROR\n";
+        print Out "end subroutine\n";
+        print Out "elemental subroutine MPI_Status_c_assign_f08(status_c, status_f08)\n";
+        print Out "    type(MPI_Status),intent(in) :: status_f08\n";
+        print Out "    type(c_Status),intent(out) :: status_c\n";
+        print Out "    status_c%count_lo = status_f08%count_lo\n";
+        print Out "    status_c%count_hi_and_cancelled = status_f08%count_hi_and_cancelled\n";
+        print Out "    status_c%MPI_SOURCE = status_f08%MPI_SOURCE\n";
+        print Out "    status_c%MPI_TAG = status_f08%MPI_TAG\n";
+        print Out "    status_c%MPI_ERROR = status_f08%MPI_ERROR\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Status_f_assign_c(status_f, status_c)\n";
+        print Out "    type(c_Status),intent(in) :: status_c\n";
+        print Out "    integer,intent(out) :: status_f(MPI_STATUS_SIZE)\n";
+        print Out "    status_f(1) = status_c%count_lo\n";
+        print Out "    status_f(2) = status_c%count_hi_and_cancelled\n";
+        print Out "    status_f(3) = status_c%MPI_SOURCE\n";
+        print Out "    status_f(4) = status_c%MPI_TAG\n";
+        print Out "    status_f(5) = status_c%MPI_ERROR\n";
+        print Out "end subroutine\n";
+        print Out "subroutine MPI_Status_c_assign_f(status_c, status_f)\n";
+        print Out "    integer,intent(in) :: status_f(MPI_STATUS_SIZE)\n";
+        print Out "    type(c_Status),intent(out) :: status_c\n";
+        print Out "    status_c%count_lo = status_f(1)\n";
+        print Out "    status_c%count_hi_and_cancelled = status_f(2)\n";
+        print Out "    status_c%MPI_SOURCE = status_f(3)\n";
+        print Out "    status_c%MPI_TAG = status_f(4)\n";
+        print Out "    status_c%MPI_ERROR = status_f(5)\n";
+        print Out "end subroutine\n";
+        print Out "function MPI_Status_f082c(status_f08, status_c) bind(C, name=\"MPI_Status_f082c\")  result (res)\n";
+        print Out "    use,intrinsic :: iso_c_binding, only: c_int\n";
+        print Out "    type(MPI_Status),intent(in) :: status_f08\n";
+        print Out "    type(c_Status),intent(out) :: status_c\n";
+        print Out "    integer(c_int) :: res\n";
+        print Out "\n";
+        print Out "    status_c = status_f08\n";
+        print Out "    res = 0\n";
+        print Out "end function\n";
+        print Out "function MPI_Status_c2f08(status_c, status_f08) bind(C, name=\"MPI_Status_c2f08\")  result (res)\n";
+        print Out "    use,intrinsic :: iso_c_binding, only: c_int\n";
+        print Out "    type(c_Status),intent(in) :: status_c\n";
+        print Out "    type(MPI_Status),intent(out) :: status_f08\n";
+        print Out "    integer(c_int) :: res\n";
+        print Out "\n";
+        print Out "    status_f08 = status_c\n";
+        print Out "    res = 0\n";
+        print Out "end function\n";
+        print Out "function PMPI_Status_f082c(status_f08, status_c) bind(C, name=\"PMPI_Status_f082c\")  result (res)\n";
+        print Out "    use,intrinsic :: iso_c_binding, only: c_int\n";
+        print Out "    type(MPI_Status),intent(in) :: status_f08\n";
+        print Out "    type(c_Status),intent(out) :: status_c\n";
+        print Out "    integer(c_int) :: res\n";
+        print Out "\n";
+        print Out "    status_c = status_f08\n";
+        print Out "    res = 0\n";
+        print Out "end function\n";
+        print Out "function PMPI_Status_c2f08(status_c, status_f08) bind(C, name=\"PMPI_Status_c2f08\")  result (res)\n";
+        print Out "    use,intrinsic :: iso_c_binding, only: c_int\n";
+        print Out "    type(c_Status),intent(in) :: status_c\n";
+        print Out "    type(MPI_Status),intent(out) :: status_f08\n";
+        print Out "    integer(c_int) :: res\n";
+        print Out "\n";
+        print Out "    status_f08 = status_c\n";
+        print Out "    res = 0\n";
+        print Out "end function\n";
+        print Out "function MPI_Comm_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Comm), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Comm_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Comm), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Comm_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Comm), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Comm_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Comm), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Comm_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Comm), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Comm_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Comm), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Comm_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Comm\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Comm):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Comm_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Comm\n";
+        print Out "    integer(c_Comm), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "function MPI_Win_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Win), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Win_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Win), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Win_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Win), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Win_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Win), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Win_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Win), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Win_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Win), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Win_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Win\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Win):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Win_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Win\n";
+        print Out "    integer(c_Win), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "function MPI_File_eq(x, y) result (res)\n";
+        print Out "    type(MPI_File), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_File_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_File), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_File_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_File), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_File_neq(x, y) result (res)\n";
+        print Out "    type(MPI_File), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_File_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_File), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_File_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_File), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_File_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_File\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_File):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_File_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_File\n";
+        print Out "    integer(c_File), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "function MPI_Group_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Group), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Group_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Group), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Group_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Group), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Group_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Group), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Group_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Group), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Group_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Group), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Group_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Group\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Group):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Group_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Group\n";
+        print Out "    integer(c_Group), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "function MPI_Op_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Op), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Op_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Op), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Op_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Op), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Op_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Op), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Op_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Op), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Op_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Op), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Op_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Op\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Op):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Op_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Op\n";
+        print Out "    integer(c_Op), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "function MPI_Datatype_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Datatype), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Datatype_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Datatype), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Datatype_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Datatype), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Datatype_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Datatype), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Datatype_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Datatype), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Datatype_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Datatype), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Datatype_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Datatype\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Datatype):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Datatype_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Datatype\n";
+        print Out "    integer(c_Datatype), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "function MPI_Request_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Request), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Request_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Request), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Request_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Request), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Request_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Request), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Request_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Request), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Request_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Request), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Request_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Request\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Request):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Request_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Request\n";
+        print Out "    integer(c_Request), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "function MPI_Info_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Info), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Info_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Info), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Info_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Info), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Info_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Info), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Info_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Info), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Info_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Info), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Info_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Info\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Info):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Info_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Info\n";
+        print Out "    integer(c_Info), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "function MPI_Errhandler_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Errhandler), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Errhandler_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Errhandler), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Errhandler_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Errhandler), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Errhandler_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Errhandler), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Errhandler_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Errhandler), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Errhandler_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Errhandler), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Errhandler_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Errhandler\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Errhandler):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Errhandler_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Errhandler\n";
+        print Out "    integer(c_Errhandler), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "function MPI_Message_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Message), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Message_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Message), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Message_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Message), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Message_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Message), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Message_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Message), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Message_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Message), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Message_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Message\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Message):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Message_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Message\n";
+        print Out "    integer(c_Message), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+        print Out "\n";
+        print Out "end module MPI_f08_types\n";
+        close Out;
+
+        open Out, ">$dir/mpi_c_interface_types.f90" or die "Can't write $dir/mpi_c_interface_types.f90: $!\n";
+        print "  --> [$dir/mpi_c_interface_types.f90]\n";
+        print Out "!      \n";
+        print Out "!      Copyright (C) by Argonne National Laboratory\n";
+        print Out "!          See COPYRIGHT in top-level directory\n";
+        print Out "!      \n";
+        print Out "!      DO NOT EDIT\n";
+        print Out "!      This file created by buildiface\n";
+        print Out "!      \n";
+        print Out "module mpi_c_interface_types\n";
+        print Out "\n";
+        print Out "use, intrinsic:: iso_c_binding\n";
+        print Out "implicit none\n";
+        print Out "integer,parameter :: c_Fint = KIND(0)\n";
+        print Out "integer,parameter :: c_Aint = $mpidef{MPI_AINT_KIND}\n";
+        print Out "integer,parameter :: c_Count = $mpidef{MPI_COUNT_KIND}\n";
+        print Out "integer,parameter :: c_Offset = $mpidef{MPI_OFFSET_KIND}\n";
+        print Out "integer,parameter :: c_Comm = c_int\n";
+        print Out "integer,parameter :: c_Win = c_int\n";
+        print Out "integer,parameter :: c_File = c_intptr_t\n";
+        print Out "integer,parameter :: c_Group = c_int\n";
+        print Out "integer,parameter :: c_Op = c_int\n";
+        print Out "integer,parameter :: c_Datatype = c_int\n";
+        print Out "integer,parameter :: c_Request = c_int\n";
+        print Out "integer,parameter :: c_Info = c_int\n";
+        print Out "integer,parameter :: c_Errhandler = c_int\n";
+        print Out "integer,parameter :: c_Message = c_int\n";
+        print Out "type, bind(c) :: c_Status\n";
+        my $sp = "    ";
+        print Out "${sp}integer(c_int) :: count_lo\n";
+        print Out "${sp}integer(c_int) :: count_hi_and_cancelled\n";
+        print Out "${sp}integer(c_int) :: MPI_SOURCE\n";
+        print Out "${sp}integer(c_int) :: MPI_TAG\n";
+        print Out "${sp}integer(c_int) :: MPI_ERROR\n";
+        print Out "end type c_Status\n";
+        print Out "\n";
+        print Out "end module mpi_c_interface_types\n";
+        close Out;
+        open Out, ">$dir/mpi_f08_compile_constants.f90" or die "Can't write $dir/mpi_f08_compile_constants.f90: $!\n";
+        print "  --> [$dir/mpi_f08_compile_constants.f90]\n";
+        print Out "!      \n";
+        print Out "!      Copyright (C) by Argonne National Laboratory\n";
+        print Out "!          See COPYRIGHT in top-level directory\n";
+        print Out "!      \n";
+        print Out "!      DO NOT EDIT\n";
+        print Out "!      This file created by buildiface\n";
+        print Out "!      \n";
+        print Out "module mpi_f08_compile_constants\n";
+        print Out "\n";
+        print Out "use,intrinsic :: iso_c_binding, only: c_int\n";
+        print Out "use :: mpi_f08_types\n";
+        print Out "use :: mpi_c_interface_types, only: c_Aint, c_Count, c_Offset\n";
+        print Out "\n";
+        print Out "private :: c_int\n";
+        print Out "private :: c_Aint, c_Count, c_Offset\n";
+        foreach my $k (@mpidef_list) {
+            if ($k=~/^MPI_DISPLACEMENT_CURRENT/) {
+                print Out "integer(kind=MPI_OFFSET_KIND), parameter :: $k = $mpidef{$k}\n";
+            }
+            elsif ($mpidef_type{$k}) {
+                my $T = $mpidef_type{$k};
+                printf Out "type($T), parameter :: %s = $T(%d)\n", $k, $mpidef{$k};
+            }
+            else {
+                printf Out "integer, parameter :: %20s = %d\n", $k, $mpidef{$k};
+            }
+        }
+        print Out "\n";
+        print Out "end module mpi_f08_compile_constants\n";
+        close Out;
+        open Out, ">$dir/mpi_f08_link_constants.f90" or die "Can't write $dir/mpi_f08_link_constants.f90: $!\n";
+        print "  --> [$dir/mpi_f08_link_constants.f90]\n";
+        print Out "!      \n";
+        print Out "!      Copyright (C) by Argonne National Laboratory\n";
+        print Out "!          See COPYRIGHT in top-level directory\n";
+        print Out "!      \n";
+        print Out "!      DO NOT EDIT\n";
+        print Out "!      This file created by buildiface\n";
+        print Out "!      \n";
+        print Out "module mpi_f08_link_constants\n";
+        print Out "\n";
+        print Out "use,intrinsic:: iso_c_binding, only: c_ptr, c_int, c_char, c_loc\n";
+        print Out "use :: mpi_f08_types, only: MPI_Status\n";
+        print Out "use :: mpi_c_interface_types, only: c_Status\n";
+        print Out "implicit none\n";
+        print Out "type(MPI_Status, bind(C, name=\"MPIR_F08_MPI_STATUS_IGNORE_OBJ\"), target:: MPI_STATUS_IGNORE\n";
+        print Out "type(c_ptr), bind(C, name=\"MPIR_C_MPI_STATUS_IGNORE\") :: MPIR_C_MPI_STATUS_IGNORE\n";
+        print Out "type(c_ptr), bind(C, name=\"MPI_F08_STATUS_IGNORE\") :: MPI_F08_STATUS_IGNORE\n";
+        print Out "type(MPI_Status, dimension(1), bind(C, name=\"MPIR_F08_MPI_STATUSES_IGNORE_OBJ\"), target:: MPI_STATUSES_IGNORE\n";
+        print Out "type(c_ptr), bind(C, name=\"MPIR_C_MPI_STATUSES_IGNORE\") :: MPIR_C_MPI_STATUSES_IGNORE\n";
+        print Out "type(c_ptr), bind(C, name=\"MPI_F08_STATUSES_IGNORE\") :: MPI_F08_STATUSES_IGNORE\n";
+        print Out "character(len=1), dimension(1), target :: MPI_ARGV_NULL\n";
+        print Out "type(c_ptr), bind(C, name=\"MPIR_C_MPI_ARGV_NULL\") :: MPIR_C_MPI_ARGV_NULL\n";
+        print Out "character(len=1), dimension(1,1), target :: MPI_ARGVS_NULL\n";
+        print Out "type(c_ptr), bind(C, name=\"MPIR_C_MPI_ARGVS_NULL\") :: MPIR_C_MPI_ARGVS_NULL\n";
+        print Out "integer, dimension(1), target :: MPI_ERRCODES_IGNORE\n";
+        print Out "type(c_ptr), bind(C, name=\"MPIR_C_MPI_ERRCODES_IGNORE\") :: MPIR_C_MPI_ERRCODES_IGNORE\n";
+        print Out "integer, dimension(1), target :: MPI_UNWEIGHTED\n";
+        print Out "type(c_ptr), protected, bind(C, name=\"MPIR_C_MPI_UNWEIGHTED\") :: MPIR_C_MPI_UNWEIGHTED\n";
+        print Out "integer, dimension(1), target :: MPI_WEIGHTS_EMPTY\n";
+        print Out "type(c_ptr), protected, bind(C, name=\"MPIR_C_MPI_WEIGHTS_EMPTY\") :: MPIR_C_MPI_WEIGHTS_EMPTY\n";
+        print Out "integer(c_int), bind(C, name=\"MPIR_F08_MPI_IN_PLACE\") :: MPI_IN_PLACE\n";
+        print Out "integer(c_int), bind(C, name=\"MPIR_F08_MPI_BOTTOM\") :: MPI_BOTTOM\n";
+        print Out "\n";
+        print Out "end module mpi_f08_link_constants\n";
+        close Out;
     }
     $make_conds{BUILD_PROFILING_LIB} = 0;
     $make_conds{BUILD_COVERAGE} = 0;
@@ -1028,6 +3209,18 @@ if ($config eq "mpich") {
     if (!$opts{disable_fortran}) {
         $make_conds{BUILD_F77_BINDING} = 1;
         $make_conds{BUILD_FC_BINDING} = 1;
+        if ($opts{f08}) {
+            $make_conds{BUILD_F08_BINDING} = 1;
+            $config_defines{HAVE_F08_BINDING} = 1;
+        }
+        else {
+            $config_defines{HAVE_F08_BINDING} = 0;
+        }
+    }
+    else {
+        system "touch src/binding/fortran/mpif_h/Makefile.mk";
+        system "touch src/binding/fortran/use_mpi/Makefile.mk";
+        system "touch src/binding/fortran/use_mpi_f08/Makefile.mk";
     }
 
     if (1) {
@@ -1537,21 +3730,6 @@ sub get_sizeof_bsend_status {
     }
 }
 
-sub get_config_name {
-    my ($type) = @_;
-    if ($type=~/pair:(.+)/) {
-        if ($1 eq "int") {
-            return "TWO_INT";
-        }
-        else {
-            $type="$1 int";
-        }
-    }
-
-    $type =~ tr/\* \/./p_/;
-    return uc($type);
-}
-
 sub get_have_headers {
     my ($headerlist) = @_;
     my @cpp_paths;
@@ -1592,6 +3770,21 @@ sub autoconf_file {
         print Out $l;
     }
     close Out;
+}
+
+sub get_config_name {
+    my ($type) = @_;
+    if ($type=~/pair:(.+)/) {
+        if ($1 eq "int") {
+            return "TWO_INT";
+        }
+        else {
+            $type="$1 int";
+        }
+    }
+
+    $type =~ tr/\* \/./p_/;
+    return uc($type);
 }
 
 sub test_cc_header {

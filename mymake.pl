@@ -99,8 +99,8 @@ elsif (@ARGV) {
     $need_save_args = 1;
 }
 foreach my $a (@ARGV) {
-    if ($a=~/^-quick/) {
-        $opts{quick}=1;
+    if ($a=~/^-(quick|f08|noclean)/) {
+        $opts{$1}=1;
     }
     elsif ($a=~/^--(.*?)=(.*)/) {
         my ($o, $v) = ($1, $2);
@@ -377,7 +377,7 @@ if ($need_save_args) {
     }
     close Out;
 
-    if (-f "Makefile") {
+    if (-f "Makefile" and !$opts{noclean}) {
         system "make realclean";
     }
 }
@@ -400,6 +400,40 @@ if (!-f "src/mpid/ch4/netmod/include/netmod.h") {
     }
     elsif (-f "maint/gen_ch4_api.py") {
         system "$python maint/gen_ch4_api.py";
+    }
+}
+if (!$opts{disable_cxx}) {
+    print ": buildiface - cxx\n";
+    chdir "src/binding/cxx";
+    system "perl buildiface -nosep -initfile=./cxx.vlist";
+    chdir $pwd;
+}
+if (!$opts{disable_fortran}) {
+    if (!-f "configure") {
+        print ": buildiface - mpif_h\n";
+        chdir "src/binding/fortran/mpif_h";
+        system "perl buildiface >/dev/null";
+        chdir $pwd;
+        print ": buildiface - use_mpi\n";
+        chdir "src/binding/fortran/use_mpi";
+        system "perl buildiface >/dev/null";
+        system "perl ../mpif_h/buildiface -infile=cf90t.h -deffile=./cf90tdefs";
+        chdir $pwd;
+        print ": buildiface - use_mpi_f08\n";
+        chdir "src/binding/fortran/use_mpi_f08";
+        system "perl buildiface >/dev/null";
+        chdir $pwd;
+        print ": buildiface - use_mpi_f08/wrappers_c\n";
+        chdir "src/binding/fortran/use_mpi_f08/wrappers_c";
+        system "rm -f Makefile.mk";
+        if (-f "$pwd/src/include/mpi_proto.h") {
+            system "perl buildiface $pwd/src/include/mpi_proto.h";
+        }
+        else {
+            system "perl buildiface $pwd/src/include/mpi.h.in";
+        }
+        system "perl buildiface $pwd/src/mpi/romio/include/mpio.h.in";
+        chdir $pwd;
     }
 }
 
@@ -450,12 +484,60 @@ if ($opts{quick}) {
             system "perl $opts{mymake}_libtool.pl";
         }
     }
+    else {
+        print "\"libtool\" already exist.\n";
+    }
     if (!-f "src/include/mpichconf.h") {
         system "perl $opts{mymake}_config.pl mpich";
         system "perl $opts{mymake}_makefile.pl mpich";
     }
+    else {
+        print "\"src/include/mpichconf.h\" already exist.\n";
+    }
 }
 else {
+    if (!$opts{disable_cxx}) {
+        $opts{enable_cxx}=1;
+        $dst_hash{"src/binding/cxx/mpicxx.h"}="$opts{prefix}/include";
+    }
+    else {
+        system "touch src/binding/cxx/mpicxx.h.in";
+    }
+
+    if (!$opts{disable_fortran}) {
+        push @extra_make_rules, "src/binding/fortran/use_mpi/mpi.lo: src/binding/fortran/use_mpi/mpi_constants.lo src/binding/fortran/use_mpi/mpi_sizeofs.lo src/binding/fortran/use_mpi/mpi_base.lo";
+        push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_base.lo: src/binding/fortran/use_mpi/mpi_constants.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_sizeofs.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_constants.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi/mpifnoext.h: src/binding/fortran/mpif_h/mpif.h";
+        push @extra_make_rules, "\tsed -e 's/^C/!/g' -e '/EXTERNAL/d' -e '/MPI_WTICK/d' \$< > \$@";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_nobuf.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_cdesc.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_nobuf.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_glue.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_glue.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo", "";
+
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08.lo: src/binding/fortran/use_mpi_f08/pmpi_f08.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/pmpi_f08.lo: src/binding/fortran/use_mpi_f08/mpi_f08_callbacks.lo src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_callbacks.lo: src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo: src/binding/fortran/use_mpi_f08/mpi_f08_types.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo: src/binding/fortran/use_mpi_f08/mpi_f08_types.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_types.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_cdesc.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo", "";
+        $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$opts{prefix}/include";
+    }
+    else {
+        system "touch src/binding/fortran/mpif_h/Makefile.mk";
+        system "touch src/binding/fortran/use_mpi/Makefile.mk";
+        system "touch src/binding/fortran/use_mpi_f08/Makefile.mk";
+        system "touch src/binding/fortran/mpif_h/mpif.h.in";
+        system "touch src/binding/fortran/mpif_h/setbotf.h.in";
+        system "touch src/binding/fortran/mpif_h/setbot.c.in";
+        system "touch src/binding/fortran/use_mpi/mpi_sizeofs.f90.in";
+        system "touch src/binding/fortran/use_mpi/mpi_base.f90.in";
+        system "touch src/binding/fortran/use_mpi/mpi_constants.f90.in";
+        system "touch src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.f90.in";
+        system "touch src/binding/fortran/use_mpi_f08/mpi_c_interface_types.f90.in";
+    }
     push @extra_make_rules, "DO_stage = perl $opts{mymake}_stage.pl";
     push @extra_make_rules, "DO_clean = perl $opts{mymake}_clean.pl";
     push @extra_make_rules, "DO_errmsg = perl $opts{mymake}_errmsg.pl";
@@ -921,81 +1003,6 @@ else {
         push @extra_make_rules, "$lib_la: $config_h";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
-    }
-
-    if (!$opts{disable_cxx}) {
-        $opts{enable_cxx}=1;
-        if (!-f "configure") {
-            print ": buildiface - cxx\n";
-            chdir "src/binding/cxx";
-            system "perl buildiface -nosep -initfile=./cxx.vlist";
-            chdir $pwd;
-        }
-        $dst_hash{"src/binding/cxx/mpicxx.h"}="$opts{prefix}/include";
-    }
-    else {
-        system "touch src/binding/cxx/mpicxx.h.in";
-    }
-
-    if (!$opts{disable_fortran}) {
-        if (!-f "configure") {
-            print ": buildiface - mpif_h\n";
-            chdir "src/binding/fortran/mpif_h";
-            system "perl buildiface >/dev/null";
-            chdir $pwd;
-        }
-        if (!-f "configure") {
-            print ": buildiface - use_mpi\n";
-            chdir "src/binding/fortran/use_mpi";
-            system "perl buildiface >/dev/null";
-            system "perl ../mpif_h/buildiface -infile=cf90t.h -deffile=./cf90tdefs";
-            chdir $pwd;
-        }
-        push @extra_make_rules, "src/binding/fortran/use_mpi/mpi.lo: src/binding/fortran/use_mpi/mpi_constants.lo src/binding/fortran/use_mpi/mpi_sizeofs.lo src/binding/fortran/use_mpi/mpi_base.lo";
-        push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_base.lo: src/binding/fortran/use_mpi/mpi_constants.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_sizeofs.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_constants.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi/mpifnoext.h: src/binding/fortran/mpif_h/mpif.h";
-        push @extra_make_rules, "\tsed -e 's/^C/!/g' -e '/EXTERNAL/d' -e '/MPI_WTICK/d' \$< > \$@";
-        push @extra_make_rules, "";
-        if (!-f "configure") {
-            print ": buildiface - use_mpi_f08\n";
-            chdir "src/binding/fortran/use_mpi_f08";
-            system "perl buildiface >/dev/null";
-            chdir $pwd;
-            print ": buildiface - use_mpi_f08/wrappers_c\n";
-            chdir "src/binding/fortran/use_mpi_f08/wrappers_c";
-            system "rm -f Makefile.mk";
-            system "perl buildiface $pwd/src/include/mpi.h.in";
-            system "perl buildiface $pwd/src/mpi/romio/include/mpio.h.in";
-            chdir $pwd;
-        }
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_nobuf.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_cdesc.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_nobuf.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_glue.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_glue.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo", "";
-
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08.lo: src/binding/fortran/use_mpi_f08/pmpi_f08.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/pmpi_f08.lo: src/binding/fortran/use_mpi_f08/mpi_f08_callbacks.lo src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_callbacks.lo: src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.lo: src/binding/fortran/use_mpi_f08/mpi_f08_types.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo: src/binding/fortran/use_mpi_f08/mpi_f08_types.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_types.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_cdesc.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo", "";
-
-        $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$opts{prefix}/include";
-    }
-    else {
-        system "touch src/binding/fortran/mpif_h/Makefile.mk";
-        system "touch src/binding/fortran/use_mpi/Makefile.mk";
-        system "touch src/binding/fortran/use_mpi_f08/Makefile.mk";
-        system "touch src/binding/fortran/mpif_h/mpif.h.in";
-        system "touch src/binding/fortran/mpif_h/setbotf.h.in";
-        system "touch src/binding/fortran/mpif_h/setbot.c.in";
-        system "touch src/binding/fortran/use_mpi/mpi_sizeofs.f90.in";
-        system "touch src/binding/fortran/use_mpi/mpi_base.f90.in";
-        system "touch src/binding/fortran/use_mpi/mpi_constants.f90.in";
-        system "touch src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.f90.in";
-        system "touch src/binding/fortran/use_mpi_f08/mpi_c_interface_types.f90.in";
     }
 
     push @extra_make_rules, "cpi: ";
@@ -2432,7 +2439,7 @@ sub dump_makefile {
     if (@$t1 or @$t2 or @$t3) {
         foreach my $t (@$t1, @$t2, @$t3) {
             $t=~s/use_mpi_f08/use_mpi/;
-            $dst_hash{$t} = "$opts{prefix}/include";
+            $dst_hash{$t} = "\x24(PREFIX)/include";
         }
     }
 

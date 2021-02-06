@@ -843,6 +843,9 @@
 /* MPIR_Ucount is an unsigned MPI_Count-sized integer */
 #undef MPIR_Ucount
 
+/* MPIR_Ufint is an unsigned Fortran INTEGER-sized integer */
+#undef MPIR_Ufint
+
 /* Define to enable timing mutexes */
 #undef MPIU_MUTEX_WAIT_TIME
 
