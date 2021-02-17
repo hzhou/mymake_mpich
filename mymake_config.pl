@@ -610,7 +610,6 @@ if ($config eq "mpich") {
         autoconf_file("src/mpid/ch3/channels/nemesis/include/mpid_nem_net_module_defs.h", \%confs);
     }
 
-    $temp{MPIF_STATUS_SIZE} = $sizeof_hash{MPI_STATUS};
     if (!$opts{disable_fortran}) {
         $temp{HAVE_NO_FORTRAN_MPI_TYPES_IN_C} = 1;
         $temp{HAVE_FORTRAN_BINDING} = 1;
@@ -619,6 +618,11 @@ if ($config eq "mpich") {
         }
         $temp{MPIR_FC_REAL_CTYPE} = "float";
         $temp{MPIR_FC_DOUBLE_CTYPE} = "double";
+        my %confs;
+        $confs{MPI_STATUS_SIZE} = 5;
+        $confs{CMB_1INT_ALIGNMENT}='__attribute__((aligned(16)))';
+        $confs{CMB_STATUS_ALIGNMENT}='__attribute__((aligned(32)))';
+        autoconf_file("src/binding/fortran/mpif_h/setbot.c", \%confs);
     }
     if (0) {
         $temp{HAVE_NAMESPACES}=1;
@@ -1064,6 +1068,8 @@ if ($config eq "mpich") {
         $mpidef_type{ERRHANDLER_NULL} = "Errhandler";
         push @mpidef_list, "MPI_MESSAGE_NULL";
         $mpidef_type{MESSAGE_NULL} = "Message";
+        push @mpidef_list, "MPI_SESSION_NULL";
+        $mpidef_type{SESSION_NULL} = "Session";
         push @mpidef_list, "MPI_COMM_WORLD";
         $mpidef_type{COMM_WORLD} = "Comm";
         push @mpidef_list, "MPI_COMM_SELF";
@@ -1818,10 +1824,7 @@ if ($config eq "mpich") {
         print Out "!      DO NOT EDIT\n";
         print Out "!      This file created by buildiface\n";
         print Out "!      \n";
-        my $n = $sizeof_hash{MPI_STATUS} / $sizeof_hash{INT};
-        if ($n != 5) {
-            warn "MPI_STATUS has wrong size!\n";
-        }
+        my $n = 5;
         print Out "       INTEGER MPI_SOURCE, MPI_TAG, MPI_ERROR\n";
         print Out "       PARAMETER (MPI_SOURCE=3,MPI_TAG=4,MPI_ERROR=5)\n";
 
@@ -1962,6 +1965,12 @@ if ($config eq "mpich") {
         print Out "${sp}INTEGER :: MPI_VAL\n";
         $sp =~s/^    //;
         print Out "${sp}END TYPE MPI_Message\n";
+        print Out "${sp}TYPE :: MPI_Session\n";
+        $sp .= '    ';
+        print Out "${sp}SEQUENCE\n";
+        print Out "${sp}INTEGER :: MPI_VAL\n";
+        $sp =~s/^    //;
+        print Out "${sp}END TYPE MPI_Session\n";
         print Out "${sp}INTERFACE OPERATOR(.EQ.)\n";
         $sp .= '    ';
         print Out "${sp}MODULE PROCEDURE commeq\n";
@@ -1974,6 +1983,7 @@ if ($config eq "mpich") {
         print Out "${sp}MODULE PROCEDURE infoeq\n";
         print Out "${sp}MODULE PROCEDURE errhandlereq\n";
         print Out "${sp}MODULE PROCEDURE messageeq\n";
+        print Out "${sp}MODULE PROCEDURE sessioneq\n";
         $sp =~s/^    //;
         print Out "${sp}END INTERFACE\n";
         print Out "${sp}INTERFACE OPERATOR(.NE.)\n";
@@ -1988,6 +1998,7 @@ if ($config eq "mpich") {
         print Out "${sp}MODULE PROCEDURE infone\n";
         print Out "${sp}MODULE PROCEDURE errhandlerne\n";
         print Out "${sp}MODULE PROCEDURE messagene\n";
+        print Out "${sp}MODULE PROCEDURE sessionne\n";
         $sp =~s/^    //;
         print Out "${sp}END INTERFACE\n";
         print Out "${sp}CONTAINS\n";
@@ -2071,6 +2082,14 @@ if ($config eq "mpich") {
         print Out "${sp}    TYPE(MPI_Message), INTENT(IN):: lhs, rhs\n";
         print Out "${sp}    Messagene = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
         print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Sessioneq(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Session), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Sessioneq = lhs%MPI_VAL .EQ. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
+        print Out "${sp}LOGICAL FUNCTION Sessionne(lhs, rhs)\n";
+        print Out "${sp}    TYPE(MPI_Session), INTENT(IN):: lhs, rhs\n";
+        print Out "${sp}    Sessionne = lhs%MPI_VAL .NE. rhs%MPI_VAL\n";
+        print Out "${sp}END FUNCTION\n";
         print Out "END MODULE MPI_CONSTANTS\n";
         close Out;
 
@@ -2127,6 +2146,9 @@ if ($config eq "mpich") {
         print Out "type, bind(C) :: MPI_Message\n";
         print Out "    integer:: MPI_VAL\n";
         print Out "end type MPI_Message\n";
+        print Out "type, bind(C) :: MPI_Session\n";
+        print Out "    integer:: MPI_VAL\n";
+        print Out "end type MPI_Session\n";
         print Out "type, bind(C) :: MPI_Status\n";
         print Out "    integer :: count_lo\n";
         print Out "    integer :: count_hi_and_cancelled\n";
@@ -2178,6 +2200,9 @@ if ($config eq "mpich") {
         print Out "    module procedure MPI_Message_eq\n";
         print Out "    module procedure MPI_Message_f08_eq_f\n";
         print Out "    module procedure MPI_Message_f_eq_f08\n";
+        print Out "    module procedure MPI_Session_eq\n";
+        print Out "    module procedure MPI_Session_f08_eq_f\n";
+        print Out "    module procedure MPI_Session_f_eq_f08\n";
         print Out "end interface\n";
         print Out "private:: MPI_Comm_eq\n";
         print Out "private:: MPI_Comm_f08_eq_f\n";
@@ -2209,6 +2234,9 @@ if ($config eq "mpich") {
         print Out "private:: MPI_Message_eq\n";
         print Out "private:: MPI_Message_f08_eq_f\n";
         print Out "private:: MPI_Message_f_eq_f08\n";
+        print Out "private:: MPI_Session_eq\n";
+        print Out "private:: MPI_Session_f08_eq_f\n";
+        print Out "private:: MPI_Session_f_eq_f08\n";
         print Out "interface operator(/=)\n";
         print Out "    module procedure MPI_Comm_neq\n";
         print Out "    module procedure MPI_Comm_f08_neq_f\n";
@@ -2240,6 +2268,9 @@ if ($config eq "mpich") {
         print Out "    module procedure MPI_Message_neq\n";
         print Out "    module procedure MPI_Message_f08_neq_f\n";
         print Out "    module procedure MPI_Message_f_neq_f08\n";
+        print Out "    module procedure MPI_Session_neq\n";
+        print Out "    module procedure MPI_Session_f08_neq_f\n";
+        print Out "    module procedure MPI_Session_f_neq_f08\n";
         print Out "end interface\n";
         print Out "private:: MPI_Comm_neq\n";
         print Out "private:: MPI_Comm_f08_neq_f\n";
@@ -2271,6 +2302,9 @@ if ($config eq "mpich") {
         print Out "private:: MPI_Message_neq\n";
         print Out "private:: MPI_Message_f08_neq_f\n";
         print Out "private:: MPI_Message_f_neq_f08\n";
+        print Out "private:: MPI_Session_neq\n";
+        print Out "private:: MPI_Session_f08_neq_f\n";
+        print Out "private:: MPI_Session_f_neq_f08\n";
         print Out "interface MPI_Sizeof\n";
         print Out "    module procedure MPI_Sizeof_character\n";
         print Out "    module procedure MPI_Sizeof_logical\n";
@@ -2997,6 +3031,57 @@ if ($config eq "mpich") {
         print Out "    integer:: res\n";
         print Out "    res = x\n";
         print Out "end function\n";
+        print Out "function MPI_Session_eq(x, y) result (res)\n";
+        print Out "    type(MPI_Session), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL == y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Session_f08_eq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Session), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Session_f_eq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Session), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL == f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Session_neq(x, y) result (res)\n";
+        print Out "    type(MPI_Session), intent(in):: x,y\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (x%MPI_VAL /= y%MPI_VAL)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Session_f08_neq_f(f08, f) result (res)\n";
+        print Out "    type(MPI_Session), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Session_f_neq_f08(f, f08) result (res)\n";
+        print Out "    type(MPI_Session), intent(in):: f08\n";
+        print Out "    integer, intent(in):: f\n";
+        print Out "    logical:: res\n";
+        print Out "    res = (f08%MPI_VAL /= f)\n";
+        print Out "end function\n";
+        print Out "function MPI_Session_f2c(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Session\n";
+        print Out "    integer, value:: x\n";
+        print Out "    integer(c_Session):: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
+
+        print Out "function MPI_Session_c2f(x) result (res)\n";
+        print Out "    use mpi_c_interface_types, only: c_Session\n";
+        print Out "    integer(c_Session), value:: x\n";
+        print Out "    integer:: res\n";
+        print Out "    res = x\n";
+        print Out "end function\n";
         print Out "\n";
         print Out "end module MPI_f08_types\n";
         close Out;
@@ -3028,6 +3113,7 @@ if ($config eq "mpich") {
         print Out "integer,parameter :: c_Info = c_int\n";
         print Out "integer,parameter :: c_Errhandler = c_int\n";
         print Out "integer,parameter :: c_Message = c_int\n";
+        print Out "integer,parameter :: c_Session = c_int\n";
         print Out "type, bind(c) :: c_Status\n";
         my $sp = "    ";
         print Out "${sp}integer(c_int) :: count_lo\n";
@@ -3710,10 +3796,8 @@ sub get_sizeof_bsend_status {
     elsif (-f "src/include/mpii_bsend.h") {
         print Out "#include \"$pwd/src/include/mpii_bsend.h\"\n";
     }
-    print Out "typedef struct {int lo; int hi; int src; int tag; int err;} MPI_Status;";
     print Out "int main() {\n";
     print Out "    printf(\"MPII_BSEND_DATA_T: %lu\\n\", sizeof(MPII_Bsend_data_t));\n";
-    print Out "    printf(\"MPI_STATUS: %lu\\n\", sizeof(MPI_Status));\n";
     print Out "    return 0;\n";
     print Out "}\n";
     close Out;

@@ -73,6 +73,7 @@ else {
 }
 $make_vars{CCLD} = $make_vars{CC};
 $make_vars{CXXLD} = $make_vars{CXX};
+$make_vars{FCLD} = $make_vars{FC};
 $make_vars{DEFS} = "-DHAVE_CONFIG_H";
 
 $make_vars{CFLAGS} = $opts{cflags};
@@ -452,6 +453,10 @@ if ($what eq "mpich") {
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo: src/binding/fortran/use_mpi_f08/mpi_f08_types.lo", "";
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_types.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo", "";
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_cdesc.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo", "";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/f_sync_reg_f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/pf_sync_reg_f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/pf08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
         $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$opts{prefix}/include";
         my $U="src/binding/fortran";
         $make_vars{AM_FCFLAGS} = "-I$U/use_mpi";
@@ -641,6 +646,7 @@ elsif ($what eq "test") {
         }
         $make_vars{CCLD} = $make_vars{CC};
         $make_vars{CXXLD} = $make_vars{CXX};
+        $make_vars{FCLD} = $make_vars{FC};
         $make_vars{DEFS} = "-DHAVE_CONFIG_H";
 
         $make_vars{CFLAGS} = $opts{cflags};
@@ -894,31 +900,6 @@ sub dump_makefile {
         print Out "\n";
     }
     if (!$opts{disable_fortran}) {
-        my $fc = get_make_var("F77");
-        my $flags = get_make_var("FFLAGS");
-        my $am_flags = get_make_var("AM_FFLAGS");
-        $flags.=" $am_flags";
-        if ($flags=~/-I(\S+)/) {
-            my ($modpath) = ($1);
-            if ($fc =~/^(pgfortran|ifort)/) {
-                $flags.=" -module $modpath";
-            }
-            elsif ($fc =~/^sunf\d+/) {
-                $flags.=" -moddir=$modpath";
-            }
-            elsif ($fc =~/^af\d+/) {
-                $flags.=" -YMOD_OUT_DIR=$modpath";
-            }
-            else {
-                $flags.=" -J$modpath";
-            }
-        }
-        print Out "F77COMPILE = $fc $flags\n";
-        print Out "LTF77 = $lt --mode=compile $lt_opt --tag=F77 \x24(F77COMPILE)\n";
-
-        my $ld = get_make_var("F77LD");
-        print Out "F77LD = $lt --mode=link $lt_opt --tag=F77 $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
-        print Out "\n";
         my $fc = get_make_var("FC");
         my $flags = get_make_var("FCFLAGS");
         my $am_flags = get_make_var("AM_FCFLAGS");
@@ -958,7 +939,7 @@ sub dump_makefile {
     foreach my $p (@ltlibs) {
         my $ld = "LTLD";
         if ($p=~/libmpifort.la/) {
-            $ld = "F77LD";
+            $ld = "FCLD";
         }
         elsif ($p=~/libmpicxx.la/) {
             $ld = "CXXLD";
@@ -1123,7 +1104,7 @@ sub dump_makefile {
     foreach my $p (@programs) {
         my $ld = "LTLD";
         if ($p=~/libmpifort.la/) {
-            $ld = "F77LD";
+            $ld = "FCLD";
         }
         elsif ($p=~/libmpicxx.la/) {
             $ld = "CXXLD";
@@ -1330,10 +1311,10 @@ sub dump_makefile {
     if (!$opts{disable_fortran}) {
         print Out "%.lo: %.f\n";
         if ($opts{V}==0) {
-            print Out "\t\@echo LTF77 \$\@ && \x24(LTF77) -c -o \$\@ \$<\n";
+            print Out "\t\@echo LTFC \$\@ && \x24(LTFC) -c -o \$\@ \$<\n";
         }
         else {
-            print Out "\t\x24(LTF77) -c -o \$\@ \$<\n";
+            print Out "\t\x24(LTFC) -c -o \$\@ \$<\n";
         }
         print Out "\n";
         print Out "%.lo: %.f90\n";

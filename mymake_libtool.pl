@@ -21,6 +21,8 @@ chdir "mymake/libtool" or die "can't chdir mymake/libtool\n";
 open Out, ">configure.ac" or die "Can't write configure.ac: $!\n";
 print Out "AC_INIT\n";
 print Out "LT_INIT\n";
+print Out "AC_PROG_CXX\n";
+print Out "AC_PROG_FC\n";
 print Out "LT_OUTPUT\n";
 close Out;
 

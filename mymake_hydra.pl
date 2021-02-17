@@ -145,8 +145,12 @@ elsif (-e "modules.tar.gz") {
 elsif (-e "mymake/modules.tar.gz") {
     $mod_tarball = "mymake/modules.tar.gz";
 }
+my $cmd = "git log --after=\"2021-2-16\" |grep 'Yaksa has been updated to use intptr_t'";
+if (`$cmd`) {
+    $mod_tarball=~s/modules\.tar\.gz/modules-yaksa-new.tar.gz/;
+}
 if ($opts{"with-cuda"} && $mod_tarball) {
-    $mod_tarball=~s/modules.tar.gz/modules-gpu.tar.gz/;
+    $mod_tarball=~s/modules\.tar\.gz/modules-gpu.tar.gz/;
 }
 if ($ENV{MODDIR}) {
     $opts{moddir} = Cwd::abs_path($ENV{MODDIR});
@@ -737,31 +741,6 @@ sub dump_makefile {
         print Out "\n";
     }
     if (!$opts{disable_fortran}) {
-        my $fc = get_make_var("F77");
-        my $flags = get_make_var("FFLAGS");
-        my $am_flags = get_make_var("AM_FFLAGS");
-        $flags.=" $am_flags";
-        if ($flags=~/-I(\S+)/) {
-            my ($modpath) = ($1);
-            if ($fc =~/^(pgfortran|ifort)/) {
-                $flags.=" -module $modpath";
-            }
-            elsif ($fc =~/^sunf\d+/) {
-                $flags.=" -moddir=$modpath";
-            }
-            elsif ($fc =~/^af\d+/) {
-                $flags.=" -YMOD_OUT_DIR=$modpath";
-            }
-            else {
-                $flags.=" -J$modpath";
-            }
-        }
-        print Out "F77COMPILE = $fc $flags\n";
-        print Out "LTF77 = $lt --mode=compile $lt_opt --tag=F77 \x24(F77COMPILE)\n";
-
-        my $ld = get_make_var("F77LD");
-        print Out "F77LD = $lt --mode=link $lt_opt --tag=F77 $ld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
-        print Out "\n";
         my $fc = get_make_var("FC");
         my $flags = get_make_var("FCFLAGS");
         my $am_flags = get_make_var("AM_FCFLAGS");
@@ -801,7 +780,7 @@ sub dump_makefile {
     foreach my $p (@ltlibs) {
         my $ld = "LTLD";
         if ($p=~/libmpifort.la/) {
-            $ld = "F77LD";
+            $ld = "FCLD";
         }
         elsif ($p=~/libmpicxx.la/) {
             $ld = "CXXLD";
@@ -966,7 +945,7 @@ sub dump_makefile {
     foreach my $p (@programs) {
         my $ld = "LTLD";
         if ($p=~/libmpifort.la/) {
-            $ld = "F77LD";
+            $ld = "FCLD";
         }
         elsif ($p=~/libmpicxx.la/) {
             $ld = "CXXLD";
@@ -1173,10 +1152,10 @@ sub dump_makefile {
     if (!$opts{disable_fortran}) {
         print Out "%.lo: %.f\n";
         if ($opts{V}==0) {
-            print Out "\t\@echo LTF77 \$\@ && \x24(LTF77) -c -o \$\@ \$<\n";
+            print Out "\t\@echo LTFC \$\@ && \x24(LTFC) -c -o \$\@ \$<\n";
         }
         else {
-            print Out "\t\x24(LTF77) -c -o \$\@ \$<\n";
+            print Out "\t\x24(LTFC) -c -o \$\@ \$<\n";
         }
         print Out "\n";
         print Out "%.lo: %.f90\n";
