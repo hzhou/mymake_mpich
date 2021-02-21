@@ -1149,7 +1149,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_CHAR} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_CHAR} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_CHAR} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_CHAR";
         $mpidef_type{"CHAR"} = "Datatype";
@@ -1158,7 +1158,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UNSIGNED_CHAR} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UNSIGNED_CHAR} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UNSIGNED_CHAR} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UNSIGNED_CHAR";
         $mpidef_type{"UNSIGNED_CHAR"} = "Datatype";
@@ -1167,7 +1167,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_SHORT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_SHORT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_SHORT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_SHORT";
         $mpidef_type{"SHORT"} = "Datatype";
@@ -1176,7 +1176,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UNSIGNED_SHORT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UNSIGNED_SHORT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UNSIGNED_SHORT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UNSIGNED_SHORT";
         $mpidef_type{"UNSIGNED_SHORT"} = "Datatype";
@@ -1185,7 +1185,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INT";
         $mpidef_type{"INT"} = "Datatype";
@@ -1194,7 +1194,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UNSIGNED_INT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UNSIGNED_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UNSIGNED_INT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UNSIGNED_INT";
         $mpidef_type{"UNSIGNED_INT"} = "Datatype";
@@ -1203,7 +1203,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_LONG} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_LONG} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_LONG} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_LONG";
         $mpidef_type{"LONG"} = "Datatype";
@@ -1212,7 +1212,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UNSIGNED_LONG} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UNSIGNED_LONG} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UNSIGNED_LONG} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UNSIGNED_LONG";
         $mpidef_type{"UNSIGNED_LONG"} = "Datatype";
@@ -1221,7 +1221,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_LONG_LONG} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_LONG_LONG} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_LONG_LONG} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_LONG_LONG";
         $mpidef_type{"LONG_LONG"} = "Datatype";
@@ -1230,7 +1230,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_FLOAT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_FLOAT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_FLOAT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_FLOAT";
         $mpidef_type{"FLOAT"} = "Datatype";
@@ -1239,7 +1239,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_DOUBLE} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_DOUBLE} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_DOUBLE} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_DOUBLE";
         $mpidef_type{"DOUBLE"} = "Datatype";
@@ -1248,7 +1248,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_LONG_DOUBLE} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_LONG_DOUBLE} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_LONG_DOUBLE} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_LONG_DOUBLE";
         $mpidef_type{"LONG_DOUBLE"} = "Datatype";
@@ -1257,7 +1257,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_BYTE} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_BYTE} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_BYTE} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_BYTE";
         $mpidef_type{"BYTE"} = "Datatype";
@@ -1266,7 +1266,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_WCHAR} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_WCHAR} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_WCHAR} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_WCHAR";
         $mpidef_type{"WCHAR"} = "Datatype";
@@ -1275,7 +1275,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_PACKED} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_PACKED} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_PACKED} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_PACKED";
         $mpidef_type{"PACKED"} = "Datatype";
@@ -1284,7 +1284,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_LB} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_LB} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_LB} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_LB";
         $mpidef_type{"LB"} = "Datatype";
@@ -1293,7 +1293,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UB} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UB} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UB} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UB";
         $mpidef_type{"UB"} = "Datatype";
@@ -1302,7 +1302,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_2INT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_2INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_2INT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_2INT";
         $mpidef_type{"2INT"} = "Datatype";
@@ -1311,7 +1311,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_SIGNED_CHAR} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_SIGNED_CHAR} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_SIGNED_CHAR} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_SIGNED_CHAR";
         $mpidef_type{"SIGNED_CHAR"} = "Datatype";
@@ -1320,7 +1320,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UNSIGNED_LONG_LONG} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UNSIGNED_LONG_LONG} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UNSIGNED_LONG_LONG} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UNSIGNED_LONG_LONG";
         $mpidef_type{"UNSIGNED_LONG_LONG"} = "Datatype";
@@ -1329,7 +1329,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_CHARACTER} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_CHARACTER} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_CHARACTER} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_CHARACTER";
         $mpidef_type{"CHARACTER"} = "Datatype";
@@ -1338,7 +1338,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INTEGER} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INTEGER} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INTEGER} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INTEGER";
         $mpidef_type{"INTEGER"} = "Datatype";
@@ -1347,7 +1347,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_REAL} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_REAL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_REAL} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_REAL";
         $mpidef_type{"REAL"} = "Datatype";
@@ -1356,7 +1356,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_LOGICAL} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_LOGICAL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_LOGICAL} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_LOGICAL";
         $mpidef_type{"LOGICAL"} = "Datatype";
@@ -1365,7 +1365,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_COMPLEX";
         $mpidef_type{"COMPLEX"} = "Datatype";
@@ -1374,7 +1374,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_DOUBLE_PRECISION} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_DOUBLE_PRECISION} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_DOUBLE_PRECISION} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_DOUBLE_PRECISION";
         $mpidef_type{"DOUBLE_PRECISION"} = "Datatype";
@@ -1383,7 +1383,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_2INTEGER} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_2INTEGER} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_2INTEGER} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_2INTEGER";
         $mpidef_type{"2INTEGER"} = "Datatype";
@@ -1392,7 +1392,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_2REAL} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_2REAL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_2REAL} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_2REAL";
         $mpidef_type{"2REAL"} = "Datatype";
@@ -1401,7 +1401,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_DOUBLE_COMPLEX";
         $mpidef_type{"DOUBLE_COMPLEX"} = "Datatype";
@@ -1410,7 +1410,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_2DOUBLE_PRECISION} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_2DOUBLE_PRECISION} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_2DOUBLE_PRECISION} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_2DOUBLE_PRECISION";
         $mpidef_type{"2DOUBLE_PRECISION"} = "Datatype";
@@ -1419,7 +1419,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_2COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_2COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_2COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_2COMPLEX";
         $mpidef_type{"2COMPLEX"} = "Datatype";
@@ -1428,7 +1428,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_2DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_2DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_2DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_2DOUBLE_COMPLEX";
         $mpidef_type{"2DOUBLE_COMPLEX"} = "Datatype";
@@ -1437,7 +1437,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_REAL4} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_REAL4} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_REAL4} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_REAL4";
         $mpidef_type{"REAL4"} = "Datatype";
@@ -1446,7 +1446,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_COMPLEX8} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_COMPLEX8} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_COMPLEX8} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_COMPLEX8";
         $mpidef_type{"COMPLEX8"} = "Datatype";
@@ -1455,7 +1455,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_REAL8} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_REAL8} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_REAL8} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_REAL8";
         $mpidef_type{"REAL8"} = "Datatype";
@@ -1464,7 +1464,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_COMPLEX16} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_COMPLEX16} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_COMPLEX16} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_COMPLEX16";
         $mpidef_type{"COMPLEX16"} = "Datatype";
@@ -1473,7 +1473,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_REAL16} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_REAL16} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_REAL16} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_REAL16";
         $mpidef_type{"REAL16"} = "Datatype";
@@ -1482,7 +1482,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_COMPLEX32} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_COMPLEX32} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_COMPLEX32} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_COMPLEX32";
         $mpidef_type{"COMPLEX32"} = "Datatype";
@@ -1491,7 +1491,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INTEGER1} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INTEGER1} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INTEGER1} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INTEGER1";
         $mpidef_type{"INTEGER1"} = "Datatype";
@@ -1500,7 +1500,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INTEGER2} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INTEGER2} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INTEGER2} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INTEGER2";
         $mpidef_type{"INTEGER2"} = "Datatype";
@@ -1509,7 +1509,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INTEGER4} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INTEGER4} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INTEGER4} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INTEGER4";
         $mpidef_type{"INTEGER4"} = "Datatype";
@@ -1518,7 +1518,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INTEGER8} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INTEGER8} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INTEGER8} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INTEGER8";
         $mpidef_type{"INTEGER8"} = "Datatype";
@@ -1527,7 +1527,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INTEGER16} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INTEGER16} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INTEGER16} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INTEGER16";
         $mpidef_type{"INTEGER16"} = "Datatype";
@@ -1536,7 +1536,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_CXX_BOOL} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_CXX_BOOL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_CXX_BOOL} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_CXX_BOOL";
         $mpidef_type{"CXX_BOOL"} = "Datatype";
@@ -1545,7 +1545,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_CXX_COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_CXX_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_CXX_COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_CXX_COMPLEX";
         $mpidef_type{"CXX_COMPLEX"} = "Datatype";
@@ -1554,7 +1554,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_CXX_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_CXX_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_CXX_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_CXX_DOUBLE_COMPLEX";
         $mpidef_type{"CXX_DOUBLE_COMPLEX"} = "Datatype";
@@ -1563,7 +1563,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_CXX_LONG_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_CXX_LONG_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_CXX_LONG_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_CXX_LONG_DOUBLE_COMPLEX";
         $mpidef_type{"CXX_LONG_DOUBLE_COMPLEX"} = "Datatype";
@@ -1572,7 +1572,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INT8_T} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INT8_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INT8_T} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INT8_T";
         $mpidef_type{"INT8_T"} = "Datatype";
@@ -1581,7 +1581,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INT16_T} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INT16_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INT16_T} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INT16_T";
         $mpidef_type{"INT16_T"} = "Datatype";
@@ -1590,7 +1590,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INT32_T} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INT32_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INT32_T} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INT32_T";
         $mpidef_type{"INT32_T"} = "Datatype";
@@ -1599,7 +1599,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_INT64_T} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_INT64_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_INT64_T} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_INT64_T";
         $mpidef_type{"INT64_T"} = "Datatype";
@@ -1608,7 +1608,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UINT8_T} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UINT8_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UINT8_T} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UINT8_T";
         $mpidef_type{"UINT8_T"} = "Datatype";
@@ -1617,7 +1617,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UINT16_T} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UINT16_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UINT16_T} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UINT16_T";
         $mpidef_type{"UINT16_T"} = "Datatype";
@@ -1626,7 +1626,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UINT32_T} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UINT32_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UINT32_T} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UINT32_T";
         $mpidef_type{"UINT32_T"} = "Datatype";
@@ -1635,7 +1635,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_UINT64_T} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_UINT64_T} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_UINT64_T} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_UINT64_T";
         $mpidef_type{"UINT64_T"} = "Datatype";
@@ -1644,7 +1644,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_C_BOOL} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_C_BOOL} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_C_BOOL} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_C_BOOL";
         $mpidef_type{"C_BOOL"} = "Datatype";
@@ -1653,7 +1653,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_C_FLOAT_COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_C_FLOAT_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_C_FLOAT_COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_C_FLOAT_COMPLEX";
         $mpidef_type{"C_FLOAT_COMPLEX"} = "Datatype";
@@ -1662,7 +1662,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_C_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_C_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_C_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_C_DOUBLE_COMPLEX";
         $mpidef_type{"C_DOUBLE_COMPLEX"} = "Datatype";
@@ -1671,7 +1671,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_C_LONG_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_C_LONG_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_C_LONG_DOUBLE_COMPLEX} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_C_LONG_DOUBLE_COMPLEX";
         $mpidef_type{"C_LONG_DOUBLE_COMPLEX"} = "Datatype";
@@ -1680,7 +1680,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_AINT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_AINT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_AINT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_AINT";
         $mpidef_type{"AINT"} = "Datatype";
@@ -1689,7 +1689,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_OFFSET} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_OFFSET} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_OFFSET} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_OFFSET";
         $mpidef_type{"OFFSET"} = "Datatype";
@@ -1698,7 +1698,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_COUNT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_COUNT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_COUNT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_COUNT";
         $mpidef_type{"COUNT"} = "Datatype";
@@ -1707,7 +1707,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_C_FLOAT16} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_C_FLOAT16} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_C_FLOAT16} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_C_FLOAT16";
         $mpidef_type{"C_FLOAT16"} = "Datatype";
@@ -1716,7 +1716,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_FLOAT_INT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_FLOAT_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_FLOAT_INT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_FLOAT_INT";
         $mpidef_type{"FLOAT_INT"} = "Datatype";
@@ -1725,7 +1725,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_DOUBLE_INT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_DOUBLE_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_DOUBLE_INT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_DOUBLE_INT";
         $mpidef_type{"DOUBLE_INT"} = "Datatype";
@@ -1734,7 +1734,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_LONG_INT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_LONG_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_LONG_INT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_LONG_INT";
         $mpidef_type{"LONG_INT"} = "Datatype";
@@ -1743,7 +1743,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_SHORT_INT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_SHORT_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_SHORT_INT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_SHORT_INT";
         $mpidef_type{"SHORT_INT"} = "Datatype";
@@ -1752,7 +1752,7 @@ if ($config eq "mpich") {
             $mpidef{MPI_LONG_DOUBLE_INT} = "MPI_DATATYPE_NULL";
         }
         else {
-            $mpidef{MPI_LONG_DOUBLE_INT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+            $mpidef{MPI_LONG_DOUBLE_INT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         }
         push @mpidef_list, "MPI_LONG_DOUBLE_INT";
         $mpidef_type{"LONG_DOUBLE_INT"} = "Datatype";
