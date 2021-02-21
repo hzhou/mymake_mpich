@@ -446,7 +446,11 @@ if ($config eq "mpich") {
     $temp{USE_PMI_PORT} = 1;
     $temp{HAVE_NAMEPUB_SERVICE} = 1;
 
-    $temp{HAVE_ERROR_CHECKING}='MPID_ERROR_LEVEL_ALL';
+    if ($opts{"disable-error-checking"}) {
+    }
+    else {
+        $temp{HAVE_ERROR_CHECKING}='MPID_ERROR_LEVEL_ALL';
+    }
     $temp{MPICH_ERROR_MSG_LEVEL} = 'MPICH_ERROR_MSG__ALL';
     $temp{MPICH_IS_THREADED} = 1;
     $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__GLOBAL';
@@ -1000,11 +1004,11 @@ if ($config eq "mpich") {
         }
 
         my $v = hex $mpi_h_confs->{MPI_AINT_DATATYPE};
-        $mpidef{MPI_AINT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        $mpidef{MPI_AINT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         my $v = hex $mpi_h_confs->{MPI_OFFSET_DATATYPE};
-        $mpidef{MPI_OFFSET} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        $mpidef{MPI_OFFSET} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         my $v = hex $mpi_h_confs->{MPI_COUNT_DATATYPE};
-        $mpidef{MPI_COUNT} = $v > 0x7fffffff ? $v - 0x100000000 : $v;
+        $mpidef{MPI_COUNT} = $v > 0x7fffffff ? $v - (1<<31) : $v;
         $mpidef{MPI_INTEGER_KIND} = $sizeof_hash{INT};
         $mpidef{MPI_ADDRESS_KIND} = $sizeof_hash{AINT};
         $mpidef{MPI_AINT_KIND} = $sizeof_hash{AINT};

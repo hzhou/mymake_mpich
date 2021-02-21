@@ -687,7 +687,7 @@ else {
         if ($t=~/--enable-(g|strict)/) {
             $configure.=" $t";
         }
-        elsif ($t=~/--with-(mpl|thread-package|argobots|uti|cuda)/) {
+        elsif ($t=~/--with(out)?-(mpl|thread-package|argobots|uti|cuda)/) {
             $configure.=" $t";
         }
     }
