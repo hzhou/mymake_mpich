@@ -173,6 +173,7 @@ else {
 }
 
 my $uname = `uname`;
+$opts{uname} = $uname;
 if ($uname=~/Darwin/) {
     $opts{do_pmpi} = 1;
 }

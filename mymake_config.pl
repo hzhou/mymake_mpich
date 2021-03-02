@@ -385,7 +385,9 @@ $config_defines{HAVE_SCHED_SETAFFINITY}=1;
 $config_defines{HAVE_SETITIMER}=1;
 $config_defines{HAVE_STRUCT_RANDOM_DATA}=1;
 $config_defines{USE_WEAK_SYMBOLS}=1;
-$config_defines{USE_SYM_HEAP} = 1;
+if ($opts{uname}=~/Linux/i) {
+    $config_defines{USE_SYM_HEAP} = 1;
+}
 $config_defines{WORDS_LITTLEENDIAN}=1;
 
 $config_defines{restrict} = '__restrict';
