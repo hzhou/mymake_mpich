@@ -385,9 +385,6 @@ $config_defines{HAVE_SCHED_SETAFFINITY}=1;
 $config_defines{HAVE_SETITIMER}=1;
 $config_defines{HAVE_STRUCT_RANDOM_DATA}=1;
 $config_defines{USE_WEAK_SYMBOLS}=1;
-if ($opts{uname}=~/Linux/i) {
-    $config_defines{USE_SYM_HEAP} = 1;
-}
 $config_defines{WORDS_LITTLEENDIAN}=1;
 
 $config_defines{restrict} = '__restrict';
@@ -419,7 +416,13 @@ $config_defines{HAVE_PTHREAD_YIELD}=1;
 $config_defines{HAVE_MMAP}=1;
 $config_defines{HAVE_MUNMAP}=1;
 $config_defines{HAVE_INET_PTON}=1;
-$config_defines{STRERROR_R_CHAR_P} = 1;
+
+if ($opts{uname}=~/Linux/i) {
+    $config_defines{USE_SYM_HEAP} = 1;
+}
+if ($opts{uname}=~/Linux/i) {
+    $config_defines{STRERROR_R_CHAR_P} = 1;
+}
 
 if ($config eq "mpich") {
     my %make_conds;
