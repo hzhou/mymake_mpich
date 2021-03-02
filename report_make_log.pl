@@ -147,9 +147,6 @@ sub parse_warning {
         if ($t=~/warning #177:/) {
             $o->{skip}="icc: warning #177: unused label";
         }
-        elsif ($compiler eq "gcc-4" and $t=~/\[(-Wmaybe-uninitialized)\]/) {
-            $o->{skip}="gcc-4: $1";
-        }
         elsif ($compiler eq "pgi") {
             if ($t=~/warning: transfer of control bypasses initialization of/) {
                 $o->{skip}="pgi: goto bypasses variable initialization";
