@@ -3520,7 +3520,9 @@ elsif ($config eq "hydra") {
     $config_defines{HAVE_BSS_EXTERNAL}=1;
     $config_defines{HAVE_BSS_PERSIST}=1;
     $config_defines{HAVE_ERROR_CHECKING}=1;
-    $config_defines{HAVE_EXTERN_ENVIRON}=1;
+    if ($opts{uname}=~/Linux/) {
+        $config_defines{HAVE_EXTERN_ENVIRON}=1;
+    }
     $config_defines{ENABLE_PROFILING}=1;
 
     $config_defines{HYDRA_CXX}="\"$opts{CXX} \"";
