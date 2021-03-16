@@ -450,6 +450,7 @@ if ($config eq "mpich") {
     $temp{HAVE_TAG_ERROR_BITS} = 1;
     $temp{USE_PMI_PORT} = 1;
     $temp{HAVE_NAMEPUB_SERVICE} = 1;
+    $temp{HAVE_HWLOC} = 1;
 
     if ($opts{"disable-error-checking"}) {
     }

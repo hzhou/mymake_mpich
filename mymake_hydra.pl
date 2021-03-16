@@ -150,7 +150,7 @@ if (`$cmd`) {
     $mod_tarball=~s/modules\.tar\.gz/modules-yaksa-new.tar.gz/;
 }
 if ($opts{"with-cuda"} && $mod_tarball) {
-    $mod_tarball=~s/modules\.tar\.gz/modules-gpu.tar.gz/;
+    $mod_tarball=~s/modules.*\.tar\.gz/modules-gpu.tar.gz/;
 }
 if ($ENV{MODDIR}) {
     $opts{moddir} = Cwd::abs_path($ENV{MODDIR});
