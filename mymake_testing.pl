@@ -49,7 +49,7 @@ foreach my $t (split /\s+/, $opts{config_args}) {
     elsif ($t=~/--(dis|en)able-(fortran|cxx|romio)/) {
         $config_args .= " $t";
     }
-    elsif ($t=~/--with-(thread-package|argobots)/) {
+    elsif ($t=~/--with-(thread-package|argobots|cuda|ze)/) {
         $config_args .= " $t";
     }
 }
