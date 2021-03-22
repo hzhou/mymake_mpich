@@ -3223,6 +3223,7 @@ if ($config eq "mpich") {
     $opts{enable_shm} = 1;
     if ($opts{device} =~ /ch3/) {
         $make_conds{BUILD_CH3} = 1;
+        $make_conds{BUILD_DATALOOP_ENGINE} = 1;
         if ($opts{device} =~/ch3:sock/) {
             $make_conds{BUILD_CH3_SOCK}=1;
             $make_conds{BUILD_CH3_UTIL_SOCK}=1;
