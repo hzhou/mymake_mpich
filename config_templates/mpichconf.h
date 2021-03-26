@@ -285,6 +285,9 @@
 /* Define if _Float16 is supported */
 #undef HAVE_FLOAT16
 
+/* Define if __float128 is supported */
+#undef HAVE_FLOAT128
+
 /* Define to 1 if the system has the type `float _Complex'. */
 #undef HAVE_FLOAT__COMPLEX
 

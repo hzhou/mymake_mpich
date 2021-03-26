@@ -299,6 +299,7 @@ if ($opts{cc_version}=~/gcc 4/) {
 }
 my @header_list=("stdio.h");
 my @type_list=("void *", "char", "short", "int", "long", "long long", "size_t", "off_t", "float", "double", "long double");
+push @type_list, "__float128";
 if ($config eq "mpich") {
     push @type_list, "pair:short";
     push @type_list, "pair:int";
@@ -3879,6 +3880,9 @@ sub get_config_name {
         else {
             $type="$1 int";
         }
+    }
+    elsif ($type eq "__float128") {
+        $type = "float128";
     }
 
     $type =~ tr/\* \/./p_/;

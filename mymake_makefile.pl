@@ -259,8 +259,8 @@ if ($what eq "mpich") {
             foreach my $m (@tlist) {
                 open In, "$m" or die "Can't open $m: $!\n";
                 while(<In>){
-                    if (/relink_command="\(cd \S+ucx.src.uct.(\S+);/) {
-                        my $dir = "src/uct/$1";
+                    if (/relink_command="\(cd \S+ucx.(src.uc[tm].\S+);/) {
+                        my $dir = "$1";
                         $m=~s/modules/$dir/;
                     }
                 }
