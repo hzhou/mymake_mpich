@@ -905,6 +905,7 @@ else {
             system "find $ucxdir -name '*.la' | xargs sed -i \"s,MODDIR,$ucxdir,g\"";
             system "find $ucxdir -name '*.la*' | xargs sed -i \"s,/MODPREFIX,$opts{prefix},g\"";
             system "mkdir -p $opts{prefix}/lib/ucx";
+            $ENV{LD_LIBRARY_PATH}="$opts{prefix}/lib:$opts{prefix}/lib/ucx:$ENV{LD_LIBRARY_PATH}";
             foreach my $m ("ucm", "ucs", "uct", "ucp") {
                 system "$ucxdir/libtool --mode=install --quiet install $ucxdir/src/$m/lib$m.la $opts{prefix}/lib";
             }
