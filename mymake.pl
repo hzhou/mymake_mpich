@@ -913,7 +913,7 @@ else {
             foreach my $m (@tlist) {
                 open In, "$m" or die "Can't open $m: $!\n";
                 while(<In>){
-                    if (/relink_command="\(cd \S+ucx.(src.uc[tm].\S+);/) {
+                    if (/relink_command="\(cd \S+ucx.(src.\S+);/) {
                         my $dir = "$1";
                         $m=~s/modules/$dir/;
                     }
