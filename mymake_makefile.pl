@@ -265,7 +265,7 @@ if ($what eq "mpich") {
                     }
                 }
                 close In;
-                system "$ucxdir/libtool --mode=install --quiet install $m $opts{prefix}/lib";
+                system "$ucxdir/libtool --mode=install --quiet install $m $opts{prefix}/lib/ucx";
             }
             unlink "$ucxdir/need_sed";
         }
