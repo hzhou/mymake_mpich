@@ -335,16 +335,21 @@ if ($config eq "mpich") {
     $config_defines{MAX_ALIGNMENT} = 16;
     $config_defines{MPIR_Ufint} = "unsigned int";
     my $MPI_AINT;
-    if ($sizeof_hash{LONG} == $sizeof_hash{LONG_LONG}) {
+    if ($sizeof_hash{VOID_P}==$sizeof_hash{LONG}) {
         $MPI_AINT = "long";
         $config_defines{MPIR_AINT_MAX} = 'LONG_MAX';
+    }
+    elsif ($sizeof_hash{VOID_P}==$sizeof_hash{LONG_LONG}) {
+        $MPI_AINT = "long long";
+        $config_defines{MPIR_AINT_MAX} = 'LONG_LONG_MAX';
+    }
+
+    if ($sizeof_hash{LONG} == $sizeof_hash{LONG_LONG}) {
         $config_defines{MPIR_COUNT_MAX} = 'LONG_MAX';
         $config_defines{MPIR_OFFSET_MAX} = 'LONG_MAX';
         $config_defines{MPIR_Ucount} = "unsigned long";
     }
     else {
-        $MPI_AINT = "long long";
-        $config_defines{MPIR_AINT_MAX} = 'LONG_LONG_MAX';
         $config_defines{MPIR_COUNT_MAX} = 'LONG_LONG_MAX';
         $config_defines{MPIR_OFFSET_MAX} = 'LONG_LONG_MAX';
         $config_defines{MPIR_Ucount} = "unsigned long long";
