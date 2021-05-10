@@ -69,6 +69,7 @@ $hash_defines{"disable-ch4-ofi-ipv6"} = "MPIDI_CH4_OFI_SKIP_IPV6";
 $hash_defines{"enable-legacy-ofi"} = "MPIDI_ENABLE_LEGACY_OFI";
 $hash_defines{"enable-ch4-am-only"} = "MPIDI_ENABLE_AM_ONLY";
 $hash_defines{"with-ch4-max-vcis"} = "MPIDI_CH4_MAX_VCIS";
+$hash_defines{"with-ch4-rank-bits"} = "CH4_RANK_BITS";
 $hash_defines{"enable-nolocal"} = "ENABLE_NO_LOCAL";
 $hash_defines{"enable-izem-queue"} = "ENABLE_IZEM_QUEUE";
 
@@ -255,6 +256,12 @@ if ($config_defines{MPIDI_CH4_MAX_VCIS} > 1 and !$config_defines{MPIDI_CH4_VCI_M
 }
 if ($config_defines{MPICH_THREAD_GRANULARITY} =~/VCI|POBJ/) {
     $config_defines{MPICH_THREAD_REFCOUNT} = "MPICH_REFCOUNT__LOCKFREE";
+    if (!$config_defines{MPIDI_CH4_MAX_VCIS}) {
+        $config_defines{MPIDI_CH4_MAX_VCIS} = 64;
+    }
+    if (!$config_defines{MPIDI_CH4_VCI_METHOD}) {
+        $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__COMM";
+    }
 }
 else {
     $config_defines{MPICH_THREAD_REFCOUNT} = "MPICH_REFCOUNT__NONE";
@@ -481,7 +488,6 @@ if ($config eq "mpich") {
         $temp{MPIDI_CH4_MAX_VCIS}=1;
         $temp{MPIDI_CH4_USE_MT_DIRECT}=1;
         $temp{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__ZERO';
-        $temp{CH4_RANK_BITS}=32;
         $temp{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
 
         $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
@@ -3449,7 +3455,6 @@ elsif ($config eq "mpl") {
     $config_defines{HAVE___TYPEOF}=1;
 
     $config_defines{HAVE_ALIGNED_ALLOC}=1;
-    $config_defines{HAVE_BACKTRACE}=1;
     $config_defines{HAVE_BROKEN_VALGRIND}=1;
     $config_defines{HAVE_FDOPEN}=1;
     $config_defines{HAVE_GETIFADDRS}=1;
