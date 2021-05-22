@@ -498,6 +498,7 @@ if ($config eq "mpich") {
             $temp{HAVE_LIBUCP} = 1;
             $temp{HAVE_UCP_PUT_NB}=1;
             $temp{HAVE_UCP_GET_NB}=1;
+            $temp{CH4_UCX_RANKBITS}=16;
         }
         elsif ($opts{device}=~/ch4:ofi/) {
             $temp{HAVE_CH4_NETMOD_OFI}=1;

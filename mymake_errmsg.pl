@@ -134,8 +134,8 @@ foreach my $f (@files) {
                 next;
             }
             while(1){
-                if ($args=~/^(\((?:[^()]++|(?-1))*+\))/) {
-                    $args=substr($1, 1, -1);
+                if ($args=~/^\((.*)\);/) {
+                    $args=$1;
                     last;
                 }
                 $args=~s/\\$//;
@@ -143,13 +143,10 @@ foreach my $f (@files) {
                 chomp;
                 $args.=' '.$_;
             }
-            my @arglist=arg_split($args);
-            my $pat=$KnownErrRoutines{$name};
-            my @idx=split /:/, $pat;
-            if ($arglist[$idx[0]]=~/"(\*\*.*)"/) {
+            if ($args=~/"(\*\*\w+)"/) {
                 $generics{$1}++;
             }
-            if ($arglist[$idx[0]+1]=~/"(\*\*.*)"/) {
+            if ($args=~/"(\*\*\w+ [^"]*)"/) {
                 $specifics{$1}++;
             }
         }
@@ -272,23 +269,4 @@ foreach my $name (@classnames) {
 print Out "};\n";
 print Out "#endif\n\n";
 close Out;
-
-# ---- subroutines --------------------------------------------
-sub arg_split {
-    my ($t) = @_;
-    my @strs;
-    while ($t=~/(.*)("(?:[^\\]|\\")*")(.*)/) {
-        my $i=@strs;
-        push @strs, $2;
-        $t=$1."str:$i".$3;
-    }
-    $t=~s/(\((?:[^()]++|(?-1))*+\))/--/g;
-    my @t = split /\s*,\s*/, $t;
-    foreach my $t (@t) {
-        if ($t =~/^str:(\d+)/) {
-            $t=$strs[$1];
-        }
-    }
-    return @t;
-}
 
