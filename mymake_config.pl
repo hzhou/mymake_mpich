@@ -489,6 +489,7 @@ if ($config eq "mpich") {
         $temp{MPIDI_CH4_USE_MT_DIRECT}=1;
         $temp{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__ZERO';
         $temp{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
+        $temp{ENABLE_LOCAL_SESSION_INIT}=1;
 
         $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
 

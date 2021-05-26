@@ -105,6 +105,9 @@
 /* Define to 1 to enable rma-related MPI_T performance variables */
 #undef ENABLE_PVAR_RMA
 
+/* Define to skip initializing builtin world comm during MPI_Session_init */
+#undef ENABLE_LOCAL_SESSION_INIT
+ 
 /* The value of false in Fortran */
 #undef F77_FALSE_VALUE
 
