@@ -331,6 +331,9 @@ if ($ENV{MODTARBALL}) {
 elsif (-e "modules.tar.gz") {
     $mod_tarball = "modules.tar.gz";
 }
+elsif (-e "modules-yaksa-new.tar.gz") {
+    $mod_tarball = "modules-yaksa-new.tar.gz";
+}
 elsif (-e "modules-gpu.tar.gz") {
     $mod_tarball = "modules-gpu.tar.gz";
 }
