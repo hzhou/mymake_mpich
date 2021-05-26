@@ -1,4 +1,3 @@
-
 VER=$1
 
 if test x$1 = x4.6 ; then

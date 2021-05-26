@@ -1,4 +1,3 @@
-
 set -e
 if test -z $NJOB ; then
     NJOB=16

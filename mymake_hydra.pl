@@ -148,7 +148,7 @@ elsif (-e "modules-yaksa-new.tar.gz") {
 elsif (-e "modules-gpu.tar.gz") {
     $mod_tarball = "modules-gpu.tar.gz";
 }
-if ($mod_tarball eq "modules.tar.gz") {
+if ($mod_tarball =~/modules\.tar\.gz$/) {
     my $cmd = "git log --after=\"2021-2-16\" |grep 'Yaksa has been updated to use intptr_t'";
     if (`$cmd`) {
         $mod_tarball=~s/modules\.tar\.gz/modules-yaksa-new.tar.gz/;

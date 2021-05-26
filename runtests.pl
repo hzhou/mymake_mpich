@@ -59,7 +59,6 @@ our $verbose;
     "include-dir" => "include_dir",
     "exclude-dir" => "exclude_dir",
 );
-
 $cwd = getcwd();
 $config{tests} = "testlist";
 $config{srcdir} = ".";
