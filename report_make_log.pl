@@ -54,7 +54,8 @@ while(<In>){
 }
 close In;
 
-dump_report(\@make_log, $dur);
+my $n_fails = dump_report(\@make_log, $dur);
+exit $n_fails;
 
 # ---- subroutines --------------------------------------------
 sub dump_report {
@@ -113,6 +114,7 @@ sub dump_report {
     print Out "</testsuite>\n";
     print Out "</testsuites>\n";
     close Out;
+    return $n_fails;
 }
 
 sub parse_warning {
