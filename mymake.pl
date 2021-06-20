@@ -423,6 +423,14 @@ if (!-f "src/mpid/ch4/netmod/include/netmod.h") {
         system "$python maint/gen_ch4_api.py";
     }
 }
+if (!-f "src/mpi/coll/mpir_coll.c") {
+    if (-f "maint/gen_coll.pl") {
+        system "perl maint/gen_coll.pl";
+    }
+    elsif (-f "maint/gen_coll.py") {
+        system "$python maint/gen_coll.py";
+    }
+}
 if (!$opts{disable_cxx}) {
     print ": buildiface - cxx\n";
     chdir "src/binding/cxx";

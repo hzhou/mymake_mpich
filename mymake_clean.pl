@@ -40,6 +40,7 @@ if (-d $opts{prefix}) {
 }
 
 push @realclean_list, "src/binding/c/*/*.c";
+push @realclean_list, "src/mpid/ch4/netmod/include/netmod.h";
 
 foreach my $t (@realclean_list) {
     print "rm -rf $t\n";

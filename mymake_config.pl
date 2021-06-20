@@ -3627,6 +3627,12 @@ elsif ($config eq "test") {
     if ($opts{device}!~/ch4:ucx/) {
         $config_defines{HAVE_MPI_SPAWN} = 1;
     }
+    my %confs;
+    $confs{PERL}="/usr/bin/perl";
+    $confs{MPIEXEC} = "mpiexec";
+    $confs{MPI_IS_STRICT} = "false";
+    $confs{RUN_XFAIL} = "false";
+    autoconf_file("test/mpi/runtests", \%confs);
 }
 elsif ($config eq "dtpools") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
