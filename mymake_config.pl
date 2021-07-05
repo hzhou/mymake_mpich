@@ -3636,6 +3636,11 @@ elsif ($config eq "test") {
     if ($opts{device}!~/ch4:ucx/) {
         $config_defines{HAVE_MPI_SPAWN} = 1;
     }
+
+    if ($opts{"with-cuda"}) {
+        $config_defines{HAVE_GPU} = 1;
+        $config_defines{HAVE_CUDA} = 1;
+    }
     my %confs;
     $confs{PERL}="/usr/bin/perl";
     $confs{MPIEXEC} = "mpiexec";

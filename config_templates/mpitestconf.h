@@ -45,6 +45,9 @@
 /* Fortran names are uppercase in stdcall */
 #undef F77_NAME_UPPER_STDCALL
 
+/* Define if GPU is supported */
+#undef HAVE_GPU
+
 /* Define if CUDA is available */
 #undef HAVE_CUDA
 
