@@ -603,6 +603,7 @@ elsif ($what eq "test") {
     my @all_am = glob("test/mpi/*/Makefile.am");
     push @all_am, glob("test/mpi/threads/*/Makefile.am");
     push @all_am, glob("test/mpi/errors/*/Makefile.am");
+    push @all_am, glob("test/mpi/impls/mpich/comm/Makefile.am");
     foreach my $a (@all_am) {
         my $dir;
         if ($a =~ /test\/mpi\/(.*)\/Makefile.am/) {

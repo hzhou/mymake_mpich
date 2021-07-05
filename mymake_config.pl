@@ -483,6 +483,9 @@ if ($config eq "mpich") {
         if ($opts{"without-ch4-shmmods"}) {
             $temp{MPIDI_CH4_DIRECT_NETMOD} = 1;
         }
+        if ($opts{"enable-ch4-am-only"}) {
+            $temp{MPIDI_ENABLE_AM_ONLY} = 1;
+        }
         $temp{MPIDI_BUILD_CH4_LOCALITY_INFO}=1;
         $temp{MPIDI_CH4U_USE_PER_COMM_QUEUE}=1;
         $temp{MPIDI_CH4_MAX_VCIS}=1;
@@ -516,6 +519,7 @@ if ($config eq "mpich") {
                 $temp{MPIDI_CH4_SHM_ENABLE_GPU}=1;
                 $make_conds{BUILD_SHM_IPC_GPU} = 1;
             }
+            $temp{ENABLE_PVAR_MULTINIC}=0;
         }
     }
     elsif ($opts{device}=~/ch3/) {
@@ -707,10 +711,14 @@ if ($config eq "mpich") {
         $confs{"MPICH_MPI${P}_LDFLAGS"}="";
         $confs{"MPICH_MPI${P}_LIBS"}="";
 
-        if (-f "src/env/mpi$p.bash.in") {
+        my $script = "src/env/mpi$p.bash.in";
+        if ($opts{sh}) {
+            $script = "src/env/mpi$p.sh.in";
+        }
+        if (-f $script) {
             my @lines;
             {
-                open In, "src/env/mpi$p.bash.in" or die "Can't open src/env/mpi$p.bash.in.\n";
+                open In, "$script" or die "Can't open $script.\n";
                 @lines=<In>;
                 close In;
             }
