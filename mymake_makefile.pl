@@ -672,6 +672,14 @@ elsif ($what eq "test") {
         push @extra_make_rules, "\t(cd $top_srcdir/dtpools/src && \x24(MAKE) libdtpools.la)";
         push @extra_make_rules, "";
 
+        if ($opts{"with-cuda"}) {
+            my $p = $opts{"with-cuda"};
+            $conds{HAVE_CUDA} = 1;
+            $make_vars{CPPFLAGS} .= " -I$p/include";
+            $make_vars{LDFLAGS} .= " -L$p/lib64";
+            $make_vars{LIBS} .= " -lcudart -lcuda";
+        }
+
         $make_vars{LIBTOOL} = "$top_srcdir/libtool";
         $make_vars{CC} = "mpicc";
         $make_vars{CCLD} = "mpicc";
