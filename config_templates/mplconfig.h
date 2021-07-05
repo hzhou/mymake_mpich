@@ -284,22 +284,19 @@
 #undef LT_OBJDIR
 
 /* Define if GPU is supported */
-#undef MPL_HAVE_GPU
+#undef HAVE_GPU
 
 /* Define if CUDA is available */
-#undef MPL_HAVE_CUDA
+#undef HAVE_CUDA
 
 /* Define if ZE is available */
-#undef MPL_HAVE_ZE
-
-/* Define if use MMAP shared memory */
-#undef MPL_USE_MMAP_SHM
+#undef HAVE_ZE
 
 /* Define if use Windows shared memory */
-#undef MPL_USE_NT_SHM
+#undef USE_NT_SHM
 
 /* Define if use SYSV shared memory */
-#undef MPL_USE_SYSV_SHM
+#undef USE_SYSV_SHM
 
 /* Define if aligned_alloc needs a declaration */
 #undef NEEDS_ALIGNED_ALLOC_DECL
