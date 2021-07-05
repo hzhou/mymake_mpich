@@ -3464,11 +3464,6 @@ elsif ($config eq "mpl") {
     $config_defines{HAVE__BOOL}=1;
     $config_defines{HAVE___TYPEOF}=1;
 
-    if ($opts{"with-cuda"}) {
-        $config_defines{HAVE_GPU} = 1;
-        $config_defines{HAVE_CUDA} = 1;
-    }
-
     $config_defines{HAVE_ALIGNED_ALLOC}=1;
     $config_defines{HAVE_BROKEN_VALGRIND}=1;
     $config_defines{HAVE_FDOPEN}=1;
@@ -3479,8 +3474,10 @@ elsif ($config eq "mpl") {
     $config_defines{HAVE_USLEEP}=1;
 
     if ($opts{"with-cuda"}) {
-        $config_defines{HAVE_CUDA}=1;
+        $config_defines{HAVE_GPU} = 1;
+        $config_defines{HAVE_CUDA} = 1;
     }
+
     $config_defines{HAVE_PTHREAD_MUTEXATTR_SETPSHARED} = 1;
 
     $config_defines{backtrace_size_t} = "int";
