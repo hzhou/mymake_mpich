@@ -283,6 +283,9 @@
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
+/* Define if GPU is supported */
+#undef MPL_HAVE_GPU
+
 /* Define if CUDA is available */
 #undef MPL_HAVE_CUDA
 
