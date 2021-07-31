@@ -137,9 +137,10 @@ if ($what eq "mpich") {
             system $cmd;
         }
     }
-    if ($opts{"with-mpl"} and -d $opts{"with-mpl"}) {
-        $I_list .= " -I$opts{"with-mpl"}/include";
-        $L_list .= " -L$opts{"with-mpl"}/lib -lmpl";
+    my $L=$opts{"with-mpl"};
+    if ($L and -d $L) {
+        $I_list .= " -I$L/include";
+        $L_list .= " -L$L/lib -lmpl";
     }
     else {
         push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
@@ -166,9 +167,10 @@ if ($what eq "mpich") {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-    if ($opts{"with-hwloc"} and -d $opts{"with-hwloc"}) {
-        $I_list .= " -I$opts{"with-hwloc"}/include";
-        $L_list .= " -L$opts{"with-hwloc"}/lib -lhwloc";
+    my $L=$opts{"with-hwloc"};
+    if ($L and -d $L) {
+        $I_list .= " -I$L/include";
+        $L_list .= " -L$L/lib -lhwloc";
     }
     else {
         push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
@@ -179,9 +181,10 @@ if ($what eq "mpich") {
     my $subdir="\x24(MODS)/hwloc";
     my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
     my $config_h = "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
-    if ($opts{"with-yaksa"} and -d $opts{"with-yaksa"}) {
-        $I_list .= " -I$opts{"with-yaksa"}/include";
-        $L_list .= " -L$opts{"with-yaksa"}/lib -lyaksa";
+    my $L=$opts{"with-yaksa"};
+    if ($L and -d $L) {
+        $I_list .= " -I$L/include";
+        $L_list .= " -L$L/lib -lyaksa";
     }
     else {
         push @CONFIGS, "\x24(MODS)/yaksa/src/frontend/include/yaksa_config.h";
@@ -194,9 +197,10 @@ if ($what eq "mpich") {
     my $config_h = "\x24(MODS)/yaksa/src/frontend/include/yaksa_config.h";
     if (-f "maint/tuning/coll/json_gen.sh") {
         system "bash maint/tuning/coll/json_gen.sh";
-        if ($opts{"with-jsonc"} and -d $opts{"with-jsonc"}) {
-            $I_list .= " -I$opts{"with-jsonc"}/include";
-            $L_list .= " -L$opts{"with-jsonc"}/lib -ljsonc";
+        my $L=$opts{"with-jsonc"};
+        if ($L and -d $L) {
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -ljsonc";
         }
         else {
             push @CONFIGS, "\x24(MODS)/json-c/json.h";
@@ -209,9 +213,10 @@ if ($what eq "mpich") {
         my $config_h = "\x24(MODS)/json-c/json.h";
     }
     if ($opts{enable_izem}) {
-        if ($opts{"with-izem"} and -d $opts{"with-izem"}) {
-            $I_list .= " -I$opts{"with-izem"}/include";
-            $L_list .= " -L$opts{"with-izem"}/lib -lizem";
+        my $L=$opts{"with-izem"};
+        if ($L and -d $L) {
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -lizem";
         }
         else {
             push @CONFIGS, "\x24(MODS)/izem/src/include/zm_config.h";
@@ -234,9 +239,10 @@ if ($what eq "mpich") {
                 system $cmd;
             }
         }
-        if ($opts{"with-opa"} and -d $opts{"with-opa"}) {
-            $I_list .= " -I$opts{"with-opa"}/include";
-            $L_list .= " -L$opts{"with-opa"}/lib -lopa";
+        my $L=$opts{"with-opa"};
+        if ($L and -d $L) {
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -lopa";
         }
         else {
             push @CONFIGS, "\x24(MODS)/openpa/src/opa_config.h";
@@ -263,9 +269,10 @@ if ($what eq "mpich") {
     if (!$opts{disable_romio}) {
         system "rsync -r confdb/ src/mpi/romio/confdb/";
         system "cp maint/version.m4 src/mpi/romio/";
-        if ($opts{"with-romio"} and -d $opts{"with-romio"}) {
-            $I_list .= " -I$opts{"with-romio"}/include";
-            $L_list .= " -L$opts{"with-romio"}/lib -lromio";
+        my $L=$opts{"with-romio"};
+        if ($L and -d $L) {
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -lromio";
         }
         else {
             push @CONFIGS, "src/mpi/romio/adio/include/romioconf.h";
@@ -328,9 +335,10 @@ if ($what eq "mpich") {
             print Out @lines;
             close Out;
         }
-        if ($opts{"with-ucx"} and -d $opts{"with-ucx"}) {
-            $I_list .= " -I$opts{"with-ucx"}/include";
-            $L_list .= " -L$opts{"with-ucx"}/lib -lucx";
+        my $L=$opts{"with-ucx"};
+        if ($L and -d $L) {
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -lucx";
         }
         else {
             push @CONFIGS, "\x24(MODS)/ucx/config.h";
@@ -343,9 +351,10 @@ if ($what eq "mpich") {
         my $config_h = "\x24(MODS)/ucx/config.h";
     }
     elsif ($opts{device}=~/ch4:ofi/ and (!$opts{"with-libfabric"} or $opts{"with-libfabric"} eq "embedded")) {
-        if ($opts{"with-ofi"} and -d $opts{"with-ofi"}) {
-            $I_list .= " -I$opts{"with-ofi"}/include";
-            $L_list .= " -L$opts{"with-ofi"}/lib -lofi";
+        my $L=$opts{"with-ofi"};
+        if ($L and -d $L) {
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -lofi";
         }
         else {
             push @CONFIGS, "\x24(MODS)/libfabric/config.h";
@@ -358,9 +367,10 @@ if ($what eq "mpich") {
         my $config_h = "\x24(MODS)/libfabric/config.h";
     }
     elsif ($opts{device}=~/ch3.*:ofi/ and (!$opts{"with-ofi"} or $opts{"with-ofi"} eq "embedded")) {
-        if ($opts{"with-ofi"} and -d $opts{"with-ofi"}) {
-            $I_list .= " -I$opts{"with-ofi"}/include";
-            $L_list .= " -L$opts{"with-ofi"}/lib -lofi";
+        my $L=$opts{"with-ofi"};
+        if ($L and -d $L) {
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -lofi";
         }
         else {
             push @CONFIGS, "\x24(MODS)/libfabric/config.h";
@@ -603,9 +613,10 @@ elsif ($what eq "hydra") {
             system $cmd;
         }
     }
-    if ($opts{"with-mpl"} and -d $opts{"with-mpl"}) {
-        $I_list .= " -I$opts{"with-mpl"}/include";
-        $L_list .= " -L$opts{"with-mpl"}/lib -lmpl";
+    my $L=$opts{"with-mpl"};
+    if ($L and -d $L) {
+        $I_list .= " -I$L/include";
+        $L_list .= " -L$L/lib -lmpl";
     }
     else {
         push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
@@ -632,9 +643,10 @@ elsif ($what eq "hydra") {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-    if ($opts{"with-hwloc"} and -d $opts{"with-hwloc"}) {
-        $I_list .= " -I$opts{"with-hwloc"}/include";
-        $L_list .= " -L$opts{"with-hwloc"}/lib -lhwloc";
+    my $L=$opts{"with-hwloc"};
+    if ($L and -d $L) {
+        $I_list .= " -I$L/include";
+        $L_list .= " -L$L/lib -lhwloc";
     }
     else {
         push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";

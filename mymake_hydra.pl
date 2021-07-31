@@ -430,9 +430,10 @@ if (!-d "$opts{moddir}/mpl") {
         system $cmd;
     }
 }
-if ($opts{"with-mpl"} and -d $opts{"with-mpl"}) {
-    $I_list .= " -I$opts{"with-mpl"}/include";
-    $L_list .= " -L$opts{"with-mpl"}/lib -lmpl";
+my $L=$opts{"with-mpl"};
+if ($L and -d $L) {
+    $I_list .= " -I$L/include";
+    $L_list .= " -L$L/lib -lmpl";
 }
 else {
     push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
@@ -469,9 +470,10 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$lib_la: $config_h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-if ($opts{"with-hwloc"} and -d $opts{"with-hwloc"}) {
-    $I_list .= " -I$opts{"with-hwloc"}/include";
-    $L_list .= " -L$opts{"with-hwloc"}/lib -lhwloc";
+my $L=$opts{"with-hwloc"};
+if ($L and -d $L) {
+    $I_list .= " -I$L/include";
+    $L_list .= " -L$L/lib -lhwloc";
 }
 else {
     push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
