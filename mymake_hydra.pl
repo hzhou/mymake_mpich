@@ -430,9 +430,15 @@ if (!-d "$opts{moddir}/mpl") {
         system $cmd;
     }
 }
-push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
-$I_list .= " -I\x24(MODS)/mpl/include";
-$L_list .= " \x24(MODDIR)/mpl/libmpl.la";
+if ($opts{"with-mpl"} and -d $opts{"with-mpl"}) {
+    $I_list .= " -I$opts{"with-mpl"}/include";
+    $L_list .= " -L$opts{"with-mpl"}/lib -lmpl";
+}
+else {
+    push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
+    $I_list .= " -I\x24(MODS)/mpl/include";
+    $L_list .= " \x24(MODDIR)/mpl/libmpl.la";
+}
 my $configure = "./configure --disable-versioning --enable-embedded";
 foreach my $t (@config_args) {
     if ($t=~/--enable-(g|strict)/) {
@@ -463,9 +469,15 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$lib_la: $config_h";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
-push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
-$I_list .= " -I\x24(MODS)/hwloc/include";
-$L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+if ($opts{"with-hwloc"} and -d $opts{"with-hwloc"}) {
+    $I_list .= " -I$opts{"with-hwloc"}/include";
+    $L_list .= " -L$opts{"with-hwloc"}/lib -lhwloc";
+}
+else {
+    push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
+    $I_list .= " -I\x24(MODS)/hwloc/include";
+    $L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+}
 my $configure = "./configure --enable-embedded-mode --enable-visibility";
 my $subdir="\x24(MODS)/hwloc";
 my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";

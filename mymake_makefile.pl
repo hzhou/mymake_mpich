@@ -137,9 +137,15 @@ if ($what eq "mpich") {
             system $cmd;
         }
     }
-    push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
-    $I_list .= " -I\x24(MODS)/mpl/include";
-    $L_list .= " \x24(MODDIR)/mpl/libmpl.la";
+    if ($opts{"with-mpl"} and -d $opts{"with-mpl"}) {
+        $I_list .= " -I$opts{"with-mpl"}/include";
+        $L_list .= " -L$opts{"with-mpl"}/lib -lmpl";
+    }
+    else {
+        push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
+        $I_list .= " -I\x24(MODS)/mpl/include";
+        $L_list .= " \x24(MODDIR)/mpl/libmpl.la";
+    }
     my $configure = "./configure --disable-versioning --enable-embedded";
     foreach my $t (@config_args) {
         if ($t=~/--enable-(g|strict)/) {
@@ -160,34 +166,58 @@ if ($what eq "mpich") {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-    push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
-    $I_list .= " -I\x24(MODS)/hwloc/include";
-    $L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+    if ($opts{"with-hwloc"} and -d $opts{"with-hwloc"}) {
+        $I_list .= " -I$opts{"with-hwloc"}/include";
+        $L_list .= " -L$opts{"with-hwloc"}/lib -lhwloc";
+    }
+    else {
+        push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
+        $I_list .= " -I\x24(MODS)/hwloc/include";
+        $L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+    }
     my $configure = "./configure --enable-embedded-mode --enable-visibility";
     my $subdir="\x24(MODS)/hwloc";
     my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
     my $config_h = "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
-    push @CONFIGS, "\x24(MODS)/yaksa/src/frontend/include/yaksa_config.h";
-    $I_list .= " -I\x24(MODS)/yaksa/src/frontend/include";
-    $L_list .= " \x24(MODDIR)/yaksa/libyaksa.la";
+    if ($opts{"with-yaksa"} and -d $opts{"with-yaksa"}) {
+        $I_list .= " -I$opts{"with-yaksa"}/include";
+        $L_list .= " -L$opts{"with-yaksa"}/lib -lyaksa";
+    }
+    else {
+        push @CONFIGS, "\x24(MODS)/yaksa/src/frontend/include/yaksa_config.h";
+        $I_list .= " -I\x24(MODS)/yaksa/src/frontend/include";
+        $L_list .= " \x24(MODDIR)/yaksa/libyaksa.la";
+    }
     my $configure = "./configure";
     my $subdir="\x24(MODS)/yaksa";
     my $lib_la = "\x24(MODDIR)/yaksa/libyaksa.la";
     my $config_h = "\x24(MODS)/yaksa/src/frontend/include/yaksa_config.h";
     if (-f "maint/tuning/coll/json_gen.sh") {
         system "bash maint/tuning/coll/json_gen.sh";
-        push @CONFIGS, "\x24(MODS)/json-c/json.h";
-        $I_list .= " -I\x24(MODS)/json-c";
-        $L_list .= " \x24(MODDIR)/json-c/libjson-c.la";
+        if ($opts{"with-jsonc"} and -d $opts{"with-jsonc"}) {
+            $I_list .= " -I$opts{"with-jsonc"}/include";
+            $L_list .= " -L$opts{"with-jsonc"}/lib -ljsonc";
+        }
+        else {
+            push @CONFIGS, "\x24(MODS)/json-c/json.h";
+            $I_list .= " -I\x24(MODS)/json-c";
+            $L_list .= " \x24(MODDIR)/json-c/libjson-c.la";
+        }
         my $configure = "./configure";
         my $subdir="\x24(MODS)/json-c";
         my $lib_la = "\x24(MODDIR)/json-c/libjson-c.la";
         my $config_h = "\x24(MODS)/json-c/json.h";
     }
     if ($opts{enable_izem}) {
-        push @CONFIGS, "\x24(MODS)/izem/src/include/zm_config.h";
-        $I_list .= " -I\x24(MODS)/izem/src/include";
-        $L_list .= " \x24(MODDIR)/izem/src/libzm.la";
+        if ($opts{"with-izem"} and -d $opts{"with-izem"}) {
+            $I_list .= " -I$opts{"with-izem"}/include";
+            $L_list .= " -L$opts{"with-izem"}/lib -lizem";
+        }
+        else {
+            push @CONFIGS, "\x24(MODS)/izem/src/include/zm_config.h";
+            $I_list .= " -I\x24(MODS)/izem/src/include";
+            $L_list .= " \x24(MODDIR)/izem/src/libzm.la";
+        }
         my $configure = "./configure --enable-embedded";
         my $subdir="\x24(MODS)/izem";
         my $lib_la = "\x24(MODDIR)/izem/src/libzm.la";
@@ -204,9 +234,15 @@ if ($what eq "mpich") {
                 system $cmd;
             }
         }
-        push @CONFIGS, "\x24(MODS)/openpa/src/opa_config.h";
-        $I_list .= " -I\x24(MODS)/openpa/src";
-        $L_list .= " \x24(MODDIR)/openpa/src/libopa.la";
+        if ($opts{"with-opa"} and -d $opts{"with-opa"}) {
+            $I_list .= " -I$opts{"with-opa"}/include";
+            $L_list .= " -L$opts{"with-opa"}/lib -lopa";
+        }
+        else {
+            push @CONFIGS, "\x24(MODS)/openpa/src/opa_config.h";
+            $I_list .= " -I\x24(MODS)/openpa/src";
+            $L_list .= " \x24(MODDIR)/openpa/src/libopa.la";
+        }
         my $configure = "./configure --disable-versioning --enable-embedded";
         if ($opts{openpa_primitives}) {
             $configure .= " --with-atomic-primitives=$opts{openpa_primitives}";
@@ -227,8 +263,14 @@ if ($what eq "mpich") {
     if (!$opts{disable_romio}) {
         system "rsync -r confdb/ src/mpi/romio/confdb/";
         system "cp maint/version.m4 src/mpi/romio/";
-        push @CONFIGS, "src/mpi/romio/adio/include/romioconf.h";
-        $I_list .= " -Isrc/mpi/romio/include";
+        if ($opts{"with-romio"} and -d $opts{"with-romio"}) {
+            $I_list .= " -I$opts{"with-romio"}/include";
+            $L_list .= " -L$opts{"with-romio"}/lib -lromio";
+        }
+        else {
+            push @CONFIGS, "src/mpi/romio/adio/include/romioconf.h";
+            $I_list .= " -Isrc/mpi/romio/include";
+        }
         my @t_env;
         push @t_env, "FROM_MPICH=yes";
         push @t_env, "main_top_srcdir=$pwd";
@@ -286,27 +328,45 @@ if ($what eq "mpich") {
             print Out @lines;
             close Out;
         }
-        push @CONFIGS, "\x24(MODS)/ucx/config.h";
-        $I_list .= " -I\x24(MODS)/ucx/src";
-        $L_list .= " \x24(PREFIX)/lib/libucp.la";
+        if ($opts{"with-ucx"} and -d $opts{"with-ucx"}) {
+            $I_list .= " -I$opts{"with-ucx"}/include";
+            $L_list .= " -L$opts{"with-ucx"}/lib -lucx";
+        }
+        else {
+            push @CONFIGS, "\x24(MODS)/ucx/config.h";
+            $I_list .= " -I\x24(MODS)/ucx/src";
+            $L_list .= " \x24(PREFIX)/lib/libucp.la";
+        }
         my $configure = "./configure --prefix=\x24(PREFIX) --disable-static";
         my $subdir="\x24(MODS)/ucx";
         my $lib_la = "\x24(MODDIR)/ucx/src/ucp/libucp.la";
         my $config_h = "\x24(MODS)/ucx/config.h";
     }
     elsif ($opts{device}=~/ch4:ofi/ and (!$opts{"with-libfabric"} or $opts{"with-libfabric"} eq "embedded")) {
-        push @CONFIGS, "\x24(MODS)/libfabric/config.h";
-        $I_list .= " -I\x24(MODS)/libfabric/include";
-        $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+        if ($opts{"with-ofi"} and -d $opts{"with-ofi"}) {
+            $I_list .= " -I$opts{"with-ofi"}/include";
+            $L_list .= " -L$opts{"with-ofi"}/lib -lofi";
+        }
+        else {
+            push @CONFIGS, "\x24(MODS)/libfabric/config.h";
+            $I_list .= " -I\x24(MODS)/libfabric/include";
+            $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+        }
         my $configure = "./configure --enable-embedded";
         my $subdir="\x24(MODS)/libfabric";
         my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
         my $config_h = "\x24(MODS)/libfabric/config.h";
     }
     elsif ($opts{device}=~/ch3.*:ofi/ and (!$opts{"with-ofi"} or $opts{"with-ofi"} eq "embedded")) {
-        push @CONFIGS, "\x24(MODS)/libfabric/config.h";
-        $I_list .= " -I\x24(MODS)/libfabric/include";
-        $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+        if ($opts{"with-ofi"} and -d $opts{"with-ofi"}) {
+            $I_list .= " -I$opts{"with-ofi"}/include";
+            $L_list .= " -L$opts{"with-ofi"}/lib -lofi";
+        }
+        else {
+            push @CONFIGS, "\x24(MODS)/libfabric/config.h";
+            $I_list .= " -I\x24(MODS)/libfabric/include";
+            $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+        }
         my $configure = "./configure --enable-embedded";
         my $subdir="\x24(MODS)/libfabric";
         my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
@@ -543,9 +603,15 @@ elsif ($what eq "hydra") {
             system $cmd;
         }
     }
-    push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
-    $I_list .= " -I\x24(MODS)/mpl/include";
-    $L_list .= " \x24(MODDIR)/mpl/libmpl.la";
+    if ($opts{"with-mpl"} and -d $opts{"with-mpl"}) {
+        $I_list .= " -I$opts{"with-mpl"}/include";
+        $L_list .= " -L$opts{"with-mpl"}/lib -lmpl";
+    }
+    else {
+        push @CONFIGS, "\x24(MODS)/mpl/include/mplconfig.h";
+        $I_list .= " -I\x24(MODS)/mpl/include";
+        $L_list .= " \x24(MODDIR)/mpl/libmpl.la";
+    }
     my $configure = "./configure --disable-versioning --enable-embedded";
     foreach my $t (@config_args) {
         if ($t=~/--enable-(g|strict)/) {
@@ -566,9 +632,15 @@ elsif ($what eq "hydra") {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-    push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
-    $I_list .= " -I\x24(MODS)/hwloc/include";
-    $L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+    if ($opts{"with-hwloc"} and -d $opts{"with-hwloc"}) {
+        $I_list .= " -I$opts{"with-hwloc"}/include";
+        $L_list .= " -L$opts{"with-hwloc"}/lib -lhwloc";
+    }
+    else {
+        push @CONFIGS, "\x24(MODS)/hwloc/include/hwloc/autogen/config.h";
+        $I_list .= " -I\x24(MODS)/hwloc/include";
+        $L_list .= " \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+    }
     my $configure = "./configure --enable-embedded-mode --enable-visibility";
     my $subdir="\x24(MODS)/hwloc";
     my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
