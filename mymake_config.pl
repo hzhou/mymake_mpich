@@ -495,6 +495,16 @@ if ($config eq "mpich") {
         $temp{ENABLE_LOCAL_SESSION_INIT}=1;
 
         $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
+        if (!$temp{MPIDI_CH4_DIRECT_NETMOD}) {
+            if ($opts{"with-cuda"}) {
+                $temp{MPIDI_CH4_SHM_ENABLE_GPU}=1;
+                $make_conds{BUILD_SHM_IPC_GPU} = 1;
+            }
+            if ($opts{"with-xpmem"}) {
+                $temp{MPIDI_CH4_SHM_ENABLE_XPMEM}=1;
+                $make_conds{BUILD_SHM_IPC_XPMEM} = 1;
+            }
+        }
 
         if ($opts{device}=~/ch4:ucx/) {
             $temp{MPIDI_CH4_DIRECT_NETMOD}=1;
@@ -514,10 +524,6 @@ if ($config eq "mpich") {
             }
             else {
                 $temp{MPIDI_CH4_OFI_USE_SET_RUNTIME}=1;
-            }
-            if (!$temp{MPIDI_CH4_DIRECT_NETMOD}) {
-                $temp{MPIDI_CH4_SHM_ENABLE_GPU}=1;
-                $make_conds{BUILD_SHM_IPC_GPU} = 1;
             }
             $temp{ENABLE_PVAR_MULTINIC}=0;
         }
@@ -3647,6 +3653,14 @@ elsif ($config eq "test") {
     $confs{MPI_IS_STRICT} = "false";
     $confs{RUN_XFAIL} = "false";
     autoconf_file("test/mpi/runtests", \%confs);
+    system "chmod a+x test/mpi/runtests";
+    my %confs;
+    my @all_testlists = glob("test/mpi/*/testlist.in");
+    push @all_testlists, glob("test/mpi/*/*/testlist.in");
+    foreach my $a (@all_testlists) {
+        $a=~s/\.in$//;
+        autoconf_file($a, \%confs);
+    }
 }
 elsif ($config eq "dtpools") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";

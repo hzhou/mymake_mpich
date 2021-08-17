@@ -555,6 +555,15 @@ if ($what eq "mpich") {
         $make_vars{lib_libmpi_la_LIBADD} .= " $L_list";
     }
 
+    if ($opts{"with-xpmem"}) {
+        my $p = $opts{"with-xpmem"};
+        if ($p=~/\w+\//) {
+            $make_vars{CPPFLAGS} .= " -I$p/include";
+            $make_vars{LDFLAGS} .= " -L$p/lib64";
+        }
+        $make_vars{LIBS} .= " -lxpmem";
+    }
+
     dump_makefile("Makefile");
 }
 elsif ($what eq "mpl") {
