@@ -1197,10 +1197,10 @@ else {
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
     $dst_hash{"mymake/mpicxx"}=$bin;
-    $dst_hash{"mymake/mpif77"}=$bin;
     $dst_hash{"mymake/mpifort"}=$bin;
     $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
     $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
+    $dst_hash{"LN_S-$bin/mpif77"}="$bin/mpifort";
 
     my $ret=0;
     my $t = `uname -m`;
@@ -1630,30 +1630,6 @@ else {
             my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
             open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx: $!\n";
             print "  --> [mymake/mpicxx]\n";
-            foreach my $l (@lines) {
-                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
-                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-                }
-                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
-                    my ($c, $flags) = ($1, $2);
-                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
-                    }
-                }
-                print Out $l;
-            }
-            close Out;
-        }
-        if (-f "src/env/mpif77.bash") {
-            my @lines;
-            {
-                open In, "src/env/mpif77.bash" or die "Can't open src/env/mpif77.bash.\n";
-                @lines=<In>;
-                close In;
-            }
-            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-            open Out, ">mymake/mpif77" or die "Can't write mymake/mpif77: $!\n";
-            print "  --> [mymake/mpif77]\n";
             foreach my $l (@lines) {
                 if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
                     $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;

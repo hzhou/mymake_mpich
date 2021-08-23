@@ -470,10 +470,10 @@ if ($what eq "mpich") {
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
     $dst_hash{"mymake/mpicxx"}=$bin;
-    $dst_hash{"mymake/mpif77"}=$bin;
     $dst_hash{"mymake/mpifort"}=$bin;
     $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
     $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
+    $dst_hash{"LN_S-$bin/mpif77"}="$bin/mpifort";
 
     $autoconf_vars{MPILIBNAME} = "mpi";
     $autoconf_vars{MPIFCLIBNAME} = "mpifort";
