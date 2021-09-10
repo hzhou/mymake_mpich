@@ -1277,8 +1277,11 @@ else {
             elsif ($l=~/^\s*HWLOC_/) {
                 next;
             }
-            elsif ($l=~/^\s*PAC_CONFIG_(HWLOC|MPL)/) {
+            elsif ($l=~/^\s*PAC_CONFIG_MPL/) {
                 next;
+            }
+            elsif ($l=~/^(\s*)PAC_CONFIG_HWLOC/) {
+                $l = "$1"."pac_have_hwloc=yes\n";
             }
             if ($flag_skip) {
                 next;

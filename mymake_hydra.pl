@@ -236,11 +236,11 @@ if (!-f "mymake/Makefile.orig") {
             if ($l=~/^\s*HWLOC_/) {
                 next;
             }
-            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
+            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS|PAC_CONFIG_MPL)/) {
                 next;
             }
-            elsif ($l=~/^(\s*)PAC_CONFIG_(HWLOC|MPL)/) {
-                next;
+            elsif ($l=~/^(\s*)PAC_CONFIG_HWLOC/) {
+                $l = "$1"."pac_have_hwloc=yes\n";
             }
             if ($flag_skip) {
                 next;
@@ -271,11 +271,11 @@ if (!-f "mymake/Makefile.orig") {
             if ($l=~/^\s*HWLOC_/) {
                 next;
             }
-            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
+            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS|PAC_CONFIG_MPL)/) {
                 next;
             }
-            elsif ($l=~/^(\s*)PAC_CONFIG_(HWLOC|MPL)/) {
-                next;
+            elsif ($l=~/^(\s*)PAC_CONFIG_HWLOC/) {
+                $l = "$1"."pac_have_hwloc=yes\n";
             }
             if ($flag_skip) {
                 next;
