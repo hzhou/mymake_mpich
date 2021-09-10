@@ -239,6 +239,9 @@ if (!-f "mymake/Makefile.orig") {
             elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
                 next;
             }
+            elsif ($l=~/^(\s*)PAC_CONFIG_(HWLOC|MPL)/) {
+                next;
+            }
             if ($flag_skip) {
                 next;
             }
@@ -269,6 +272,9 @@ if (!-f "mymake/Makefile.orig") {
                 next;
             }
             elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS)/) {
+                next;
+            }
+            elsif ($l=~/^(\s*)PAC_CONFIG_(HWLOC|MPL)/) {
                 next;
             }
             if ($flag_skip) {

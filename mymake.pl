@@ -1277,6 +1277,9 @@ else {
             elsif ($l=~/^\s*HWLOC_/) {
                 next;
             }
+            elsif ($l=~/^\s*PAC_CONFIG_(HWLOC|MPL)/) {
+                next;
+            }
             if ($flag_skip) {
                 next;
             }
