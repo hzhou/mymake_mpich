@@ -2,12 +2,12 @@
 use strict;
 use Cwd;
 
+our %opts;
 our $config;
 our $config_in;
 our $config_out;
 our $config_prefix;
 our %config_defines;
-our %opts;
 our %config_cflags;
 our %config_ldflags;
 our %hash_defines;
@@ -16,9 +16,12 @@ our $version;
 our %sizeof_hash;
 our %headers_hash;
 
+
 my $pwd=getcwd();
 my $mymake_dir = Cwd::abs_path($0);
 $mymake_dir=~s/\/[^\/]+$//;
+
+$opts{prefix} = "$pwd/_inst";
 $config = shift @ARGV;
 print "-- mymake_config $config ...\n";
 

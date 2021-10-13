@@ -4,6 +4,7 @@ use Cwd;
 
 our %opts;
 
+
 my $pwd=getcwd();
 my $mymake_dir = Cwd::abs_path($0);
 $mymake_dir=~s/\/[^\/]+$//;
