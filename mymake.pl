@@ -563,7 +563,7 @@ else {
         $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$opts{prefix}/include";
     }
     else {
-        system "touch src/binding/fortran/mpif_h/Makefile_wrappers.mk;
+        system "touch src/binding/fortran/mpif_h/Makefile_wrappers.mk";
         system "touch src/binding/fortran/mpif_h/Makefile.mk";
         system "touch src/binding/fortran/use_mpi/Makefile.mk";
         system "touch src/binding/fortran/use_mpi_f08/Makefile.mk";
