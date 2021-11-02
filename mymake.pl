@@ -451,6 +451,9 @@ if (!$opts{disable_fortran}) {
         chdir "src/binding/fortran/use_mpi_f08";
         system "perl buildiface >/dev/null";
         chdir $pwd;
+        if (-f "maint/gen_binding_f77.py") {
+            system "$python maint/gen_binding_f77.py";
+        }
         if (-f "maint/gen_binding_f08.py") {
             system "$python maint/gen_binding_f08.py";
         }

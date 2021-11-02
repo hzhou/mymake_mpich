@@ -958,6 +958,9 @@ if ($config eq "mpich") {
     $confs{MPI_COUNT_DATATYPE} = sprintf("0x4c00%02x45", $sizeof_hash{COUNT});
 
     $confs{MPIX_C_FLOAT16} = sprintf("0x4c00%02x46", $sizeof_hash{"C_FLOAT16"});
+
+    $confs{MPI_UNSIGNED} = $confs{MPI_UNSIGNED_INT};
+    $confs{MPI_LONG_LONG_INT} = $confs{MPI_LONG_LONG};
     autoconf_file("src/include/mpi.h", \%confs);
     my $mpi_h_confs = \%confs;
     my %confs;
