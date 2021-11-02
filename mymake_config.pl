@@ -961,6 +961,7 @@ if ($config eq "mpich") {
 
     $confs{MPI_UNSIGNED} = $confs{MPI_UNSIGNED_INT};
     $confs{MPI_LONG_LONG_INT} = $confs{MPI_LONG_LONG};
+    $confs{MPIR_CXX_FLOAT_COMPLEX} = $confs{MPIR_CXX_COMPLEX};
     autoconf_file("src/include/mpi.h", \%confs);
     my $mpi_h_confs = \%confs;
     my %confs;
