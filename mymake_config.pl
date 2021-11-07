@@ -544,6 +544,13 @@ if ($config eq "mpich") {
         }
     }
 
+    if ($opts{"with-datatype-engine"} eq "dataloop") {
+        $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_DATALOOP';
+    }
+    elsif ($opts{"with-datatype-engine"} eq "yaksa") {
+        $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
+    }
+
     if ($opts{device} =~ /ch4/) {
         if (-f "src/mpid/ch4/shm/posix/posix_eager_array.c.in") {
             my $eager_modules;
@@ -3258,7 +3265,6 @@ if ($config eq "mpich") {
     $opts{enable_shm} = 1;
     if ($opts{device} =~ /ch3/) {
         $make_conds{BUILD_CH3} = 1;
-        $make_conds{BUILD_DATALOOP_ENGINE} = 1;
         if ($opts{device} =~/ch3:sock/) {
             $make_conds{BUILD_CH3_SOCK}=1;
             $make_conds{BUILD_CH3_UTIL_SOCK}=1;
@@ -3275,7 +3281,6 @@ if ($config eq "mpich") {
     }
     else {
         $make_conds{BUILD_CH4} = 1;
-        $make_conds{BUILD_YAKSA_ENGINE} = 1;
         if ($opts{device} =~/ch4:ofi/) {
             $make_conds{BUILD_CH4_NETMOD_OFI} = 1;
         }
@@ -3314,6 +3319,13 @@ if ($config eq "mpich") {
         if (0) {
             $make_conds{BUILD_CH4_COLL_TUNING} = 1;
         }
+    }
+
+    if ($temp{MPICH_DATATYPE_ENGINE} eq "MPICH_DATATYPE_ENGINE_DATALOOP") {
+        $make_conds{BUILD_DATALOOP_ENGINE} = 1;
+    }
+    elsif ($temp{MPICH_DATATYPE_ENGINE} eq "MPICH_DATATYPE_ENGINE_YAKSA") {
+        $make_conds{BUILD_YAKSA_ENGINE} = 1;
     }
 
     $make_conds{BUILD_MPID_COMMON_SCHED} = 1;
