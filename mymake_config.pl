@@ -3894,7 +3894,7 @@ sub get_sizeof_bsend_status {
         print Out "#include \"$pwd/src/include/mpii_bsend.h\"\n";
     }
     print Out "int main() {\n";
-    print Out "    printf(\"MPII_BSEND_DATA_T: %lu\\n\", sizeof(MPII_Bsend_data_t));\n";
+    print Out "    printf(\"MPII_BSEND_DATA_T: %zu\\n\", sizeof(MPII_Bsend_data_t));\n";
     print Out "    return 0;\n";
     print Out "}\n";
     close Out;
