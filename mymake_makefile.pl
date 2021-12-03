@@ -31,13 +31,15 @@ if (!$what) {
 }
 print "-- mymake_makefile $what ...\n";
 
-open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
-while(<In>){
-    if (/^(\S+): (.*)/) {
-        $opts{$1} = $2;
+if (-e "mymake/opts") {
+    open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
+    while(<In>){
+        if (/^(\S+): (.*)/) {
+            $opts{$1} = $2;
+        }
     }
+    close In;
 }
-close In;
 open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
 while(<In>){
     if (/^(\w+):\s*(.+)/) {
@@ -472,11 +474,6 @@ if ($what eq "mpich") {
 
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
-    $dst_hash{"mymake/mpicxx"}=$bin;
-    $dst_hash{"mymake/mpifort"}=$bin;
-    $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
-    $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
-    $dst_hash{"LN_S-$bin/mpif77"}="$bin/mpifort";
 
     $autoconf_vars{MPILIBNAME} = "mpi";
     $autoconf_vars{MPIFCLIBNAME} = "mpifort";

@@ -61,13 +61,15 @@ else {
     die "Usage: $0 [mpich]\n";
 }
 
-open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
-while(<In>){
-    if (/^(\S+): (.*)/) {
-        $opts{$1} = $2;
+if (-e "mymake/opts") {
+    open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
+    while(<In>){
+        if (/^(\S+): (.*)/) {
+            $opts{$1} = $2;
+        }
     }
+    close In;
 }
-close In;
 $hash_defines{"disable-ch4-ofi-ipv6"} = "MPIDI_CH4_OFI_SKIP_IPV6";
 $hash_defines{"enable-legacy-ofi"} = "MPIDI_ENABLE_LEGACY_OFI";
 $hash_defines{"enable-ch4-am-only"} = "MPIDI_ENABLE_AM_ONLY";
@@ -342,10 +344,20 @@ if ($config eq "mpich") {
     $config_defines{SIZEOF___FLOAT128}=0;
     $config_defines{SIZEOF_WCHAR_T}=0;
 
-    $config_defines{MAX_ALIGNMENT} = 16;
+    if ($sizeof_hash{VOID_P}==$sizeof_hash{INT}) {
+        $config_defines{MAX_ALIGNMENT} = 4;
+    }
+    else {
+        $config_defines{MAX_ALIGNMENT} = 16;
+    }
+
     $config_defines{MPIR_Ufint} = "unsigned int";
     my $MPI_AINT;
-    if ($sizeof_hash{VOID_P}==$sizeof_hash{LONG}) {
+    if ($sizeof_hash{VOID_P}==$sizeof_hash{INT}) {
+        $MPI_AINT = "int";
+        $config_defines{MPIR_AINT_MAX} = 'INT_MAX';
+    }
+    elsif ($sizeof_hash{VOID_P}==$sizeof_hash{LONG}) {
         $MPI_AINT = "long";
         $config_defines{MPIR_AINT_MAX} = 'LONG_MAX';
     }
@@ -784,7 +796,12 @@ if ($config eq "mpich") {
     $sizeof_hash{AINT} = $sizeof_hash{VOID_P};
     $sizeof_hash{OFFSET} = $sizeof_hash{VOID_P};
 
-    if ($sizeof_hash{VOID_P}==$sizeof_hash{LONG}) {
+    if ($sizeof_hash{VOID_P}==$sizeof_hash{INT}) {
+        $confs{MPI_AINT} = "int";
+        $confs{MPI_AINT_FMT_DEC_SPEC}='%d';
+        $confs{MPI_AINT_FMT_HEX_SPEC}='%x';
+    }
+    elsif ($sizeof_hash{VOID_P}==$sizeof_hash{LONG}) {
         $confs{MPI_AINT} = "long";
         $confs{MPI_AINT_FMT_DEC_SPEC}='%ld';
         $confs{MPI_AINT_FMT_HEX_SPEC}='%lx';

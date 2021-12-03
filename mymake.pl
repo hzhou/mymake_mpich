@@ -444,8 +444,10 @@ if (!$opts{disable_fortran}) {
         chdir $pwd;
         print ": buildiface - use_mpi\n";
         chdir "src/binding/fortran/use_mpi";
-        system "perl buildiface >/dev/null";
-        system "perl ../mpif_h/buildiface -infile=cf90t.h -deffile=./cf90tdefs";
+        if (-f "buildiface") {
+            system "perl buildiface >/dev/null";
+            system "perl ../mpif_h/buildiface -infile=cf90t.h -deffile=./cf90tdefs";
+        }
         chdir $pwd;
         print ": buildiface - use_mpi_f08\n";
         chdir "src/binding/fortran/use_mpi_f08";
@@ -453,6 +455,9 @@ if (!$opts{disable_fortran}) {
         chdir $pwd;
         if (-f "maint/gen_binding_f77.py") {
             system "$python maint/gen_binding_f77.py";
+        }
+        if (-f "maint/gen_binding_f90.py") {
+            system "$python maint/gen_binding_f90.py";
         }
         if (-f "maint/gen_binding_f08.py") {
             system "$python maint/gen_binding_f08.py";
@@ -532,9 +537,12 @@ if ($opts{quick}) {
     }
 }
 else {
+    my $bin="\x24(PREFIX)/bin";
     if (!$opts{disable_cxx}) {
         $opts{enable_cxx}=1;
         $dst_hash{"src/binding/cxx/mpicxx.h"}="$opts{prefix}/include";
+        $dst_hash{"mymake/mpicxx"}=$bin;
+        $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
     }
     else {
         system "touch src/binding/cxx/mpicxx.h.in";
@@ -564,6 +572,9 @@ else {
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/pf08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
         $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$opts{prefix}/include";
+        $dst_hash{"mymake/mpifort"}=$bin;
+        $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
+        $dst_hash{"LN_S-$bin/mpif77"}="$bin/mpifort";
     }
     else {
         system "touch src/binding/fortran/mpif_h/Makefile_wrappers.mk";
@@ -1203,11 +1214,6 @@ else {
 
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
-    $dst_hash{"mymake/mpicxx"}=$bin;
-    $dst_hash{"mymake/mpifort"}=$bin;
-    $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
-    $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
-    $dst_hash{"LN_S-$bin/mpif77"}="$bin/mpifort";
 
     my $ret=0;
     my $t = `uname -m`;

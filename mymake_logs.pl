@@ -10,13 +10,15 @@ my $mymake_dir = Cwd::abs_path($0);
 $mymake_dir=~s/\/[^\/]+$//;
 
 $opts{prefix} = "$pwd/_inst";
-open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
-while(<In>){
-    if (/^(\S+): (.*)/) {
-        $opts{$1} = $2;
+if (-e "mymake/opts") {
+    open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
+    while(<In>){
+        if (/^(\S+): (.*)/) {
+            $opts{$1} = $2;
+        }
     }
+    close In;
 }
-close In;
 my (@timer_states, %state_funcnames, %state_colors);
 my @files;
 foreach my $dir (qw(mpi mpi_t nameserv util binding include mpid pmi)) {

@@ -14,13 +14,15 @@ my $mymake_dir = Cwd::abs_path($0);
 $mymake_dir=~s/\/[^\/]+$//;
 
 $opts{prefix} = "$pwd/_inst";
-open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
-while(<In>){
-    if (/^(\S+): (.*)/) {
-        $opts{$1} = $2;
+if (-e "mymake/opts") {
+    open In, "mymake/opts" or die "Can't open mymake/opts: $!\n";
+    while(<In>){
+        if (/^(\S+): (.*)/) {
+            $opts{$1} = $2;
+        }
     }
+    close In;
 }
-close In;
 my (@classnames, %generics);
 open In, "src/mpi/errhan/baseerrnames.txt" or die "Can't open src/mpi/errhan/baseerrnames.txt: $!\n";
 while(<In>){
