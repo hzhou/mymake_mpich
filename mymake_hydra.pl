@@ -425,56 +425,18 @@ my $bin="\x24(PREFIX)/bin";
 $dst_hash{"LN_S-$bin/mpiexec"}="$bin/mpiexec.hydra";
 $dst_hash{"LN_S-$bin/mpirun"}="$bin/mpiexec.hydra";
 
-if (!-d "$opts{moddir}/mpl") {
-    my $cmd = "cp -r src/mpl $opts{moddir}/mpl";
-    print "$cmd\n";
-    system $cmd;
-    if (!$opts{quick}) {
-        my $cmd = "cp -r confdb $opts{moddir}/mpl/";
-        print "$cmd\n";
-        system $cmd;
-    }
-}
-my $L=$opts{"with-mpl"};
+my $L=$opts{"with-mpl_hydra"};
 if ($L and -d $L) {
     $I_list .= " -I$L/include";
-    $L_list .= " -L$L/lib -lmpl";
+    $L_list .= " -L$L/lib -lmpl_hydra";
 }
 else {
-    push @CONFIGS, "\x24(MODDIR)/mpl/include/mplconfig.h";
-    $I_list .= " -I\x24(MODDIR)/mpl/include";
-    $L_list .= " \x24(MODDIR)/mpl/libmpl.la";
+    push @CONFIGS, "../../../src/mpl/include/mplconfig.h";
+    $I_list .= " -I../../../src/mpl/include";
+    $L_list .= " ../../../src/mpl/libmpl.la";
 }
-my $configure = "./configure --disable-versioning --enable-embedded";
-foreach my $t (@config_args) {
-    if ($t=~/--enable-(g|strict)/) {
-        $configure.=" $t";
-    }
-    elsif ($t=~/--with(out)?-(mpl|thread-package|argobots|uti|cuda)/) {
-        $configure.=" $t";
-    }
-}
-my $subdir="\x24(MODDIR)/mpl";
-my $lib_la = "\x24(MODDIR)/mpl/libmpl.la";
-my $config_h = "\x24(MODDIR)/mpl/include/mplconfig.h";
-my @t = ("cd $subdir");
-push @t, "\x24(DO_stage) Configure MPL";
-if (-f "$opts{moddir}/mpl/autogen.sh") {
-    push @t, "sh autogen.sh";
-}
-else {
-    push @t, "autoreconf -ivf";
-}
-push @t, "$configure";
-push @t, "cp $pwd/libtool .";
-push @extra_make_rules, "$config_h: ";
-push @extra_make_rules, "\t(".join(' && ', @t).")";
-push @extra_make_rules, "";
-my @t = ("cd $subdir");
-push @t, "\x24(MAKE)";
-push @extra_make_rules, "$lib_la: $config_h";
-push @extra_make_rules, "\t(".join(' && ', @t).")";
-push @extra_make_rules, "";
+push @extra_make_rules, "../../../src/mpl/libmpl.la:";
+push @extra_make_rules, "\t\x24(MAKE) -C ../../.. src/mpl/libmpl.la";
 my $L=$opts{"with-hwloc"};
 if ($L and -d $L) {
     $I_list .= " -I$L/include";

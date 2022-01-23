@@ -32,8 +32,8 @@ if ($config eq "mpich") {
 elsif ($config eq "mpl") {
     $config_prefix = "mpl";
     $config_in = "$mymake_dir/config_templates/mplconfig.h";
-    $config_out = "mymake/mpl/include/mplconfig.h";
-    symlink "../../libtool", "mymake/mpl/libtool";
+    $config_out = "src/mpl/include/mplconfig.h";
+    symlink "../../libtool", "src/mpl/libtool";
 }
 elsif ($config eq "opa") {
     $config_prefix = "opa";
@@ -3525,7 +3525,7 @@ elsif ($config eq "mpl") {
     my %confs;
     $confs{MPL_TIMER_TYPE} = "struct timespec";
     $confs{MPL_TIMER_KIND} = "MPL_TIMER_KIND__CLOCK_GETTIME";
-    autoconf_file("mymake/mpl/include/mpl_timer.h", \%confs);
+    autoconf_file("src/mpl/include/mpl_timer.h", \%confs);
 }
 elsif ($config eq "opa") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";

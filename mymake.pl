@@ -407,28 +407,16 @@ print "device: $opts{device}\n";
 
 my $python = find_python3();
 if (!-f "src/mpi/pt2pt/send.c") {
-    if (-f "maint/gen_binding_c.pl") {
-        system "perl maint/gen_binding_c.pl";
-    }
-    elsif (-f "maint/gen_binding_c.py") {
-        system "$python maint/gen_binding_c.py";
-    }
+    print "[$python maint/gen_binding_c.py -single-source]\n";
+    system "$python maint/gen_binding_c.py -single-source";
 }
 if (!-f "src/mpid/ch4/netmod/include/netmod.h") {
-    if (-f "maint/gen_ch4_api.pl") {
-        system "perl maint/gen_ch4_api.pl";
-    }
-    elsif (-f "maint/gen_ch4_api.py") {
-        system "$python maint/gen_ch4_api.py";
-    }
+    print "[$python maint/gen_ch4_api.py]\n";
+    system "$python maint/gen_ch4_api.py";
 }
 if (!-f "src/mpi/coll/mpir_coll.c") {
-    if (-f "maint/gen_coll.pl") {
-        system "perl maint/gen_coll.pl";
-    }
-    elsif (-f "maint/gen_coll.py") {
-        system "$python maint/gen_coll.py";
-    }
+    print "[$python maint/gen_coll.py]\n";
+    system "$python maint/gen_coll.py";
 }
 if (!$opts{disable_cxx}) {
     print ": buildiface - cxx\n";
@@ -673,7 +661,7 @@ else {
     }
     else {
         my $mkfile="src/pm/hydra/Makefile";
-        my $add="\x24(MODDIR)/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+        my $add="\x24(MODDIR)/src/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
         push @extra_make_rules, ".PHONY: hydra hydra-install";
         push @extra_make_rules, "hydra: $mkfile $add";
         push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
@@ -690,7 +678,7 @@ else {
         push @extra_make_rules, "";
         if ($opts{pm} eq "hydra2") {
             my $mkfile="src/pm/hydra2/Makefile";
-            my $add="\x24(MODDIR)/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+            my $add="\x24(MODDIR)/src/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
             push @extra_make_rules, ".PHONY: hydra2 hydra2-install";
             push @extra_make_rules, "hydra2: $mkfile $add";
             push @extra_make_rules, "\t(cd src/pm/hydra2 && \x24(MAKE) )";
@@ -708,15 +696,10 @@ else {
             push @extra_make_rules, "";
         }
     }
-    if (!-d "$opts{moddir}/mpl") {
-        my $cmd = "cp -r src/mpl $opts{moddir}/mpl";
+    if (!$opts{quick} && !-d "src/mpl/confdb") {
+        my $cmd = "cp -r confdb src/mpl/";
         print "$cmd\n";
         system $cmd;
-        if (!$opts{quick}) {
-            my $cmd = "cp -r confdb $opts{moddir}/mpl/";
-            print "$cmd\n";
-            system $cmd;
-        }
     }
     my $L=$opts{"with-mpl"};
     if ($L and -d $L) {
@@ -724,9 +707,9 @@ else {
         $L_list .= " -L$L/lib -lmpl";
     }
     else {
-        push @CONFIGS, "\x24(MODDIR)/mpl/include/mplconfig.h";
-        $I_list .= " -I\x24(MODDIR)/mpl/include";
-        $L_list .= " \x24(MODDIR)/mpl/libmpl.la";
+        push @CONFIGS, "src/mpl/include/mplconfig.h";
+        $I_list .= " -Isrc/mpl/include";
+        $L_list .= " src/mpl/libmpl.la";
     }
     my $configure = "./configure --disable-versioning --enable-embedded";
     foreach my $t (@config_args) {
@@ -737,12 +720,12 @@ else {
             $configure.=" $t";
         }
     }
-    my $subdir="\x24(MODDIR)/mpl";
-    my $lib_la = "\x24(MODDIR)/mpl/libmpl.la";
-    my $config_h = "\x24(MODDIR)/mpl/include/mplconfig.h";
+    my $subdir="src/mpl";
+    my $lib_la = "src/mpl/libmpl.la";
+    my $config_h = "src/mpl/include/mplconfig.h";
     my @t = ("cd $subdir");
     push @t, "\x24(DO_stage) Configure MPL";
-    if (-f "$opts{moddir}/mpl/autogen.sh") {
+    if (-f "$opts{moddir}/src/mpl/autogen.sh") {
         push @t, "sh autogen.sh";
     }
     else {
@@ -891,53 +874,6 @@ else {
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
     }
-    if (-d "src/openpa") {
-        if (!-d "$opts{moddir}/openpa") {
-            my $cmd = "cp -r src/openpa $opts{moddir}/openpa";
-            print "$cmd\n";
-            system $cmd;
-            if (!$opts{quick}) {
-                my $cmd = "cp -r confdb $opts{moddir}/openpa/";
-                print "$cmd\n";
-                system $cmd;
-            }
-        }
-        my $L=$opts{"with-opa"};
-        if ($L and -d $L) {
-            $I_list .= " -I$L/include";
-            $L_list .= " -L$L/lib -lopa";
-        }
-        else {
-            push @CONFIGS, "\x24(MODDIR)/openpa/src/opa_config.h";
-            $I_list .= " -I\x24(MODDIR)/openpa/src";
-            $L_list .= " \x24(MODDIR)/openpa/src/libopa.la";
-        }
-        my $configure = "./configure --disable-versioning --enable-embedded";
-        if ($opts{openpa_primitives}) {
-            $configure .= " --with-atomic-primitives=$opts{openpa_primitives}";
-        }
-        my $subdir="\x24(MODDIR)/openpa";
-        my $lib_la = "\x24(MODDIR)/openpa/src/libopa.la";
-        my $config_h = "\x24(MODDIR)/openpa/src/opa_config.h";
-        my @t = ("cd $subdir");
-        push @t, "\x24(DO_stage) Configure OPA";
-        if (-f "$opts{moddir}/openpa/autogen.sh") {
-            push @t, "sh autogen.sh";
-        }
-        else {
-            push @t, "autoreconf -ivf";
-        }
-        push @t, "$configure";
-        push @t, "cp $pwd/libtool .";
-        push @extra_make_rules, "$config_h: ";
-        push @extra_make_rules, "\t(".join(' && ', @t).")";
-        push @extra_make_rules, "";
-        my @t = ("cd $subdir");
-        push @t, "\x24(MAKE)";
-        push @extra_make_rules, "$lib_la: $config_h";
-        push @extra_make_rules, "\t(".join(' && ', @t).")";
-        push @extra_make_rules, "";
-    }
 
     if (!$opts{disable_romio}) {
         system "rsync -r confdb/ src/mpi/romio/confdb/";
@@ -950,12 +886,13 @@ else {
         else {
             push @CONFIGS, "src/mpi/romio/adio/include/romioconf.h";
             $I_list .= " -Isrc/mpi/romio/include";
+            $L_list .= " src/mpi/romio/libromio.la";
         }
         my @t_env;
         push @t_env, "FROM_MPICH=yes";
         push @t_env, "main_top_srcdir=$pwd";
         push @t_env, "main_top_builddir=$pwd";
-        push @t_env, "CPPFLAGS='-I$opts{moddir}/mpl/include'";
+        push @t_env, "CPPFLAGS='-I$opts{moddir}/src/mpl/include'";
         if ($opts{argobots}) {
             $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
         }
@@ -1287,10 +1224,10 @@ else {
             if ($l=~/AC_CONFIG_SUBDIRS/) {
                 next;
             }
-            elsif ($l=~/^\s*HWLOC_/) {
-                next;
+            elsif ($l=~/^(\s*)AM_CONDITIONAL.*BUILD_ROMIO/) {
+                $l = $1. "AM_CONDITIONAL([BUILD_ROMIO], false)";
             }
-            elsif ($l=~/^\s*PAC_CONFIG_MPL/) {
+            elsif ($l=~/^\s*(PAC_CONFIG_MPL|HWLOC_)/) {
                 next;
             }
             elsif ($l=~/^(\s*)PAC_CONFIG_HWLOC/) {
@@ -1688,10 +1625,7 @@ else {
         }
 
         $ENV{CFLAGS}=$opts{CFLAGS};
-        my $t="mymake/mpl/include/mplconfig.h";
-        if (-d "src/openpa") {
-            $t.=" mymake/openpa/src/opa_config.h";
-        }
+        my $t="src/mpl/include/mplconfig.h";
         $t=~s/$pwd\///g;
 
         $ret = system "make $t";
@@ -1707,7 +1641,7 @@ else {
             close Out;
 
             my $CC = get_make_var("CC");
-            system "$CC -Imymake/mpl/include mymake/t.c -o mymake/t";
+            system "$CC -Isrc/mpl/include mymake/t.c -o mymake/t";
             system "mymake/t";
             my $ret = $? >> 8;
 
@@ -1715,7 +1649,7 @@ else {
         }
         $config_defines{SIZEOF_OPA_PTR_T} = 8;
         my $lock_based_atomics;
-        open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
+        open In, "src/mpl/include/mplconfig.h" or die "Can't open src/mpl/include/mplconfig.h: $!\n";
         while(<In>){
             if (/^#define MPL_USE_LOCK_BASED_PRIMITIVES/) {
                 $lock_based_atomics = 1;
@@ -1728,7 +1662,7 @@ else {
         }
         if (%config_defines) {
             my (@lines, $cnt);
-            open In, "mymake/mpl/include/mplconfig.h" or die "Can't open mymake/mpl/include/mplconfig.h: $!\n";
+            open In, "src/mpl/include/mplconfig.h" or die "Can't open src/mpl/include/mplconfig.h: $!\n";
             while(<In>){
                 if (/^\/\* #undef (\w+)/ && exists $config_defines{$1}) {
                     if (defined $config_defines{$1}) {
@@ -1759,7 +1693,7 @@ else {
             close In;
 
             if ($cnt>0) {
-                open Out, ">mymake/mpl/include/mplconfig.h" or die "Can't write mymake/mpl/include/mplconfig.h: $!\n";
+                open Out, ">src/mpl/include/mplconfig.h" or die "Can't write src/mpl/include/mplconfig.h: $!\n";
                 foreach my $l (@lines) {
                     print Out $l;
                 }
