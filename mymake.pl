@@ -661,7 +661,7 @@ else {
     }
     else {
         my $mkfile="src/pm/hydra/Makefile";
-        my $add="\x24(MODDIR)/src/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+        my $add="src/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
         push @extra_make_rules, ".PHONY: hydra hydra-install";
         push @extra_make_rules, "hydra: $mkfile $add";
         push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
@@ -678,7 +678,7 @@ else {
         push @extra_make_rules, "";
         if ($opts{pm} eq "hydra2") {
             my $mkfile="src/pm/hydra2/Makefile";
-            my $add="\x24(MODDIR)/src/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+            my $add="src/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
             push @extra_make_rules, ".PHONY: hydra2 hydra2-install";
             push @extra_make_rules, "hydra2: $mkfile $add";
             push @extra_make_rules, "\t(cd src/pm/hydra2 && \x24(MAKE) )";
