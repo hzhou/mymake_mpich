@@ -675,6 +675,12 @@ elsif ($what eq "test") {
         push @extra_make_rules, "$top_srcdir/dtpools/src/libdtpools.la:";
         push @extra_make_rules, "\t(cd $top_srcdir/dtpools/src && \x24(MAKE) libdtpools.la)";
         push @extra_make_rules, "";
+        push @extra_make_rules, "$top_srcdir/util/libmtest_single.la:";
+        push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libmtest_single.la)";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "$top_srcdir/util/libdtypes.la:";
+        push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libdtypes.la)";
+        push @extra_make_rules, "";
 
         if ($opts{"with-cuda"}) {
             my $p = $opts{"with-cuda"};

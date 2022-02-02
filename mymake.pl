@@ -262,6 +262,10 @@ foreach my $a (@ARGV) {
             elsif ($g=~/alwaysinline/) {
                 $config_defines{MPL_ENABLE_ALWAYS_INLINE} = 1;
             }
+            elsif ($g=~/avx/) {
+                $config_cflags{-mavx} = 1;
+                $config_defines{HAVE_MM256_STREAM_SI256} = 1;
+            }
         }
         elsif ($a=~/--enable-strict/) {
             $config_cflags{"-Wall"} = 1;

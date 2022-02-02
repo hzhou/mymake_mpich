@@ -227,6 +227,10 @@ foreach my $a (@tlist, @ARGV) {
         elsif ($g=~/alwaysinline/) {
             $config_defines{MPL_ENABLE_ALWAYS_INLINE} = 1;
         }
+        elsif ($g=~/avx/) {
+            $config_cflags{-mavx} = 1;
+            $config_defines{HAVE_MM256_STREAM_SI256} = 1;
+        }
     }
     elsif ($a=~/--enable-strict/) {
         $config_cflags{"-Wall"} = 1;
@@ -509,7 +513,6 @@ if ($config eq "mpich") {
         $temp{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
         $temp{ENABLE_LOCAL_SESSION_INIT}=1;
 
-        $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
         if (!$temp{MPIDI_CH4_DIRECT_NETMOD}) {
             if ($opts{"with-cuda"}) {
                 $temp{MPIDI_CH4_SHM_ENABLE_GPU}=1;
@@ -545,7 +548,6 @@ if ($config eq "mpich") {
     }
     elsif ($opts{device}=~/ch3/) {
         $temp{CH3_RANK_BITS} = 16;
-        $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_DATALOOP';
         $temp{PREFETCH_CELL}=1;
         $temp{USE_FASTBOX}=1;
         if ($opts{device}=~/ch3:sock/) {
@@ -560,6 +562,12 @@ if ($config eq "mpich") {
         $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_DATALOOP';
     }
     elsif ($opts{"with-datatype-engine"} eq "yaksa") {
+        $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
+    }
+    elsif ($opts{device}=~/ch3/) {
+        $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_DATALOOP';
+    }
+    else {
         $temp{MPICH_DATATYPE_ENGINE} = 'MPICH_DATATYPE_ENGINE_YAKSA';
     }
 
@@ -3683,13 +3691,15 @@ elsif ($config eq "test") {
         $config_defines{HAVE_GPU} = 1;
         $config_defines{HAVE_CUDA} = 1;
     }
-    my %confs;
-    $confs{PERL}="/usr/bin/perl";
-    $confs{MPIEXEC} = "mpiexec";
-    $confs{MPI_IS_STRICT} = "false";
-    $confs{RUN_XFAIL} = "false";
-    autoconf_file("test/mpi/runtests", \%confs);
-    system "chmod a+x test/mpi/runtests";
+    if (-e "test/mpi/runtests.in") {
+        my %confs;
+        $confs{PERL}="/usr/bin/perl";
+        $confs{MPIEXEC} = "mpiexec";
+        $confs{MPI_IS_STRICT} = "false";
+        $confs{RUN_XFAIL} = "false";
+        autoconf_file("test/mpi/runtests", \%confs);
+        system "chmod a+x test/mpi/runtests";
+    }
     my %confs;
     my @all_testlists = glob("test/mpi/*/testlist.in");
     push @all_testlists, glob("test/mpi/*/*/testlist.in");
