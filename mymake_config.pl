@@ -3634,7 +3634,12 @@ elsif ($config eq "hydra") {
     $confs{hydra_rmk_array}      = ' "'. join('",  "', @rmks). '",  NULL';
     $confs{hydra_launcher_init_array} = ' HYDT_bsci_launcher_'. join('_init,  HYDT_bsci_launcher_', @launchers). '_init,  NULL';
     $confs{hydra_rmk_init_array} = ' HYDT_bsci_rmk_'. join('_init,  HYDT_bsci_rmk_', @rmks). '_init,  NULL';
-    autoconf_file("src/pm/hydra/tools/bootstrap/src/bsci_init.c", \%confs);
+    if (-f "src/pm/hydra/lib/tools/bootstrap/src/bsci_init.c.in") {
+        autoconf_file("src/pm/hydra/lib/tools/bootstrap/src/bsci_init.c", \%confs);
+    }
+    else {
+        autoconf_file("src/pm/hydra/tools/bootstrap/src/bsci_init.c", \%confs);
+    }
 
     $config_defines{HYDRA_AVAILABLE_DEMUXES} = "\"@demuxes\"";
     $config_defines{HYDRA_DEFAULT_DEMUX} = "\"$demuxes[0]\"";

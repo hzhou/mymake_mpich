@@ -1988,7 +1988,7 @@ sub dump_makefile {
                     $objs.=" $t";
                 }
                 else {
-                    if ($t_cppflags and $t=~/(\w+)\.o/) {
+                    if ($t_cppflags and $t=~/(.*\w+)\.o/) {
                         my $obj=$1;
                         if ($obj ne $a) {
                             $obj .= "_$a";
@@ -2076,7 +2076,7 @@ sub dump_makefile {
                         $objs.=" $t";
                     }
                     else {
-                        if ($t_cppflags and $t=~/(\w+)\.o/) {
+                        if ($t_cppflags and $t=~/(.*\w+)\.o/) {
                             my $obj=$1;
                             if ($obj ne $a) {
                                 $obj .= "_$a";
@@ -2202,7 +2202,7 @@ sub dump_makefile {
                     $objs.=" $t";
                 }
                 else {
-                    if ($t_cppflags and $t=~/(\w+)\.o/) {
+                    if ($t_cppflags and $t=~/(.*\w+)\.o/) {
                         my $obj=$1;
                         if ($obj ne $a) {
                             $obj .= "_$a";
@@ -2290,7 +2290,7 @@ sub dump_makefile {
                         $objs.=" $t";
                     }
                     else {
-                        if ($t_cppflags and $t=~/(\w+)\.o/) {
+                        if ($t_cppflags and $t=~/(.*\w+)\.o/) {
                             my $obj=$1;
                             if ($obj ne $a) {
                                 $obj .= "_$a";

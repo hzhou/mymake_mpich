@@ -317,6 +317,9 @@ if (!-f "mymake/Makefile.orig") {
     system "cp -v $m[2] $m[0]";
 
     my $hwloc_mk = "tools/topo/hwloc/Makefile.mk";
+    if (-f "lib/$hwloc_mk") {
+        $hwloc_mk = "lib/$hwloc_mk";
+    }
     if ($do_hydra2) {
         $hwloc_mk = "libhydra/topo/hwloc/Makefile.mk";
     }
@@ -801,7 +804,7 @@ sub dump_makefile {
                     $objs.=" $t";
                 }
                 else {
-                    if ($t_cppflags and $t=~/(\w+)\.o/) {
+                    if ($t_cppflags and $t=~/(.*\w+)\.o/) {
                         my $obj=$1;
                         if ($obj ne $a) {
                             $obj .= "_$a";
@@ -867,7 +870,7 @@ sub dump_makefile {
                         $objs.=" $t";
                     }
                     else {
-                        if ($t_cppflags and $t=~/(\w+)\.o/) {
+                        if ($t_cppflags and $t=~/(.*\w+)\.o/) {
                             my $obj=$1;
                             if ($obj ne $a) {
                                 $obj .= "_$a";
@@ -971,7 +974,7 @@ sub dump_makefile {
                     $objs.=" $t";
                 }
                 else {
-                    if ($t_cppflags and $t=~/(\w+)\.o/) {
+                    if ($t_cppflags and $t=~/(.*\w+)\.o/) {
                         my $obj=$1;
                         if ($obj ne $a) {
                             $obj .= "_$a";
@@ -1037,7 +1040,7 @@ sub dump_makefile {
                         $objs.=" $t";
                     }
                     else {
-                        if ($t_cppflags and $t=~/(\w+)\.o/) {
+                        if ($t_cppflags and $t=~/(.*\w+)\.o/) {
                             my $obj=$1;
                             if ($obj ne $a) {
                                 $obj .= "_$a";
