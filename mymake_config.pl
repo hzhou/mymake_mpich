@@ -43,7 +43,12 @@ elsif ($config eq "opa") {
 }
 elsif ($config eq "hydra") {
     $config_in = "$mymake_dir/config_templates/hydra_config.h";
-    $config_out = "src/pm/hydra/include/hydra_config.h";
+    if (-d "src/pm/hydra/include") {
+        $config_out = "src/pm/hydra/include/hydra_config.h";
+    }
+    else {
+        $config_out = "src/pm/hydra/hydra_config.h";
+    }
     symlink "../../../libtool", "src/pm/hydra/libtool";
 }
 elsif ($config eq "test") {

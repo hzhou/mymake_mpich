@@ -2536,7 +2536,7 @@ sub get_make_objects {
     my $tlist = get_list("${a}_OBJECTS");
     my @tlist = sort @$tlist;
     foreach my $t (@tlist) {
-        $t=~s/$a-//g;
+        $t =~s/[^\/]+-//g;
     }
     return \@tlist;
 }
