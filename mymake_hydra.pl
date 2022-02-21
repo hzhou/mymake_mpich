@@ -362,7 +362,11 @@ if (!-f "mymake/Makefile.orig") {
     system "rm -f Makefile";
     system "./configure";
     my (@lines, $flag);
-    open In, "include/hydra_config.h" or die "Can't open include/hydra_config.h: $!\n";
+    my $config_h = "include/hydra_config.h";
+    if (!-d "include") {
+        $config_h = "hydra_config.h";
+    }
+    open In, "$config_h" or die "Can't open $config_h: $!\n";
     while(<In>){
         if (/#define HYDRA_DEFAULT_TOPOLIB NULL/) {
             push @lines, "#define HYDRA_DEFAULT_TOPOLIB \"hwloc\"\n";
@@ -374,8 +378,8 @@ if (!-f "mymake/Makefile.orig") {
     }
     close In;
     if ($flag) {
-        open Out, ">include/hydra_config.h" or die "Can't write include/hydra_config.h: $!\n";
-        print "  --> [include/hydra_config.h]\n";
+        open Out, ">$config_h" or die "Can't write $config_h: $!\n";
+        print "  --> [$config_h]\n";
         foreach my $l (@lines) {
             print Out "$l\n";
         }
