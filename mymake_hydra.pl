@@ -645,15 +645,25 @@ sub dump_makefile {
     print Out "INCLUDES = $t\n";
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
-    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
-    $t=~s/-I\S+\/ucx\/src//g;
-    $t=~s/-I\S+\/json-c//g;
+    if ($makefile eq "Makefile") {
+        $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+        $t=~s/-I\S+\/ucx\/src//g;
+        $t=~s/-I\S+\/json-c//g;
+    }
+    elsif ($makefile =~/hydra/) {
+        $t=~s/-I\S+\/(mpl)\/\S+\s*//g;
+    }
     print Out "AM_CPPFLAGS = $t\n";
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
-    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
-    $t=~s/-I\S+\/ucx\/src//g;
-    $t=~s/-I\S+\/json-c//g;
+    if ($makefile eq "Makefile") {
+        $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+        $t=~s/-I\S+\/ucx\/src//g;
+        $t=~s/-I\S+\/json-c//g;
+    }
+    elsif ($makefile =~/hydra/) {
+        $t=~s/-I\S+\/(mpl)\/\S+\s*//g;
+    }
     if ($opts{"with-cuda"}) {
         my $p = $opts{"with-cuda"};
         $I_list .= " -I$p/include";

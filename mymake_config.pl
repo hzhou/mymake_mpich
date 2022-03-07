@@ -35,6 +35,11 @@ elsif ($config eq "mpl") {
     $config_out = "src/mpl/include/mplconfig.h";
     symlink "../../libtool", "src/mpl/libtool";
 }
+elsif ($config eq "pmi") {
+    $config_in = "$mymake_dir/config_templates/pmi_config.h";
+    $config_out = "src/pmi/include/pmi_config.h";
+    symlink "../../../libtool", "mymake/openpa/src/libtool";
+}
 elsif ($config eq "opa") {
     $config_prefix = "opa";
     $config_in = "$mymake_dir/config_templates/opa_config.h";
@@ -3539,6 +3544,26 @@ elsif ($config eq "mpl") {
     $confs{MPL_TIMER_TYPE} = "struct timespec";
     $confs{MPL_TIMER_KIND} = "MPL_TIMER_KIND__CLOCK_GETTIME";
     autoconf_file("src/mpl/include/mpl_timer.h", \%confs);
+}
+elsif ($config eq "pmi") {
+    open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
+    while(<In>){
+        if (/^(\w+):\s*(.+)/) {
+            $opts{$1} = $2;
+        }
+    }
+    close In;
+    $config_defines{PACKAGE}='"pmi"';
+    $config_defines{PACKAGE_BUGREPORT}='""';
+    $config_defines{PACKAGE_NAME}='"PMI"';
+    $config_defines{PACKAGE_STRING}="\"PMI 1.2\"";
+    $config_defines{PACKAGE_TARNAME}='"pmi"';
+    $config_defines{PACKAGE_URL}='""';
+    $config_defines{PACKAGE_VERSION}="\"1.2\"";
+    $config_defines{VERSION}="\"1.2\"";
+    $config_defines{HAVE_MPI_H} = 1;
+    $config_defines{USE_PMI_PORT} = 1;
+    $config_defines{HAVE_ERROR_CHECKING} = 1;
 }
 elsif ($config eq "opa") {
     open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";

@@ -254,6 +254,14 @@ if ($what eq "mpich") {
         my $subdir="src/pmi";
         my $lib_la = "src/pmi/libpmi.la";
         my $config_h = "src/pmi/include/pmi_config.h";
+        push @extra_make_rules, "$config_h:";
+        push @extra_make_rules, "\t\x24(DO_config) pmi && \x24(DO_makefile) pmi";
+        push @extra_make_rules, "";
+        my @t = ("cd $subdir");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$lib_la: $config_h";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
     }
 
     if (!$opts{disable_romio}) {
@@ -568,6 +576,16 @@ elsif ($what eq "mpl") {
     @programs=();
     dump_makefile("src/mpl/Makefile");
 }
+elsif ($what eq "pmi") {
+
+    my %conds;
+    $conds{EMBEDDED_MODE} = 1;
+    $autoconf_vars{mpl_includedir} = "-I../mpl/include";
+
+    load_automake("src/pmi/Makefile.am", \%conds);
+    @programs=();
+    dump_makefile("src/pmi/Makefile");
+}
 elsif ($what eq "opa") {
     $autoconf_vars{OPALIBNAME} = "opa";
     $make_vars{DEFAULT_INCLUDES} = "-I.";
@@ -852,9 +870,14 @@ sub dump_makefile {
     print Out "INCLUDES = $t\n";
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
-    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
-    $t=~s/-I\S+\/ucx\/src//g;
-    $t=~s/-I\S+\/json-c//g;
+    if ($makefile eq "Makefile") {
+        $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+        $t=~s/-I\S+\/ucx\/src//g;
+        $t=~s/-I\S+\/json-c//g;
+    }
+    elsif ($makefile =~/hydra/) {
+        $t=~s/-I\S+\/(mpl)\/\S+\s*//g;
+    }
     print Out "AM_CPPFLAGS = $t\n";
     my $t = get_make_var_unique("CPPFLAGS");
     if ($opts{"with-cuda"}) {
@@ -862,9 +885,14 @@ sub dump_makefile {
         $I_list .= " -I$p/include";
     }
     $t=~s/\@HWLOC_\S+\@\s*//;
-    $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
-    $t=~s/-I\S+\/ucx\/src//g;
-    $t=~s/-I\S+\/json-c//g;
+    if ($makefile eq "Makefile") {
+        $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+        $t=~s/-I\S+\/ucx\/src//g;
+        $t=~s/-I\S+\/json-c//g;
+    }
+    elsif ($makefile =~/hydra/) {
+        $t=~s/-I\S+\/(mpl)\/\S+\s*//g;
+    }
     $t .= $I_list;
     print Out "CPPFLAGS = $t\n";
     my $t = get_make_var_unique("AM_CFLAGS");
