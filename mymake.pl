@@ -879,6 +879,51 @@ else {
         push @extra_make_rules, "";
     }
 
+    if (-f "src/pmi/configure.ac") {
+        system "rsync -r confdb/ src/pmi/confdb/";
+        system "cp maint/version.m4 src/pmi/";
+        my $L=$opts{"with-pmi"};
+        if ($L and -d $L) {
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -lpmi";
+        }
+        else {
+            push @CONFIGS, "src/pmi/include/pmi_config.h";
+            $I_list .= " -Isrc/pmi/include";
+            $L_list .= " src/pmi/libpmi.la";
+        }
+        my @t_env;
+        push @t_env, "FROM_MPICH=yes";
+        push @t_env, "main_top_srcdir=$pwd";
+        push @t_env, "main_top_builddir=$pwd";
+        push @t_env, "CPPFLAGS='-I$opts{moddir}/src/mpl/include'";
+        if ($opts{argobots}) {
+            $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
+        }
+        my $configure = "@t_env ./configure --enable-embedded";
+        my $subdir="src/pmi";
+        my $lib_la = "src/pmi/libpmi.la";
+        my $config_h = "src/pmi/include/pmi_config.h";
+        my @t = ("cd $subdir");
+        push @t, "\x24(DO_stage) Configure PMI";
+        if (-f "$opts{moddir}/src/pmi/autogen.sh") {
+            push @t, "sh autogen.sh";
+        }
+        else {
+            push @t, "autoreconf -ivf";
+        }
+        push @t, "$configure";
+        push @t, "cp $pwd/libtool .";
+        push @extra_make_rules, "$config_h: ";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
+        my @t = ("cd $subdir");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$lib_la: $config_h";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
+    }
+
     if (!$opts{disable_romio}) {
         system "rsync -r confdb/ src/mpi/romio/confdb/";
         system "cp maint/version.m4 src/mpi/romio/";
