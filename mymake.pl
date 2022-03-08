@@ -1871,7 +1871,7 @@ sub dump_makefile {
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     if ($makefile eq "Makefile") {
-        $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+        $t=~s/-I\S+\/(mpl|pmi|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
         $t=~s/-I\S+\/ucx\/src//g;
         $t=~s/-I\S+\/json-c//g;
     }
@@ -1882,7 +1882,7 @@ sub dump_makefile {
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     if ($makefile eq "Makefile") {
-        $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+        $t=~s/-I\S+\/(mpl|pmi|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
         $t=~s/-I\S+\/ucx\/src//g;
         $t=~s/-I\S+\/json-c//g;
     }
