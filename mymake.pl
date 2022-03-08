@@ -1562,7 +1562,7 @@ else {
             $a=~s/[\.\/]/_/g;
             my $add = $a."_LIBADD";
             my $t = get_make_var($add);
-            $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
+            $t=~s/(\S+\/)?(mpl|pmi|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
             $t=~s/\@ucxlib\@\s*//g;
             $t=~s/\@ofilib\@\s*//g;
 
@@ -1576,7 +1576,7 @@ else {
             $a=~s/[\.\/]/_/g;
             my $add = $a."_LDADD";
             my $t = get_make_var($add);
-            $t=~s/(\S+\/)?(mpl|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
+            $t=~s/(\S+\/)?(mpl|pmi|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
             $t=~s/\@ucxlib\@\s*//g;
             $t=~s/\@ofilib\@\s*//g;
 
@@ -1871,7 +1871,7 @@ sub dump_makefile {
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     if ($makefile eq "Makefile") {
-        $t=~s/-I\S+\/(mpl|pmi|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+        $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
         $t=~s/-I\S+\/ucx\/src//g;
         $t=~s/-I\S+\/json-c//g;
     }
@@ -1882,7 +1882,7 @@ sub dump_makefile {
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
     if ($makefile eq "Makefile") {
-        $t=~s/-I\S+\/(mpl|pmi|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
+        $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
         $t=~s/-I\S+\/ucx\/src//g;
         $t=~s/-I\S+\/json-c//g;
     }
