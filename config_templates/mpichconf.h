@@ -738,6 +738,8 @@
 /* Number of VCIs configured in CH4 */
 #undef MPIDI_CH4_MAX_VCIS
 
+#undef MPIDI_CH4_RESERVED_VCIS
+
 /* CH4-OFI should skip providers with IPv6 */
 #undef MPIDI_CH4_OFI_SKIP_IPV6
 

@@ -645,7 +645,7 @@ sub dump_makefile {
     print Out "INCLUDES = $t\n";
     my $t = get_make_var_unique("AM_CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
-    if ($makefile eq "Makefile") {
+    if ($makefile eq "Makefile" or $makefile eq "mymake/Makefile.custom") {
         $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
         $t=~s/-I\S+\/ucx\/src//g;
         $t=~s/-I\S+\/json-c//g;
@@ -656,7 +656,7 @@ sub dump_makefile {
     print Out "AM_CPPFLAGS = $t\n";
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
-    if ($makefile eq "Makefile") {
+    if ($makefile eq "Makefile" or $makefile eq "mymake/Makefile.custom") {
         $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
         $t=~s/-I\S+\/ucx\/src//g;
         $t=~s/-I\S+\/json-c//g;

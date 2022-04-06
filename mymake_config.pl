@@ -38,7 +38,7 @@ elsif ($config eq "mpl") {
 elsif ($config eq "pmi") {
     $config_in = "$mymake_dir/config_templates/pmi_config.h";
     $config_out = "src/pmi/include/pmi_config.h";
-    symlink "../../../libtool", "mymake/openpa/src/libtool";
+    symlink "../../libtool", "src/pmi/libtool";
 }
 elsif ($config eq "opa") {
     $config_prefix = "opa";
@@ -518,6 +518,7 @@ if ($config eq "mpich") {
         $temp{MPIDI_BUILD_CH4_LOCALITY_INFO}=1;
         $temp{MPIDI_CH4U_USE_PER_COMM_QUEUE}=1;
         $temp{MPIDI_CH4_MAX_VCIS}=1;
+        $temp{MPIDI_CH4_RESERVED_VCIS}=0;
         $temp{MPIDI_CH4_USE_MT_DIRECT}=1;
         $temp{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__ZERO';
         $temp{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
@@ -710,6 +711,10 @@ if ($config eq "mpich") {
     my %confs;
     $confs{BASH_SHELL} = "/bin/bash";
     $confs{LDFLAGS} = $ENV{LDFLAGS};
+    if ($opts{"with-cuda"}) {
+        my $p = $opts{"with-cuda"};
+        $confs{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
+    }
     $confs{LIBS} = $ENV{LIBS};
     $confs{MPILIBNAME} = "mpi";
     $confs{LPMPILIBNAME} = "";
@@ -3714,7 +3719,6 @@ elsif ($config eq "test") {
     }
 
     $config_defines{SIZEOF_MPI_OFFSET} = $sizeof_hash{VOID_P};
-    $config_defines{HAVE_GETRUSAGE} = 1;
 
     $config_defines{THREAD_PACKAGE_NAME} = "THREAD_PACKAGE_POSIX";
     $config_defines{HAVE_MPI_WIN_CREATE} = 1;
