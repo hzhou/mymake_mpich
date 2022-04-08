@@ -3568,6 +3568,7 @@ elsif ($config eq "pmi") {
     $config_defines{VERSION}="\"1.2\"";
     $config_defines{HAVE_MPI_H} = 1;
     $config_defines{USE_PMI_PORT} = 1;
+    $config_defines{HAVE_THREADS} = 1;
     $config_defines{HAVE_ERROR_CHECKING} = 1;
 }
 elsif ($config eq "opa") {

@@ -892,7 +892,7 @@ else {
     }
 
     if (-f "src/pmi/configure.ac") {
-        if ($opts{"with-pmi"} ne "slurm") {
+        if ($opts{"with-pmi"} !~ /slurm|cray/ and $opts{"with-pmilib"} !~/slurm|cray/) {
             system "rsync -r confdb/ src/pmi/confdb/";
             system "cp maint/version.m4 src/pmi/";
             my $L=$opts{"with-pmi"};
