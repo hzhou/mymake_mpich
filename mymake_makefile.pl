@@ -586,7 +586,7 @@ elsif ($what eq "pmi") {
 
     my %conds;
     $conds{EMBEDDED_MODE} = 1;
-    $autoconf_vars{mpl_includedir} = "-I../mpl/include";
+    $autoconf_vars{mpl_includedir} = "-I../mpl/include -I../include";
 
     load_automake("src/pmi/Makefile.am", \%conds);
     @programs=();

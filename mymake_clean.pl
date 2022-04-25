@@ -39,6 +39,10 @@ push @realclean_list, "mymake/t-*";
 push @realclean_list, "mymake/Makefile.*";
 
 push @realclean_list, "mymake/mpl";
+push @realclean_list, "src/mpl/include/mplconfig.h";
+push @realclean_list, "src/mpl/Makefile";
+push @realclean_list, "src/pmi/include/pmi_config.h";
+push @realclean_list, "src/pmi/Makefile";
 if (-d "src/openpa") {
     push @realclean_list, "mymake/openpa";
 }

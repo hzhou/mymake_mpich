@@ -539,12 +539,12 @@ else {
     if (!$opts{disable_cxx}) {
         $opts{enable_cxx}=1;
         $dst_hash{"src/binding/cxx/mpicxx.h"}="$opts{prefix}/include";
-        $dst_hash{"mymake/mpicxx"}=$bin;
-        $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
     }
     else {
         system "touch src/binding/cxx/mpicxx.h.in";
     }
+    $dst_hash{"mymake/mpicxx"}=$bin;
+    $dst_hash{"LN_S-$bin/mpic++"}="$bin/mpicxx";
 
     if (!$opts{disable_fortran}) {
         push @extra_make_rules, "src/binding/fortran/use_mpi/mpi.lo: src/binding/fortran/use_mpi/mpi_constants.lo src/binding/fortran/use_mpi/mpi_sizeofs.lo src/binding/fortran/use_mpi/mpi_base.lo";
