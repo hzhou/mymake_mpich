@@ -251,9 +251,13 @@ if ($what eq "mpich") {
             push @t_env, "FROM_MPICH=yes";
             push @t_env, "main_top_srcdir=$pwd";
             push @t_env, "main_top_builddir=$pwd";
-            push @t_env, "CPPFLAGS='-I$pwd/src/mpl/include'";
+            push @t_env, "CFLAGS='-I$pwd/src/mpl/include'";
             if ($opts{argobots}) {
                 $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
+            }
+            if (!$opts{disable_romio}) {
+                my $t_dir = "$pwd/src/mpi/romio/include";
+                $t_env[-1] =~s/'$/ -I\/$t_dir'/;
             }
             my $configure = "@t_env ./configure --enable-embedded";
             my $subdir="src/pmi";
@@ -729,9 +733,16 @@ elsif ($what eq "test") {
         push @extra_make_rules, "$top_srcdir/util/libmtest_single.la:";
         push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libmtest_single.la)";
         push @extra_make_rules, "";
-        push @extra_make_rules, "$top_srcdir/util/libdtypes.la:";
-        push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libdtypes.la)";
-        push @extra_make_rules, "";
+        if ($a =~ /threads/) {
+            push @extra_make_rules, "$top_srcdir/util/libmtest_thread.la:";
+            push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libmtest_thread.la)";
+            push @extra_make_rules, "";
+        }
+        if ($a =~ /datatype/) {
+            push @extra_make_rules, "$top_srcdir/util/libdtypes.la:";
+            push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libdtypes.la)";
+            push @extra_make_rules, "";
+        }
 
         if ($opts{"with-cuda"}) {
             my $p = $opts{"with-cuda"};

@@ -136,8 +136,8 @@ if ($opts{FC}) {
 }
 if (!$opts{prefix}) {
     $opts{prefix}="$pwd/_inst";
-    system "mkdir -p $opts{prefix}";
 }
+system "mkdir -p $opts{prefix}";
 my $mod_tarball;
 if ($ENV{MODTARBALL}) {
     $mod_tarball = $ENV{MODTARBALL};
