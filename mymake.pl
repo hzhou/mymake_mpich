@@ -375,7 +375,7 @@ else {
 
 my $uname = `uname`;
 $opts{uname} = $uname;
-if ($uname=~/Darwin/) {
+if ($uname=~/Darwin/ or $opts{"disable-weak-symbols"}) {
     $opts{do_pmpi} = 1;
 }
 if (!-d "mymake") {
@@ -2541,7 +2541,19 @@ sub dump_makefile {
     }
 
     my (%dirs, @install_list, @install_deps, @lns_list);
-    foreach my $k (sort keys %dst_hash) {
+    my @dst_keys = sort keys %dst_hash;
+    if ($dst_hash{'lib/libpmpi.la'}) {
+        foreach my $k (@dst_keys) {
+            if ($k eq "lib/libpmpi.la") {
+                $k = "lib/libmpi.la";
+            }
+            elsif ($k eq "lib/libmpi.la") {
+                $k = "lib/libpmpi.la";
+            }
+        }
+    }
+
+    foreach my $k (@dst_keys) {
         my $v = $dst_hash{$k};
         if ($k=~/^LN_S-(.*)/) {
             push @lns_list, "rm -f $1 && ln -s $v $1";
