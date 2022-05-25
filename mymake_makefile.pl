@@ -478,6 +478,8 @@ if ($what eq "mpich") {
 
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
+    $dst_hash{"mymake/mpifort"}=$bin;
+    $dst_hash{"mymake/mpicxx"}=$bin;
 
     $autoconf_vars{MPILIBNAME} = "mpi";
     $autoconf_vars{MPIFCLIBNAME} = "mpifort";
@@ -663,6 +665,10 @@ elsif ($what eq "test") {
     push @all_am, glob("test/mpi/threads/*/Makefile.am");
     push @all_am, glob("test/mpi/errors/*/Makefile.am");
     push @all_am, glob("test/mpi/impls/mpich/comm/Makefile.am");
+    if (!$opts{disable_fortran}) {
+        $conds{HAS_F77} = 1;
+        push @all_am, glob("test/mpi/f77/*/Makefile.am");
+    }
     foreach my $a (@all_am) {
         my $dir;
         if ($a =~ /test\/mpi\/(.*)\/Makefile.am/) {
@@ -743,6 +749,11 @@ elsif ($what eq "test") {
             push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libdtypes.la)";
             push @extra_make_rules, "";
         }
+        if ($a =~ /f77/) {
+            push @extra_make_rules, "$top_srcdir/util/libmtest_f77.la:";
+            push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libmtest_f77.la)";
+            push @extra_make_rules, "";
+        }
 
         if ($opts{"with-cuda"}) {
             my $p = $opts{"with-cuda"};
@@ -754,8 +765,19 @@ elsif ($what eq "test") {
 
         $make_vars{LIBTOOL} = "$top_srcdir/libtool";
         $make_vars{CC} = "mpicc";
+        $make_vars{CXX} = "mpicxx";
+        $make_vars{FC} = "mpifort -fcray-pointer";
         $make_vars{CCLD} = "mpicc";
-        dump_makefile("test/mpi/$dir/Makefile");
+        $make_vars{CXXLD} = "mpicxx";
+        $make_vars{FCLD} = "mpifort";
+        if ($dir=~/f77/) {
+            $opts{ld_default} = "FCLD";
+            dump_makefile("test/mpi/$dir/Makefile");
+            undef $opts{ld_default};
+        }
+        else {
+            dump_makefile("test/mpi/$dir/Makefile");
+        }
     }
 }
 elsif ($what eq "dtpools") {
@@ -1033,6 +1055,9 @@ sub dump_makefile {
             elsif ($p=~/libmpicxx.la/) {
                 $ld = "CXXLD";
             }
+            elsif ($opts{ld_default}) {
+                $ld = $opts{ld_default};
+            }
             my $cmd = "\x24($ld)";
             if ($opts{V}==0) {
                 $cmd = "\@echo $ld \$\@ && $cmd";
@@ -1202,6 +1227,9 @@ sub dump_makefile {
             }
             elsif ($p=~/libmpicxx.la/) {
                 $ld = "CXXLD";
+            }
+            elsif ($opts{ld_default}) {
+                $ld = $opts{ld_default};
             }
             my $cmd = "\x24($ld)";
             if ($opts{V}==0) {
@@ -1385,6 +1413,22 @@ sub dump_makefile {
         print Out "\t\x24(COMPILE) -c -o \$\@ \$<\n";
     }
     print Out "\n";
+    print Out "%.o: %.f\n";
+    if ($opts{V}==0) {
+        print Out "\t\@echo FC \$\@ && \x24(FCCOMPILE) -c -o \$\@ \$<\n";
+    }
+    else {
+        print Out "\t\x24(FCCOMPILE) -c -o \$\@ \$<\n";
+    }
+    print Out "\n";
+    print Out "%.o: %.f90\n";
+    if ($opts{V}==0) {
+        print Out "\t\@echo FC \$\@ && \x24(FCCOMPILE) -c -o \$\@ \$<\n";
+    }
+    else {
+        print Out "\t\x24(FCCOMPILE) -c -o \$\@ \$<\n";
+    }
+    print Out "\n";
     print Out "%.i: %.c\n";
     if ($opts{V}==0) {
         print Out "\t\@echo CC -E \$\@ && \x24(COMPILE) -E -o \$\@ \$<\n";
@@ -1554,7 +1598,7 @@ sub get_make_objects {
     }
     my @tlist;
     foreach my $a (split /\s+/, $t) {
-        if ($a=~/(.*)\.(c|f90)$/) {
+        if ($a=~/(.*)\.(c|f|f90)$/) {
             if ($is_program) {
                 push @tlist, "$1.o";
             }

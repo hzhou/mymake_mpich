@@ -791,6 +791,9 @@ sub dump_makefile {
             elsif ($p=~/libmpicxx.la/) {
                 $ld = "CXXLD";
             }
+            elsif ($opts{ld_default}) {
+                $ld = $opts{ld_default};
+            }
             my $cmd = "\x24($ld)";
             if ($opts{V}==0) {
                 $cmd = "\@echo $ld \$\@ && $cmd";
@@ -960,6 +963,9 @@ sub dump_makefile {
             }
             elsif ($p=~/libmpicxx.la/) {
                 $ld = "CXXLD";
+            }
+            elsif ($opts{ld_default}) {
+                $ld = $opts{ld_default};
             }
             my $cmd = "\x24($ld)";
             if ($opts{V}==0) {
@@ -1141,6 +1147,22 @@ sub dump_makefile {
     }
     else {
         print Out "\t\x24(COMPILE) -c -o \$\@ \$<\n";
+    }
+    print Out "\n";
+    print Out "%.o: %.f\n";
+    if ($opts{V}==0) {
+        print Out "\t\@echo FC \$\@ && \x24(FCCOMPILE) -c -o \$\@ \$<\n";
+    }
+    else {
+        print Out "\t\x24(FCCOMPILE) -c -o \$\@ \$<\n";
+    }
+    print Out "\n";
+    print Out "%.o: %.f90\n";
+    if ($opts{V}==0) {
+        print Out "\t\@echo FC \$\@ && \x24(FCCOMPILE) -c -o \$\@ \$<\n";
+    }
+    else {
+        print Out "\t\x24(FCCOMPILE) -c -o \$\@ \$<\n";
     }
     print Out "\n";
     print Out "%.i: %.c\n";

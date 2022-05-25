@@ -512,6 +512,8 @@ if ($config eq "mpich") {
 
     $temp{TRUE} = 1;
     $temp{FALSE} = 0;
+    $temp{F77_NAME_LOWER_USCORE} = 1;
+    $temp{HAVE_AINT_DIFFERENT_THAN_FINT} = 1;
 
     if ($opts{device}=~/ch4/) {
         if ($opts{"without-ch4-shmmods"}) {
@@ -703,6 +705,7 @@ if ($config eq "mpich") {
         $confs{CMB_1INT_ALIGNMENT}='__attribute__((aligned(16)))';
         $confs{CMB_STATUS_ALIGNMENT}='__attribute__((aligned(32)))';
         autoconf_file("src/binding/fortran/mpif_h/setbot.c", \%confs);
+        autoconf_file("src/binding/fortran/mpif_h/setbotf.f", \%confs);
     }
     if (0) {
         $temp{HAVE_NAMESPACES}=1;
@@ -725,8 +728,12 @@ if ($config eq "mpich") {
     $confs{LPMPILIBNAME} = "";
     $confs{MPICH_VERSION} = $version;
     $confs{CC} = $opts{CC};
+    $confs{CXX} = $opts{CXX};
+    $confs{FC} = $opts{FC};
+    $confs{FCINC} = "-I";
     $confs{with_wrapper_dl_type} = "runpath";
     $confs{INTERLIB_DEPS} = "yes";
+    $confs{MPIFCLIBNAME} = "mpifort";
 
     $confs{WRAPPER_CFLAGS}="";
     $confs{WRAPPER_CPPFLAGS}="";
@@ -2196,8 +2203,6 @@ if ($config eq "mpich") {
         $confs{SIZEOF_FC_REAL} = $sizeof_hash{REAL};
         $confs{SIZEOF_FC_DOUBLE_PRECISION} = $sizeof_hash{DOUBLE_PRECISION};
         $confs{SIZEOF_FC_CHARACTER} = $sizeof_hash{CHARACTER};
-        autoconf_file("$dir/mpi_sizeofs.f90", \%confs);
-        autoconf_file("$dir/mpi_base.f90", \%confs);
         my $dir="src/binding/fortran/use_mpi_f08";
         open Out, ">$dir/mpi_f08_types.f90" or die "Can't write $dir/mpi_f08_types.f90: $!\n";
         print "  --> [$dir/mpi_f08_types.f90]\n";
@@ -3708,6 +3713,7 @@ elsif ($config eq "test") {
     $config_defines{PACKAGE_URL}='"http://www.mpich.org/"';
     $config_defines{PACKAGE_VERSION}="\"$version\"";
     $config_defines{VERSION}="\"$version\"";
+    $config_defines{F77_NAME_LOWER_USCORE} = 1;
     $config_defines{HAVE_FLOAT__COMPLEX} = 1;
     $config_defines{HAVE_DOUBLE__COMPLEX} = 1;
     $config_defines{HAVE_LONG_DOUBLE__COMPLEX} = 1;
@@ -3751,6 +3757,11 @@ elsif ($config eq "test") {
     foreach my $a (@all_testlists) {
         $a=~s/\.in$//;
         autoconf_file($a, \%confs);
+    }
+    if (!$opts{disable_fortran}) {
+        my %confs;
+        $confs{F77_MPI_ADDRESS} = "INTEGER*8";
+        autoconf_file("test/mpi/f77/ext/add1size.h", \%confs);
     }
 }
 elsif ($config eq "dtpools") {
