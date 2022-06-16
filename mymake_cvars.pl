@@ -12,7 +12,7 @@ $mymake_dir=~s/\/[^\/]+$//;
 $opts{prefix} = "$pwd/_inst";
 my $pwd = getcwd();
 
-if (!-f "$pwd/maint/extractcvars.in") {
+if (!-f "$pwd/maint/extractcvars.in" and !-f "$pwd/maint/extractcvars") {
     die "File not found: $pwd/maint/extractcvars.in\n";
 }
 
