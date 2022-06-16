@@ -13,10 +13,9 @@ $opts{prefix} = "$pwd/_inst";
 my $pwd = getcwd();
 
 if (!-f "$pwd/maint/extractcvars.in") {
-    if (-f "$pwd/maint/extractcvars") {
-        exit;
+    if (!-f "$pwd/maint/extractcvars") {
+        die "File not found: $pwd/maint/extractcvars.in\n";
     }
-    die "File not found: $pwd/maint/extractcvars.in\n";
 }
 
 if (-f "$pwd/maint/extractcvars.in") {
