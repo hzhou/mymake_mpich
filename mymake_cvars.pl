@@ -39,7 +39,10 @@ if (-f "$pwd/maint/extractcvars.in") {
     }
     close In;
     close Out;
-}
 
-print "    extractcvars...\n";
-system "perl mymake/extractcvars.pl --dirs=\"$dirs\"";
+    print "    extractcvars...\n";
+    system "perl mymake/extractcvars.pl --dirs=\"$dirs\"";
+}
+else {
+    system "perl mymake/extractcvars.pl";
+}
