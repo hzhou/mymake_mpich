@@ -43,5 +43,9 @@ if (-f "$pwd/maint/extractcvars.in") {
     system "perl mymake/extractcvars.pl --dirs=\"$dirs\"";
 }
 else {
-    system "perl mymake/extractcvars.pl";
+    system "perl maint/extractcvars";
+}
+
+if (!-f "src/include/mpir_cvars.h") {
+    die "$0 failed!\n";
 }
