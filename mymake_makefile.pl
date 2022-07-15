@@ -976,6 +976,9 @@ sub dump_makefile {
         $t = join ' ', sort keys %config_ldflags;
         print(STDOUT "  -->  LDFLAGS = $t\n");
     }
+    if ($opts{"with-cuda"}) {
+        $t .= " -L".$opts{"with-cuda"}."/lib64";
+    }
     print Out "LDFLAGS = $t\n";
     my $t = get_make_var_unique("LIBS");
     print Out "LIBS = $t\n";
@@ -988,7 +991,12 @@ sub dump_makefile {
     print Out "LINK = $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     if ($lt) {
         print Out "LTCC = $lt --mode=compile $lt_opt \x24(COMPILE)\n";
-        print Out "LTLD = $lt --mode=link $lt_opt \x24(LINK)\n";
+        if (!$opts{quick}) {
+            print Out "LTLD = $lt --mode=link $lt_opt \x24(LINK)\n";
+        }
+        else {
+            print Out "LTLD = perl $opts{mymake}_ld.pl \"lt=$lt\" \x24(LINK)\n";
+        }
     }
     print Out "\n";
     if (!$opts{disable_cxx}) {
@@ -1446,6 +1454,16 @@ sub dump_makefile {
             print Out "\t\x24(LTCC) -c -o \$\@ \$<\n";
         }
         print Out "\n";
+        if ($opts{"with-cuda"}) {
+            print Out "%.lo: %.cu\n";
+            if ($opts{V}==0) {
+                print Out "\t\@echo NVCC \$\@ && confdb/cudalt.sh \$\@ nvcc -c \x24(AM_CPPFLAGS) \$<\n";
+            }
+            else {
+                print Out "\tconfdb/cudalt.sh \$\@ nvcc -c \x24(AM_CPPFLAGS) \$<\n";
+            }
+            print Out "\n";
+        }
         if (!$opts{disable_cxx}) {
             print Out "%.lo: %.cxx\n";
             if ($opts{V}==0) {
@@ -1520,11 +1538,21 @@ sub dump_makefile {
                 $dirs{$v} = 1;
             }
             if ($v=~/\/lib$/) {
-                push @install_list, "$lt --mode=install $lt_opt install $k $v";
+                if (!$opts{quick}) {
+                    push @install_list, "$lt --mode=install $lt_opt install $k $v";
+                }
+                else {
+                    push @install_list, "perl $opts{mymake}_install.pl $k $v";
+                }
                 push @install_deps, $k;
             }
             elsif ($v=~/\/bin$/) {
-                push @install_list, "$lt --mode=install $lt_opt install $k $v";
+                if (!$opts{quick}) {
+                    push @install_list, "$lt --mode=install $lt_opt install $k $v";
+                }
+                else {
+                    push @install_list, "perl $opts{mymake}_install.pl $k $v";
+                }
                 push @install_deps, $k;
             }
             elsif ($v=~/\/include$/) {
@@ -1598,7 +1626,7 @@ sub get_make_objects {
     }
     my @tlist;
     foreach my $a (split /\s+/, $t) {
-        if ($a=~/(.*)\.(c|f|f90)$/) {
+        if ($a=~/(.*)\.(c|f|f90|cu)$/) {
             if ($is_program) {
                 push @tlist, "$1.o";
             }
