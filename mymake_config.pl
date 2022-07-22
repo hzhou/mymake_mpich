@@ -34,6 +34,7 @@ elsif ($config eq "mpl") {
     $config_in = "$mymake_dir/config_templates/mplconfig.h";
     $config_out = "src/mpl/include/mplconfig.h";
     symlink "../../libtool", "src/mpl/libtool";
+    symlink "../../confdb", "src/mpl/confdb";
 }
 elsif ($config eq "pmi") {
     $config_in = "$mymake_dir/config_templates/pmi_config.h";
