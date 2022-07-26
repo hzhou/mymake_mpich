@@ -990,7 +990,7 @@ else {
         $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$opts{prefix}/include";
     }
     if ($opts{device}=~/:ucx/) {
-        if (!$opts{"with-ucx"} or $opts{"with-ucx"} eq "embedded")) {
+        if (!$opts{"with-ucx"} or $opts{"with-ucx"} eq "embedded") {
             my $ucxdir="$opts{moddir}/ucx";
             if (-e "$ucxdir/need_sed") {
                 print "Patch $ucxdir ...\n";
