@@ -303,93 +303,129 @@ if ($what eq "mpich") {
         $dst_hash{"src/mpi/romio/include/mpio.h"} = "$opts{prefix}/include";
         $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$opts{prefix}/include";
     }
-    if ($opts{device}=~/:ucx/ and (!$opts{"with-ucx"} or $opts{"with-ucx"} eq "embedded")) {
-        my $ucxdir="$opts{moddir}/ucx";
-        if (-e "$ucxdir/need_sed") {
-            print "Patch $ucxdir ...\n";
-            system "find $ucxdir -name '*.la' | xargs sed -i \"s,MODDIR,$ucxdir,g\"";
-            system "find $ucxdir -name '*.la*' | xargs sed -i \"s,/MODPREFIX,$opts{prefix},g\"";
-            system "mkdir -p $opts{prefix}/lib/ucx";
-            $ENV{LIBRARY_PATH}="$opts{prefix}/lib:$opts{prefix}/lib/ucx:$ENV{LIBRARY_PATH}";
-            foreach my $m ("ucm", "ucs", "uct", "ucp") {
-                system "$ucxdir/libtool --mode=install --quiet install $ucxdir/src/$m/lib$m.la $opts{prefix}/lib";
-            }
-            my @tlist = glob("$ucxdir/modules/*.la");
-            foreach my $m (@tlist) {
-                open In, "$m" or die "Can't open $m: $!\n";
-                while(<In>){
-                    if (/relink_command="\(cd \S+ucx.(src.\S+);/) {
-                        my $dir = "$1";
-                        $m=~s/modules/$dir/;
+    if ($opts{device}=~/:ucx/) {
+        if (!$opts{"with-ucx"} or $opts{"with-ucx"} eq "embedded")) {
+            my $ucxdir="$opts{moddir}/ucx";
+            if (-e "$ucxdir/need_sed") {
+                print "Patch $ucxdir ...\n";
+                system "find $ucxdir -name '*.la' | xargs sed -i \"s,MODDIR,$ucxdir,g\"";
+                system "find $ucxdir -name '*.la*' | xargs sed -i \"s,/MODPREFIX,$opts{prefix},g\"";
+                system "mkdir -p $opts{prefix}/lib/ucx";
+                $ENV{LIBRARY_PATH}="$opts{prefix}/lib:$opts{prefix}/lib/ucx:$ENV{LIBRARY_PATH}";
+                foreach my $m ("ucm", "ucs", "uct", "ucp") {
+                    system "$ucxdir/libtool --mode=install --quiet install $ucxdir/src/$m/lib$m.la $opts{prefix}/lib";
+                }
+                my @tlist = glob("$ucxdir/modules/*.la");
+                foreach my $m (@tlist) {
+                    open In, "$m" or die "Can't open $m: $!\n";
+                    while(<In>){
+                        if (/relink_command="\(cd \S+ucx.(src.\S+);/) {
+                            my $dir = "$1";
+                            $m=~s/modules/$dir/;
+                        }
                     }
+                    close In;
+                    system "$ucxdir/libtool --mode=install --quiet install $m $opts{prefix}/lib/ucx";
+                }
+                unlink "$ucxdir/need_sed";
+            }
+
+            if (!$opts{quick}) {
+            }
+
+            if ($ENV{compiler} =~ /pgi|sun/) {
+                my @lines;
+                open In, "$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't open $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
+                while(<In>){
+                    s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
+                    push @lines, $_;
                 }
                 close In;
-                system "$ucxdir/libtool --mode=install --quiet install $m $opts{prefix}/lib/ucx";
+                open Out, ">$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't write $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
+                print Out @lines;
+                close Out;
             }
-            unlink "$ucxdir/need_sed";
-        }
-
-        if (!$opts{quick}) {
-        }
-
-        if ($ENV{compiler} =~ /pgi|sun/) {
-            my @lines;
-            open In, "$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't open $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
-            while(<In>){
-                s/UCS_S_PACKED\s*ucs_status_t/ucs_status_t/;
-                push @lines, $_;
+            my $L=$opts{"with-ucx"};
+            if ($L and -d $L) {
+                $I_list .= " -I$L/include";
+                $L_list .= " -L$L/lib -lucx";
             }
-            close In;
-            open Out, ">$opts{moddir}/ucx/src/ucs/type/status.h" or die "Can't write $opts{moddir}/ucx/src/ucs/type/status.h: $!\n";
-            print Out @lines;
-            close Out;
-        }
-        my $L=$opts{"with-ucx"};
-        if ($L and -d $L) {
-            $I_list .= " -I$L/include";
-            $L_list .= " -L$L/lib -lucx";
+            else {
+                push @CONFIGS, "\x24(MODDIR)/ucx/config.h";
+                $I_list .= " -I\x24(MODDIR)/ucx/src";
+                $L_list .= " \x24(PREFIX)/lib/libucp.la";
+            }
+            my $configure = "./configure --prefix=\x24(PREFIX) --disable-static";
+            my $subdir="\x24(MODDIR)/ucx";
+            my $lib_la = "\x24(MODDIR)/ucx/src/ucp/libucp.la";
+            my $config_h = "\x24(MODDIR)/ucx/config.h";
         }
         else {
-            push @CONFIGS, "\x24(MODDIR)/ucx/config.h";
-            $I_list .= " -I\x24(MODDIR)/ucx/src";
-            $L_list .= " \x24(PREFIX)/lib/libucp.la";
+            my $L=$opts{"with-ucx"};
+            $I_list .= " -I$L/include";
+            if (-e "$L/lib64/libucp.so") {
+                $L_list .= " -L$L/lib64 -lucp -luct -lucm -lucs";
+            }
+            else {
+                print "libfabric.so NOT FOUND in $L\n";
+            }
         }
-        my $configure = "./configure --prefix=\x24(PREFIX) --disable-static";
-        my $subdir="\x24(MODDIR)/ucx";
-        my $lib_la = "\x24(MODDIR)/ucx/src/ucp/libucp.la";
-        my $config_h = "\x24(MODDIR)/ucx/config.h";
     }
-    elsif ($opts{device}=~/ch4:ofi/ and (!$opts{"with-libfabric"} or $opts{"with-libfabric"} eq "embedded")) {
-        my $L=$opts{"with-ofi"};
-        if ($L and -d $L) {
-            $I_list .= " -I$L/include";
-            $L_list .= " -L$L/lib -lofi";
+    elsif ($opts{device}=~/ch4:ofi/) {
+        if (!$opts{"with-libfabric"} || $opts{"with-libfabric"} eq "embedded") {
+            my $L=$opts{"with-ofi"};
+            if ($L and -d $L) {
+                $I_list .= " -I$L/include";
+                $L_list .= " -L$L/lib -lofi";
+            }
+            else {
+                push @CONFIGS, "\x24(MODDIR)/libfabric/config.h";
+                $I_list .= " -I\x24(MODDIR)/libfabric/include";
+                $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+            }
+            my $configure = "./configure --enable-embedded";
+            my $subdir="\x24(MODDIR)/libfabric";
+            my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
+            my $config_h = "\x24(MODDIR)/libfabric/config.h";
         }
         else {
-            push @CONFIGS, "\x24(MODDIR)/libfabric/config.h";
-            $I_list .= " -I\x24(MODDIR)/libfabric/include";
-            $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+            my $L=$opts{"with-libfabric"};
+            $I_list .= " -I$L/include";
+            if (-e "$L/lib64/libfabric.so") {
+                $L_list .= " -L$L/lib64 -lfabric";
+            }
+            else {
+                print "libfabric.so NOT FOUND in $L\n";
+            }
         }
-        my $configure = "./configure --enable-embedded";
-        my $subdir="\x24(MODDIR)/libfabric";
-        my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
-        my $config_h = "\x24(MODDIR)/libfabric/config.h";
     }
-    elsif ($opts{device}=~/ch3.*:ofi/ and (!$opts{"with-ofi"} or $opts{"with-ofi"} eq "embedded")) {
-        my $L=$opts{"with-ofi"};
-        if ($L and -d $L) {
-            $I_list .= " -I$L/include";
-            $L_list .= " -L$L/lib -lofi";
+    elsif ($opts{device}=~/ch3.*:ofi/) {
+        if (!$opts{"with-libfabric"} || $opts{"with-libfabric"} eq "embedded") {
+            my $L=$opts{"with-ofi"};
+            if ($L and -d $L) {
+                $I_list .= " -I$L/include";
+                $L_list .= " -L$L/lib -lofi";
+            }
+            else {
+                push @CONFIGS, "\x24(MODDIR)/libfabric/config.h";
+                $I_list .= " -I\x24(MODDIR)/libfabric/include";
+                $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+            }
+            my $configure = "./configure --enable-embedded";
+            my $subdir="\x24(MODDIR)/libfabric";
+            my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
+            my $config_h = "\x24(MODDIR)/libfabric/config.h";
         }
         else {
-            push @CONFIGS, "\x24(MODDIR)/libfabric/config.h";
-            $I_list .= " -I\x24(MODDIR)/libfabric/include";
-            $L_list .= " \x24(MODDIR)/libfabric/src/libfabric.la";
+            my $L=$opts{"with-libfabric"};
+            $I_list .= " -I$L/include";
+            if (-e "$L/lib64/libfabric.so") {
+                $L_list .= " -L$L/lib64 -lfabric";
+            }
+            else {
+                print "libfabric.so NOT FOUND in $L\n";
+            }
         }
-        my $configure = "./configure --enable-embedded";
-        my $subdir="\x24(MODDIR)/libfabric";
-        my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
-        my $config_h = "\x24(MODDIR)/libfabric/config.h";
     }
 
     push @extra_make_rules, "cpi: ";
