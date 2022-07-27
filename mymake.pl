@@ -1615,6 +1615,7 @@ else {
 
         foreach my $p (@ltlibs) {
             my $a = $p;
+            $a=~s/\.exe$//;
             $a=~s/[\.\/]/_/g;
             my $add = $a."_LIBADD";
             my $t = get_make_var($add);
@@ -1629,6 +1630,7 @@ else {
         }
         foreach my $p (@programs) {
             my $a = $p;
+            $a=~s/\.exe$//;
             $a=~s/[\.\/]/_/g;
             my $add = $a."_LDADD";
             my $t = get_make_var($add);
@@ -2704,6 +2706,7 @@ sub get_make_var_unique {
 sub get_make_objects {
     my ($p) = @_;
     my $a = $p;
+    $a=~s/\.exe$//;
     $a=~s/[\.\/]/_/g;
 
     my $tlist = get_list("${a}_OBJECTS");
