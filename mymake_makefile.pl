@@ -1108,6 +1108,7 @@ sub dump_makefile {
             }
 
             my $a = $p;
+            $a=~s/\.exe$//;
             $a=~s/[\.\/]/_/g;
 
             my ($deps, $objs);
@@ -1281,6 +1282,7 @@ sub dump_makefile {
             }
 
             my $a = $p;
+            $a=~s/\.exe$//;
             $a=~s/[\.\/]/_/g;
 
             my ($deps, $objs);
