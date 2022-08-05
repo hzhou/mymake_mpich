@@ -671,13 +671,16 @@ else {
     }
     else {
         my $mkfile="src/pm/hydra/Makefile";
-        my $add="src/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+        my $add="src/mpl/libmpl.la src/pmi/libpmi.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
         push @extra_make_rules, ".PHONY: hydra hydra-install";
         push @extra_make_rules, "hydra: $mkfile $add";
         push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
         push @extra_make_rules, "";
         push @extra_make_rules, "hydra-install: $mkfile";
         push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) install )";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "hydra-clean:";
+        push @extra_make_rules, "\t(cd src/pm/hydra && rm -f Makefile && rm -rf mymake )";
         push @extra_make_rules, "";
         push @extra_make_rules, "$mkfile:";
         my $config_args = "--prefix=\x24(PREFIX)";
@@ -689,28 +692,6 @@ else {
         }
         push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
         push @extra_make_rules, "";
-        if ($opts{pm} eq "hydra2") {
-            my $mkfile="src/pm/hydra2/Makefile";
-            my $add="src/mpl/libmpl.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
-            push @extra_make_rules, ".PHONY: hydra2 hydra2-install";
-            push @extra_make_rules, "hydra2: $mkfile $add";
-            push @extra_make_rules, "\t(cd src/pm/hydra2 && \x24(MAKE) )";
-            push @extra_make_rules, "";
-            push @extra_make_rules, "hydra2-install: $mkfile";
-            push @extra_make_rules, "\t(cd src/pm/hydra2 && \x24(MAKE) install )";
-            push @extra_make_rules, "";
-            push @extra_make_rules, "$mkfile:";
-            my $config_args = "--prefix=\x24(PREFIX)";
-            if ($opts{"with-argobots"}) {
-                $config_args .= " --with-argobots=$opts{argobots}";
-            }
-            if ($opts{"with-cuda"}) {
-                $config_args .= " --with-cuda=$opts{cuda}";
-            }
-            $config_args .= " --with-pm=hydra2";
-            push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
-            push @extra_make_rules, "";
-        }
     }
     if (!$opts{quick} && !-d "src/mpl/confdb") {
         my $cmd = "cp -r confdb src/mpl/";
@@ -757,6 +738,7 @@ else {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
+
     my $L=$opts{"with-hwloc"};
     if ($L and -d $L) {
         $I_list .= " -I$L/include";

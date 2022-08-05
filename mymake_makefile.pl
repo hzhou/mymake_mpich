@@ -171,6 +171,7 @@ if ($what eq "mpich") {
     push @extra_make_rules, "$lib_la: $config_h";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
+
     my $L=$opts{"with-hwloc"};
     if ($L and -d $L) {
         $I_list .= " -I$L/include";
@@ -644,18 +645,11 @@ elsif ($what eq "opa") {
     dump_makefile("mymake/openpa/src/Makefile");
 }
 elsif ($what eq "hydra") {
-    my $L=$opts{"with-mpl_hydra"};
-    if ($L and -d $L) {
-        $I_list .= " -I$L/include";
-        $L_list .= " -L$L/lib -lmpl_hydra";
-    }
-    else {
-        push @CONFIGS, "../../../src/mpl/include/mplconfig.h";
-        $I_list .= " -I../../../src/mpl/include";
-        $L_list .= " ../../../src/mpl/libmpl.la";
-    }
+    $I_list .= " -I../../../src/mpl/include";
+    $L_list .= " ../../../src/mpl/libmpl.la";
     push @extra_make_rules, "../../../src/mpl/libmpl.la:";
     push @extra_make_rules, "\t\x24(MAKE) -C ../../.. src/mpl/libmpl.la";
+
     my $L=$opts{"with-hwloc"};
     if ($L and -d $L) {
         $I_list .= " -I$L/include";

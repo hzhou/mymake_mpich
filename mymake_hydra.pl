@@ -4,7 +4,6 @@ use Cwd;
 
 our %opts;
 our @config_args;
-our $do_hydra2;
 our %objects;
 our @programs;
 our @ltlibs;
@@ -197,15 +196,8 @@ if (-f "mymake/CFLAGS") {
     }
     close In;
 }
-if ($opts{pm} eq "hydra2") {
-    print "Building hydra2...\n";
-    $do_hydra2 = 1;
-}
 
 my $dir="src/pm/hydra";
-if ($do_hydra2) {
-    $dir="src/pm/hydra2";
-}
 chdir $dir or die "Can't chdir $dir\n";
 my $srcdir = "../../..";
 $pwd = getcwd();
@@ -218,76 +210,39 @@ if (!-f "mymake/Makefile.orig") {
     system "cp $srcdir/maint/version.m4 .";
 
     my @mod_list;
-    if ($do_hydra2) {
-        my $f = "configure.ac";
-        my $f_ = $f;
-        $f_=~s/[\.\/]/_/g;
-        my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-        push @mod_list, \@m;
+    my $f = "configure.ac";
+    my $f_ = $f;
+    $f_=~s/[\.\/]/_/g;
+    my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
+    push @mod_list, \@m;
 
-        system "mv $m[0] $m[1]";
-        my @lines;
-        {
-            open In, "$m[1]" or die "Can't open $m[1].\n";
-            @lines=<In>;
-            close In;
-        }
-        my $flag_skip=0;
-        open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-        print "  --> [$m[2]]\n";
-        foreach my $l (@lines) {
-            if ($l=~/^\s*HWLOC_/) {
-                next;
-            }
-            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS|PAC_CONFIG_MPL)/) {
-                next;
-            }
-            elsif ($l=~/^(\s*)PAC_CONFIG_HWLOC/) {
-                $l = "$1"."pac_have_hwloc=yes\n";
-            }
-            if ($flag_skip) {
-                next;
-            }
-            print Out $l;
-        }
-        close Out;
-        system "cp -v $m[2] $m[0]";
+    system "mv $m[0] $m[1]";
+    my @lines;
+    {
+        open In, "$m[1]" or die "Can't open $m[1].\n";
+        @lines=<In>;
+        close In;
     }
-    else {
-        my $f = "configure.ac";
-        my $f_ = $f;
-        $f_=~s/[\.\/]/_/g;
-        my @m =($f, "mymake/$f_.orig", "mymake/$f_.mod");
-        push @mod_list, \@m;
-
-        system "mv $m[0] $m[1]";
-        my @lines;
-        {
-            open In, "$m[1]" or die "Can't open $m[1].\n";
-            @lines=<In>;
-            close In;
+    my $flag_skip=0;
+    open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
+    print "  --> [$m[2]]\n";
+    foreach my $l (@lines) {
+        if ($l=~/^\s*HWLOC_/) {
+            next;
         }
-        my $flag_skip=0;
-        open Out, ">$m[2]" or die "Can't write $m[2]: $!\n";
-        print "  --> [$m[2]]\n";
-        foreach my $l (@lines) {
-            if ($l=~/^\s*HWLOC_/) {
-                next;
-            }
-            elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS|PAC_CONFIG_MPL)/) {
-                next;
-            }
-            elsif ($l=~/^(\s*)PAC_CONFIG_HWLOC/) {
-                $l = "$1"."pac_have_hwloc=yes\n";
-            }
-            if ($flag_skip) {
-                next;
-            }
-            print Out $l;
+        elsif ($l=~/^(\s*)(PAC_CONFIG_SUBDIR|PAC_CONFIG_ALL_SUBDIRS|PAC_CONFIG_MPL)/) {
+            next;
         }
-        close Out;
-        system "cp -v $m[2] $m[0]";
+        elsif ($l=~/^(\s*)PAC_CONFIG_HWLOC/) {
+            $l = "$1"."pac_have_hwloc=yes\n";
+        }
+        if ($flag_skip) {
+            next;
+        }
+        print Out $l;
     }
+    close Out;
+    system "cp -v $m[2] $m[0]";
     my $f = "Makefile.am";
     my $f_ = $f;
     $f_=~s/[\.\/]/_/g;
@@ -319,9 +274,6 @@ if (!-f "mymake/Makefile.orig") {
     my $hwloc_mk = "tools/topo/hwloc/Makefile.mk";
     if (-f "lib/$hwloc_mk") {
         $hwloc_mk = "lib/$hwloc_mk";
-    }
-    if ($do_hydra2) {
-        $hwloc_mk = "libhydra/topo/hwloc/Makefile.mk";
     }
     my $f = "$hwloc_mk";
     my $f_ = $f;
@@ -432,18 +384,15 @@ my $bin="\x24(PREFIX)/bin";
 $dst_hash{"LN_S-$bin/mpiexec"}="$bin/mpiexec.hydra";
 $dst_hash{"LN_S-$bin/mpirun"}="$bin/mpiexec.hydra";
 
-my $L=$opts{"with-mpl_hydra"};
-if ($L and -d $L) {
-    $I_list .= " -I$L/include";
-    $L_list .= " -L$L/lib -lmpl_hydra";
-}
-else {
-    push @CONFIGS, "../../../src/mpl/include/mplconfig.h";
-    $I_list .= " -I../../../src/mpl/include";
-    $L_list .= " ../../../src/mpl/libmpl.la";
-}
+$I_list .= " -I../../../src/mpl/include";
+$L_list .= " ../../../src/mpl/libmpl.la";
 push @extra_make_rules, "../../../src/mpl/libmpl.la:";
 push @extra_make_rules, "\t\x24(MAKE) -C ../../.. src/mpl/libmpl.la";
+
+$I_list .= " -I../../../src/pmi/include";
+$L_list .= " ../../../src/pmi/libpmi.la";
+push @extra_make_rules, "../../../src/pmi/libpmi.la:";
+push @extra_make_rules, "\t\x24(MAKE) -C ../../.. src/pmi/libpmi.la";
 my $L=$opts{"with-hwloc"};
 if ($L and -d $L) {
     $I_list .= " -I$L/include";
