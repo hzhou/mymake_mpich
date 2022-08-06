@@ -389,7 +389,7 @@ $L_list .= " ../../../src/mpl/libmpl.la";
 push @extra_make_rules, "../../../src/mpl/libmpl.la:";
 push @extra_make_rules, "\t\x24(MAKE) -C ../../.. src/mpl/libmpl.la";
 
-$I_list .= " -I../../../src/pmi/include";
+$I_list .= " -I../../../src/pmi/src";
 $L_list .= " ../../../src/pmi/libpmi.la";
 push @extra_make_rules, "../../../src/pmi/libpmi.la:";
 push @extra_make_rules, "\t\x24(MAKE) -C ../../.. src/pmi/libpmi.la";
