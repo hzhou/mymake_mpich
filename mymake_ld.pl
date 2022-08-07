@@ -89,6 +89,9 @@ else {
         if ($a=~/(.*)\/(\S+)\.lo$/) {
             $cmd .= " $1/.libs/$2.o";
         }
+        elsif ($a=~/libucp.la/) {
+            $cmd .= " -lucp";
+        }
         elsif ($a=~/(.*)\/(\S+)\.la$/) {
             $cmd .= " -Wl,--whole-archive";
             $cmd .= " $1/.libs/$2.a";

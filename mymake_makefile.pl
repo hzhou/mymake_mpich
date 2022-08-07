@@ -650,6 +650,10 @@ elsif ($what eq "hydra") {
     push @extra_make_rules, "../../../src/mpl/libmpl.la:";
     push @extra_make_rules, "\t\x24(MAKE) -C ../../.. src/mpl/libmpl.la";
 
+    $I_list .= " -I../../../src/pmi/src";
+    $L_list .= " ../../../src/pmi/libpmi.la";
+    push @extra_make_rules, "../../../src/pmi/libpmi.la:";
+    push @extra_make_rules, "\t\x24(MAKE) -C ../../.. src/pmi/libpmi.la";
     my $L=$opts{"with-hwloc"};
     if ($L and -d $L) {
         $I_list .= " -I$L/include";
