@@ -1992,7 +1992,7 @@ sub dump_makefile {
     print Out "LINK = $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     if ($lt) {
         print Out "LTCC = $lt --mode=compile $lt_opt \x24(COMPILE)\n";
-        if (!$opts{quick} or $opts{no-mymake-ld}) {
+        if (!$opts{quick} or $opts{"no-mymake-ld"}) {
             print Out "LTLD = $lt --mode=link $lt_opt \x24(LINK)\n";
         }
         else {
