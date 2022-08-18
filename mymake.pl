@@ -903,6 +903,9 @@ else {
             my $subdir="src/pmi";
             my $lib_la = "src/pmi/libpmi.la";
             my $config_h = "src/pmi/include/pmi_config.h";
+            if (!$opts{disable_romio}) {
+                $config_h .= " src/mpi/romio/adio/include/romioconf.h";
+            }
             my @t = ("cd $subdir");
             push @t, "\x24(DO_stage) Configure PMI";
             if (-f "$opts{moddir}/src/pmi/autogen.sh") {

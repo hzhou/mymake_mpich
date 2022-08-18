@@ -264,6 +264,9 @@ if ($what eq "mpich") {
             my $subdir="src/pmi";
             my $lib_la = "src/pmi/libpmi.la";
             my $config_h = "src/pmi/include/pmi_config.h";
+            if (!$opts{disable_romio}) {
+                $config_h .= " src/mpi/romio/adio/include/romioconf.h";
+            }
             push @extra_make_rules, "$config_h:";
             push @extra_make_rules, "\t\x24(DO_config) pmi && \x24(DO_makefile) pmi";
             push @extra_make_rules, "";
