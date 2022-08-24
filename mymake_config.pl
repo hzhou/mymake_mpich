@@ -130,6 +130,14 @@ $hash_define_vals{"MPIDI_CH4_VCI_METHOD"} = {
     "explicit" => "MPICH_VCI__EXPLICIT",
 };
 
+$hash_defines{"with-pmi"} = "USE_{PMI1_API,PMI2_API,PMIX_API}";
+$hash_define_vals{"USE_{PMI1_API,PMI2_API,PMIX_API}"} = {
+    "default" => "PMI1_API",
+    "pmi1"    => "PMI1_API",
+    "pmi2"    => "PMI2_API",
+    "pmix"    => "PMIX_API",
+};
+
 my $t;
 {
     open In, "mymake/args" or die "Can't open mymake/args.\n";
