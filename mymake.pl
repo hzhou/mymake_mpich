@@ -728,6 +728,8 @@ else {
     my $subdir="src/mpl";
     my $lib_la = "src/mpl/libmpl.la";
     my $config_h = "src/mpl/include/mplconfig.h";
+    my $lib_dep = $config_h;
+
     my @t = ("cd $subdir");
     push @t, "\x24(DO_stage) Configure MPL";
     if (-f "$opts{moddir}/src/mpl/autogen.sh") {
@@ -741,9 +743,10 @@ else {
     push @extra_make_rules, "$config_h: ";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
+    my $dep = "$config_h";
     my @t = ("cd $subdir");
     push @t, "\x24(MAKE)";
-    push @extra_make_rules, "$lib_la: $config_h";
+    push @extra_make_rules, "$lib_la: $lib_dep";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
 
@@ -761,6 +764,8 @@ else {
     my $subdir="\x24(MODDIR)/hwloc";
     my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
     my $config_h = "\x24(MODDIR)/hwloc/include/hwloc/autogen/config.h";
+    my $lib_dep = $config_h;
+
     my @t = ("cd $subdir");
     push @t, "\x24(DO_stage) Configure HWLOC";
     if (-f "$opts{moddir}/hwloc/autogen.sh") {
@@ -774,9 +779,10 @@ else {
     push @extra_make_rules, "$config_h: ";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
+    my $dep = "$config_h";
     my @t = ("cd $subdir");
     push @t, "\x24(MAKE)";
-    push @extra_make_rules, "$lib_la: $config_h";
+    push @extra_make_rules, "$lib_la: $lib_dep";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
     my $L=$opts{"with-yaksa"};
@@ -793,6 +799,8 @@ else {
     my $subdir="\x24(MODDIR)/yaksa";
     my $lib_la = "\x24(MODDIR)/yaksa/libyaksa.la";
     my $config_h = "\x24(MODDIR)/yaksa/src/frontend/include/yaksa_config.h";
+    my $lib_dep = $config_h;
+
     my @t = ("cd $subdir");
     push @t, "\x24(DO_stage) Configure YAKSA";
     if (-f "$opts{moddir}/yaksa/autogen.sh") {
@@ -806,9 +814,10 @@ else {
     push @extra_make_rules, "$config_h: ";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
+    my $dep = "$config_h";
     my @t = ("cd $subdir");
     push @t, "\x24(MAKE)";
-    push @extra_make_rules, "$lib_la: $config_h";
+    push @extra_make_rules, "$lib_la: $lib_dep";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
     if (-f "maint/tuning/coll/json_gen.sh") {
@@ -827,6 +836,8 @@ else {
         my $subdir="\x24(MODDIR)/json-c";
         my $lib_la = "\x24(MODDIR)/json-c/libjson-c.la";
         my $config_h = "\x24(MODDIR)/json-c/json.h";
+        my $lib_dep = $config_h;
+
         my @t = ("cd $subdir");
         push @t, "\x24(DO_stage) Configure JSONC";
         if (-f "$opts{moddir}/json-c/autogen.sh") {
@@ -840,9 +851,10 @@ else {
         push @extra_make_rules, "$config_h: ";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
+        my $dep = "$config_h";
         my @t = ("cd $subdir");
         push @t, "\x24(MAKE)";
-        push @extra_make_rules, "$lib_la: $config_h";
+        push @extra_make_rules, "$lib_la: $lib_dep";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
     }
@@ -861,6 +873,8 @@ else {
         my $subdir="\x24(MODDIR)/izem";
         my $lib_la = "\x24(MODDIR)/izem/src/libzm.la";
         my $config_h = "\x24(MODDIR)/izem/src/include/zm_config.h";
+        my $lib_dep = $config_h;
+
         my @t = ("cd $subdir");
         push @t, "\x24(DO_stage) Configure IZEM";
         if (-f "$opts{moddir}/izem/autogen.sh") {
@@ -874,9 +888,10 @@ else {
         push @extra_make_rules, "$config_h: ";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
+        my $dep = "$config_h";
         my @t = ("cd $subdir");
         push @t, "\x24(MAKE)";
-        push @extra_make_rules, "$lib_la: $config_h";
+        push @extra_make_rules, "$lib_la: $lib_dep";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
     }
@@ -911,9 +926,11 @@ else {
             my $subdir="src/pmi";
             my $lib_la = "src/pmi/libpmi.la";
             my $config_h = "src/pmi/include/pmi_config.h";
+            my $lib_dep = $config_h;
             if (!$opts{disable_romio}) {
-                $config_h .= " src/mpi/romio/adio/include/romioconf.h";
+                $lib_dep .= " src/mpi/romio/adio/include/romioconf.h";
             }
+
             my @t = ("cd $subdir");
             push @t, "\x24(DO_stage) Configure PMI";
             if (-f "$opts{moddir}/src/pmi/autogen.sh") {
@@ -927,9 +944,10 @@ else {
             push @extra_make_rules, "$config_h: ";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
+            my $dep = "$config_h";
             my @t = ("cd $subdir");
             push @t, "\x24(MAKE)";
-            push @extra_make_rules, "$lib_la: $config_h";
+            push @extra_make_rules, "$lib_la: $lib_dep";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
         }
@@ -960,6 +978,8 @@ else {
         my $subdir="src/mpi/romio";
         my $lib_la = "src/mpi/romio/libromio.la";
         my $config_h = "src/mpi/romio/adio/include/romioconf.h";
+        my $lib_dep = $config_h;
+
         my @t = ("cd $subdir");
         push @t, "\x24(DO_stage) Configure ROMIO";
         if (-f "$opts{moddir}/src/mpi/romio/autogen.sh") {
@@ -973,9 +993,10 @@ else {
         push @extra_make_rules, "$config_h: ";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
+        my $dep = "$config_h";
         my @t = ("cd $subdir");
         push @t, "\x24(MAKE)";
-        push @extra_make_rules, "$lib_la: $config_h";
+        push @extra_make_rules, "$lib_la: $lib_dep";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
 
@@ -1038,6 +1059,8 @@ else {
             my $subdir="\x24(MODDIR)/ucx";
             my $lib_la = "\x24(MODDIR)/ucx/src/ucp/libucp.la";
             my $config_h = "\x24(MODDIR)/ucx/config.h";
+            my $lib_dep = $config_h;
+
             my @t = ("cd $subdir");
             push @t, "\x24(DO_stage) Configure UCX";
             if (-f "$opts{moddir}/ucx/autogen.sh") {
@@ -1051,9 +1074,10 @@ else {
             push @extra_make_rules, "$config_h: ";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
+            my $dep = "$config_h";
             my @t = ("cd $subdir");
             push @t, "\x24(MAKE)";
-            push @extra_make_rules, "$lib_la: $config_h";
+            push @extra_make_rules, "$lib_la: $lib_dep";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
         }
@@ -1084,6 +1108,8 @@ else {
             my $subdir="\x24(MODDIR)/libfabric";
             my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
             my $config_h = "\x24(MODDIR)/libfabric/config.h";
+            my $lib_dep = $config_h;
+
             my @t = ("cd $subdir");
             push @t, "\x24(DO_stage) Configure OFI";
             if (-f "$opts{moddir}/libfabric/autogen.sh") {
@@ -1097,9 +1123,10 @@ else {
             push @extra_make_rules, "$config_h: ";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
+            my $dep = "$config_h";
             my @t = ("cd $subdir");
             push @t, "\x24(MAKE)";
-            push @extra_make_rules, "$lib_la: $config_h";
+            push @extra_make_rules, "$lib_la: $lib_dep";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
         }
@@ -1130,6 +1157,8 @@ else {
             my $subdir="\x24(MODDIR)/libfabric";
             my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
             my $config_h = "\x24(MODDIR)/libfabric/config.h";
+            my $lib_dep = $config_h;
+
             my @t = ("cd $subdir");
             push @t, "\x24(DO_stage) Configure OFI";
             if (-f "$opts{moddir}/libfabric/autogen.sh") {
@@ -1143,9 +1172,10 @@ else {
             push @extra_make_rules, "$config_h: ";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
+            my $dep = "$config_h";
             my @t = ("cd $subdir");
             push @t, "\x24(MAKE)";
-            push @extra_make_rules, "$lib_la: $config_h";
+            push @extra_make_rules, "$lib_la: $lib_dep";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
         }

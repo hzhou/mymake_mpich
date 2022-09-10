@@ -409,6 +409,8 @@ my $configure = "./configure --enable-embedded-mode --enable-visibility";
 my $subdir="\x24(MODDIR)/hwloc";
 my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
 my $config_h = "\x24(MODDIR)/hwloc/include/hwloc/autogen/config.h";
+my $lib_dep = $config_h;
+
 my @t = ("cd $subdir");
 push @t, "\x24(DO_stage) Configure HWLOC";
 if (-f "$opts{moddir}/hwloc/autogen.sh") {
@@ -422,9 +424,10 @@ push @t, "cp $pwd/libtool .";
 push @extra_make_rules, "$config_h: ";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
+my $dep = "$config_h";
 my @t = ("cd $subdir");
 push @t, "\x24(MAKE)";
-push @extra_make_rules, "$lib_la: $config_h";
+push @extra_make_rules, "$lib_la: $lib_dep";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
 if ($opts{argobots}) {

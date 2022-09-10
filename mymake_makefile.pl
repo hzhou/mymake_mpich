@@ -163,6 +163,8 @@ if ($what eq "mpich") {
     my $subdir="src/mpl";
     my $lib_la = "src/mpl/libmpl.la";
     my $config_h = "src/mpl/include/mplconfig.h";
+    my $lib_dep = $config_h;
+
     push @extra_make_rules, "$config_h:";
     push @extra_make_rules, "\t\x24(DO_config) mpl && \x24(DO_makefile) mpl";
     push @extra_make_rules, "";
@@ -186,6 +188,8 @@ if ($what eq "mpich") {
     my $subdir="\x24(MODDIR)/hwloc";
     my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
     my $config_h = "\x24(MODDIR)/hwloc/include/hwloc/autogen/config.h";
+    my $lib_dep = $config_h;
+
     my $L=$opts{"with-yaksa"};
     if ($L and -d $L) {
         $I_list .= " -I$L/include";
@@ -200,6 +204,8 @@ if ($what eq "mpich") {
     my $subdir="\x24(MODDIR)/yaksa";
     my $lib_la = "\x24(MODDIR)/yaksa/libyaksa.la";
     my $config_h = "\x24(MODDIR)/yaksa/src/frontend/include/yaksa_config.h";
+    my $lib_dep = $config_h;
+
     if (-f "maint/tuning/coll/json_gen.sh") {
         system "bash maint/tuning/coll/json_gen.sh";
         my $L=$opts{"with-jsonc"};
@@ -216,6 +222,8 @@ if ($what eq "mpich") {
         my $subdir="\x24(MODDIR)/json-c";
         my $lib_la = "\x24(MODDIR)/json-c/libjson-c.la";
         my $config_h = "\x24(MODDIR)/json-c/json.h";
+        my $lib_dep = $config_h;
+
     }
     if ($opts{enable_izem}) {
         my $L=$opts{"with-izem"};
@@ -232,6 +240,8 @@ if ($what eq "mpich") {
         my $subdir="\x24(MODDIR)/izem";
         my $lib_la = "\x24(MODDIR)/izem/src/libzm.la";
         my $config_h = "\x24(MODDIR)/izem/src/include/zm_config.h";
+        my $lib_dep = $config_h;
+
     }
 
     if (-f "src/pmi/configure.ac") {
@@ -264,9 +274,11 @@ if ($what eq "mpich") {
             my $subdir="src/pmi";
             my $lib_la = "src/pmi/libpmi.la";
             my $config_h = "src/pmi/include/pmi_config.h";
+            my $lib_dep = $config_h;
             if (!$opts{disable_romio}) {
-                $config_h .= " src/mpi/romio/adio/include/romioconf.h";
+                $lib_dep .= " src/mpi/romio/adio/include/romioconf.h";
             }
+
             push @extra_make_rules, "$config_h:";
             push @extra_make_rules, "\t\x24(DO_config) pmi && \x24(DO_makefile) pmi";
             push @extra_make_rules, "";
@@ -303,6 +315,8 @@ if ($what eq "mpich") {
         my $subdir="src/mpi/romio";
         my $lib_la = "src/mpi/romio/libromio.la";
         my $config_h = "src/mpi/romio/adio/include/romioconf.h";
+        my $lib_dep = $config_h;
+
 
         $dst_hash{"src/mpi/romio/include/mpio.h"} = "$opts{prefix}/include";
         $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$opts{prefix}/include";
@@ -363,6 +377,8 @@ if ($what eq "mpich") {
             my $subdir="\x24(MODDIR)/ucx";
             my $lib_la = "\x24(MODDIR)/ucx/src/ucp/libucp.la";
             my $config_h = "\x24(MODDIR)/ucx/config.h";
+            my $lib_dep = $config_h;
+
         }
         else {
             my $L=$opts{"with-ucx"};
@@ -391,6 +407,8 @@ if ($what eq "mpich") {
             my $subdir="\x24(MODDIR)/libfabric";
             my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
             my $config_h = "\x24(MODDIR)/libfabric/config.h";
+            my $lib_dep = $config_h;
+
         }
         else {
             my $L=$opts{"with-libfabric"};
@@ -419,6 +437,8 @@ if ($what eq "mpich") {
             my $subdir="\x24(MODDIR)/libfabric";
             my $lib_la = "\x24(MODDIR)/libfabric/src/libfabric.la";
             my $config_h = "\x24(MODDIR)/libfabric/config.h";
+            my $lib_dep = $config_h;
+
         }
         else {
             my $L=$opts{"with-libfabric"};
@@ -673,6 +693,8 @@ elsif ($what eq "hydra") {
     my $subdir="\x24(MODDIR)/hwloc";
     my $lib_la = "\x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
     my $config_h = "\x24(MODDIR)/hwloc/include/hwloc/autogen/config.h";
+    my $lib_dep = $config_h;
+
     my %conds;
     $conds{HYDRA_HAVE_HWLOC}=1;
     $conds{hydra_have_hwloc}=1;
