@@ -33,6 +33,7 @@ push @realclean_list, "src/pm/hydra/Makefile";
 if (-f "src/pmi/configure.ac") {
     push @realclean_list, "src/pmi/include/pmi_config.h";
 }
+push @realclean_list, "src/pmi/src/pmi_msg.*";
 
 push @realclean_list, "configure";
 push @realclean_list, "mymake/t-*";

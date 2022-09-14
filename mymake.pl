@@ -436,6 +436,14 @@ if (-f "maint/gen_coll.py") {
         system "$python maint/gen_coll.py";
     }
 }
+if (-f "src/pmi/maint/gen_pmi_msg.py") {
+    chdir "src/pmi";
+    if (!-f "src/pmi_msg.h") {
+        print "[$python maint/gen_pmi_msg.py]\n";
+        system "$python maint/gen_pmi_msg.py";
+    }
+    chdir "../..";
+}
 if (!$opts{disable_cxx}) {
     print ": buildiface - cxx\n";
     chdir "src/binding/cxx";
