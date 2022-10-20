@@ -816,6 +816,16 @@ elsif ($what eq "test") {
             push @extra_make_rules, "";
         }
 
+        my $runtests;
+        if ($a =~ /test\/mpi\/(.*)\/Makefile.am/) {
+            $runtests="$1/runtests";
+            $runtests=~s/[^\/]+\//..\//g;
+        }
+
+        push @extra_make_rules, "testing:";
+        push @extra_make_rules, "\t$runtests -tests=testlist";
+        push @extra_make_rules, "";
+
         if ($opts{"with-cuda"}) {
             my $p = $opts{"with-cuda"};
             $conds{HAVE_CUDA} = 1;
