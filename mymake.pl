@@ -1763,6 +1763,10 @@ else {
         $t=~s/$pwd\///g;
 
         $ret = system "make $t";
+        my $t="src/pmi/include/pmi_config.h";
+        $t=~s/$pwd\///g;
+
+        $ret = system "make $t";
     }
 
     if ($ret == 0) {
