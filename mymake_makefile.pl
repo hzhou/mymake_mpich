@@ -262,7 +262,7 @@ if ($what eq "mpich") {
             push @t_env, "FROM_MPICH=yes";
             push @t_env, "main_top_srcdir=$pwd";
             push @t_env, "main_top_builddir=$pwd";
-            push @t_env, "CFLAGS='-I$pwd/src/mpl/include'";
+            push @t_env, "CPPFLAGS='-I$pwd/src/mpl/include'";
             if ($opts{argobots}) {
                 $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
             }
