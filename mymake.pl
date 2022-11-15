@@ -78,7 +78,7 @@ $hash_define_vals{"MPIDI_CH4_USE_MT_{DIRECT,HANDOFF,RUNTIME}"} = {
 
 $hash_defines{"enable-ch4-vci-method"} = "MPIDI_CH4_VCI_METHOD";
 $hash_define_vals{"MPIDI_CH4_VCI_METHOD"} = {
-    "default" => "MPICH_VCI__ZERO",
+    "default" => "MPICH_VCI__COMM",
     "zero" =>    "MPICH_VCI__ZERO",
     "communicator" => "MPICH_VCI__COMM",
     "tag" => "MPICH_VCI__TAG",
@@ -302,6 +302,12 @@ foreach my $a (@ARGV) {
             push @config_args, $a;
         }
     }
+}
+if (!$opts{device}) {
+    $opts{device} = "ch4:ofi";
+}
+elsif ($opts{device} eq "ch4") {
+    $opts{device} = "ch4:ofi";
 }
 
 if ($config_defines{MPIDI_CH4_MAX_VCIS} > 1 and !$config_defines{MPIDI_CH4_VCI_METHOD}) {
@@ -2040,9 +2046,9 @@ sub dump_makefile {
     print Out "COMPILE = $cc \x24(DEFS) \x24(DEFAULT_INCLUDES) \x24(INCLUDES) \x24(AM_CPPFLAGS) \x24(CPPFLAGS) \x24(AM_CFLAGS) \x24(CFLAGS)\n";
     print Out "LINK = $ccld \x24(AM_LDFLAGS) \x24(LDFLAGS)\n";
     if ($lt) {
-        print Out "LTCC = $lt --mode=compile $lt_opt \x24(COMPILE)\n";
-        if (!$opts{quick} or !$ENV{"USE_MYMAKE_LD"}) {
-            print Out "LTLD = $lt --mode=link $lt_opt \x24(LINK)\n";
+        print Out "LTCC = $lt --mode=compile $lt_opt --tag=CC \x24(COMPILE)\n";
+        if (!$opts{quick} or !$ENV{"USE_MYMAKE_LD"} or $ENV{CC}) {
+            print Out "LTLD = $lt --mode=link $lt_opt --tag=CC \x24(LINK)\n";
         }
         else {
             print Out "LTLD = perl $opts{mymake}_ld.pl \"lt=$lt\" \x24(LINK)\n";

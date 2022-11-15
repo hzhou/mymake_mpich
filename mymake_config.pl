@@ -122,7 +122,7 @@ $hash_define_vals{"MPIDI_CH4_USE_MT_{DIRECT,HANDOFF,RUNTIME}"} = {
 
 $hash_defines{"enable-ch4-vci-method"} = "MPIDI_CH4_VCI_METHOD";
 $hash_define_vals{"MPIDI_CH4_VCI_METHOD"} = {
-    "default" => "MPICH_VCI__ZERO",
+    "default" => "MPICH_VCI__COMM",
     "zero" =>    "MPICH_VCI__ZERO",
     "communicator" => "MPICH_VCI__COMM",
     "tag" => "MPICH_VCI__TAG",
@@ -511,7 +511,7 @@ if ($config eq "mpich") {
     }
     $temp{MPICH_ERROR_MSG_LEVEL} = 'MPICH_ERROR_MSG__ALL';
     $temp{MPICH_IS_THREADED} = 1;
-    $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__GLOBAL';
+    $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__VCI';
     $temp{MPICH_THREAD_LEVEL} = 'MPI_THREAD_MULTIPLE';
     $temp{MPICH_THREAD_REFCOUNT} = 'MPICH_REFCOUNT__NONE';
 
@@ -532,7 +532,7 @@ if ($config eq "mpich") {
         $temp{MPIDI_CH4_MAX_VCIS}=1;
         $temp{MPIDI_CH4_RESERVED_VCIS}=0;
         $temp{MPIDI_CH4_USE_MT_DIRECT}=1;
-        $temp{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__ZERO';
+        $temp{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__COMM';
         $temp{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
         $temp{ENABLE_LOCAL_SESSION_INIT}=1;
 
