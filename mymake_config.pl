@@ -511,7 +511,6 @@ if ($config eq "mpich") {
     }
     $temp{MPICH_ERROR_MSG_LEVEL} = 'MPICH_ERROR_MSG__ALL';
     $temp{MPICH_IS_THREADED} = 1;
-    $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__VCI';
     $temp{MPICH_THREAD_LEVEL} = 'MPI_THREAD_MULTIPLE';
     $temp{MPICH_THREAD_REFCOUNT} = 'MPICH_REFCOUNT__NONE';
 
@@ -521,6 +520,7 @@ if ($config eq "mpich") {
     $temp{HAVE_AINT_DIFFERENT_THAN_FINT} = 1;
 
     if ($opts{device}=~/ch4/) {
+        $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__VCI';
         if ($opts{"without-ch4-shmmods"}) {
             $temp{MPIDI_CH4_DIRECT_NETMOD} = 1;
         }
@@ -570,6 +570,7 @@ if ($config eq "mpich") {
         }
     }
     elsif ($opts{device}=~/ch3/) {
+        $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__GLOBAL';
         $temp{CH3_RANK_BITS} = 16;
         $temp{PREFETCH_CELL}=1;
         $temp{USE_FASTBOX}=1;
