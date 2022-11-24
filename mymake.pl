@@ -966,6 +966,7 @@ else {
     if (!$opts{disable_romio}) {
         system "rsync -r confdb/ src/mpi/romio/confdb/";
         system "cp maint/version.m4 src/mpi/romio/";
+        system "ln -sf ../mpi/romio/include/mpio.h src/include/mpio.h";
         my $L=$opts{"with-romio"};
         if ($L and -d $L) {
             $I_list .= " -I$L/include";
