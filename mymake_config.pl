@@ -512,7 +512,6 @@ if ($config eq "mpich") {
     $temp{MPICH_ERROR_MSG_LEVEL} = 'MPICH_ERROR_MSG__ALL';
     $temp{MPICH_IS_THREADED} = 1;
     $temp{MPICH_THREAD_LEVEL} = 'MPI_THREAD_MULTIPLE';
-    $temp{MPICH_THREAD_REFCOUNT} = 'MPICH_REFCOUNT__NONE';
 
     $temp{TRUE} = 1;
     $temp{FALSE} = 0;
@@ -521,6 +520,7 @@ if ($config eq "mpich") {
 
     if ($opts{device}=~/ch4/) {
         $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__VCI';
+        $temp{MPICH_THREAD_REFCOUNT} = 'MPICH_REFCOUNT__LOCKFREE';
         if ($opts{"without-ch4-shmmods"}) {
             $temp{MPIDI_CH4_DIRECT_NETMOD} = 1;
         }
@@ -535,6 +535,7 @@ if ($config eq "mpich") {
         $temp{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__COMM';
         $temp{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
         $temp{ENABLE_LOCAL_SESSION_INIT}=1;
+        $temp{ENABLE_THREADCOMM}=1;
 
         if (!$temp{MPIDI_CH4_DIRECT_NETMOD}) {
             if ($opts{"with-cuda"}) {
@@ -571,6 +572,7 @@ if ($config eq "mpich") {
     }
     elsif ($opts{device}=~/ch3/) {
         $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__GLOBAL';
+        $temp{MPICH_THREAD_REFCOUNT} = 'MPICH_REFCOUNT__NONE';
         $temp{CH3_RANK_BITS} = 16;
         $temp{PREFETCH_CELL}=1;
         $temp{USE_FASTBOX}=1;
@@ -731,6 +733,7 @@ if ($config eq "mpich") {
     }
     $confs{LIBS} = $ENV{LIBS};
     $confs{MPILIBNAME} = "mpi";
+    $confs{MPIABILIBNAME} = "mpi_abi";
     $confs{LPMPILIBNAME} = "";
     $confs{MPICH_VERSION} = $version;
     $confs{CC} = $opts{CC};
@@ -773,7 +776,7 @@ if ($config eq "mpich") {
     $confs{INCLUDEDIR}="$opts{prefix}/include";
     $confs{LIBDIR}="$opts{prefix}/lib";
 
-    foreach my $p ("cc", "cxx", "f77", "fort") {
+    foreach my $p ("cc", "cc_abi", "cxx", "f77", "fort") {
         my $P = uc($p);
         $confs{"MPICH_MPI${P}_CFLAGS"}="";
         $confs{"MPICH_MPI${P}_CPPFLAGS"}="";
@@ -3301,6 +3304,9 @@ if ($config eq "mpich") {
         print Out "\n";
         print Out "end module mpi_f08_link_constants\n";
         close Out;
+    }
+    if ($opts{"enable-mpi-abi"}) {
+        $make_conds{BUILD_ABI_LIB} = 1;
     }
     $make_conds{BUILD_PROFILING_LIB} = 0;
     $make_conds{BUILD_COVERAGE} = 0;

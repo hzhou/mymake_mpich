@@ -423,26 +423,30 @@ my $python = find_python3();
 if (-f "maint/gen_binding_c.py") {
     if (!-f "src/mpi/pt2pt/send.c") {
         print "[$python maint/gen_binding_c.py -single-source]\n";
-        system "$python maint/gen_binding_c.py -single-source";
+        system("$python maint/gen_binding_c.py -single-source")== 0 or die "Failed $python maint/gen_binding_c.py -single-source\n";
     }
+}
+if (-f "src/binding/abi/gen_abi.py") {
+    print "[cd src/binding/abi && $python gen_abi.py]\n";
+    system("cd src/binding/abi && $python gen_abi.py")== 0 or die "Failed cd src/binding/abi && $python gen_abi.py\n";
 }
 if (-f "maint/gen_ch4_api.py") {
     if (!-f "src/mpid/ch4/netmod/include/netmod.h") {
         print "[$python maint/gen_ch4_api.py]\n";
-        system "$python maint/gen_ch4_api.py";
+        system("$python maint/gen_ch4_api.py")== 0 or die "Failed $python maint/gen_ch4_api.py\n";
     }
 }
 if (-f "maint/gen_coll.py") {
     if (!-f "src/mpi/coll/mpir_coll.c") {
         print "[$python maint/gen_coll.py]\n";
-        system "$python maint/gen_coll.py";
+        system("$python maint/gen_coll.py")== 0 or die "Failed $python maint/gen_coll.py\n";
     }
 }
 if (-f "src/pmi/maint/gen_pmi_msg.py") {
     chdir "src/pmi";
     if (!-f "src/pmi_msg.h") {
         print "[$python maint/gen_pmi_msg.py]\n";
-        system "$python maint/gen_pmi_msg.py";
+        system("$python maint/gen_pmi_msg.py")== 0 or die "Failed $python maint/gen_pmi_msg.py\n";
     }
     chdir "../..";
 }
@@ -986,6 +990,9 @@ else {
             $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
         }
         my $configure = "@t_env ./configure";
+        if ($opts{"enable-mpi-abi"}) {
+            $configure .= " --enable-mpi-abi";
+        }
         my $subdir="src/mpi/romio";
         my $lib_la = "src/mpi/romio/libromio.la";
         my $config_h = "src/mpi/romio/adio/include/romioconf.h";
@@ -1010,6 +1017,13 @@ else {
         push @extra_make_rules, "$lib_la: $lib_dep";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
+        if ($opts{"enable-mpi-abi"}) {
+            my @t = ("cd $subdir");
+            push @t, "\x24(MAKE) libromio_abi.la";
+            push @extra_make_rules, "src/mpi/romio/libromio_abi.la: $lib_dep";
+            push @extra_make_rules, "\t(".join(' && ', @t).")";
+            push @extra_make_rules, "";
+        }
 
         $dst_hash{"src/mpi/romio/include/mpio.h"} = "$opts{prefix}/include";
         $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$opts{prefix}/include";
@@ -1285,11 +1299,24 @@ else {
     if ($opts{do_pmpi}) {
         $special_targets{lib_libmpi_la}="\x24(LTCC) -DMPICH_MPI_FROM_PMPI";
     }
+    if ($opts{"enable-mpi-abi"}) {
+        my $CC = "\x24(LTCC) -DBUILD_MPI_ABI -Isrc/binding/abi";
+        if (!$opts{do_pmpi}) {
+            $special_targets{lib_libmpi_abi_la}=$CC;
+        }
+        else {
+            $special_targets{lib_libpmpi_abi_la}=$CC;
+            $special_targets{lib_libmpi_abi_la}="$CC -DMPICH_MPI_FROM_PMPI";
+        }
+    }
 
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
     $dst_hash{"mymake/mpifort"}=$bin;
     $dst_hash{"mymake/mpicxx"}=$bin;
+    if ($opts{"enable-mpi-abi"}) {
+        $dst_hash{"mymake/mpicc_abi"} = $bin;
+    }
 
     my $ret=0;
     my $t = `uname -m`;
@@ -1659,6 +1686,10 @@ else {
 
             if (($add=~/libmpi_la_/ && $opts{have_weak}) or ($add=~/libpmpi_la_/)) {
                 $t.= $L_list;
+            }
+            elsif (($add=~/libmpi_abi_la_/ && $opts{have_weak}) or ($add=~/libpmpi_abi_la_/)) {
+                $t.= $L_list;
+                $t =~s/libromio.la/libromio_abi.la/;
             }
             $objects{$add} = $t;
         }

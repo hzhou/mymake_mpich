@@ -313,6 +313,9 @@ if ($what eq "mpich") {
             $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
         }
         my $configure = "@t_env ./configure";
+        if ($opts{"enable-mpi-abi"}) {
+            $configure .= " --enable-mpi-abi";
+        }
         my $subdir="src/mpi/romio";
         my $lib_la = "src/mpi/romio/libromio.la";
         my $config_h = "src/mpi/romio/adio/include/romioconf.h";
@@ -536,13 +539,27 @@ if ($what eq "mpich") {
     if ($opts{do_pmpi}) {
         $special_targets{lib_libmpi_la}="\x24(LTCC) -DMPICH_MPI_FROM_PMPI";
     }
+    if ($opts{"enable-mpi-abi"}) {
+        my $CC = "\x24(LTCC) -DBUILD_MPI_ABI -Isrc/binding/abi";
+        if (!$opts{do_pmpi}) {
+            $special_targets{lib_libmpi_abi_la}=$CC;
+        }
+        else {
+            $special_targets{lib_libpmpi_abi_la}=$CC;
+            $special_targets{lib_libmpi_abi_la}="$CC -DMPICH_MPI_FROM_PMPI";
+        }
+    }
 
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
     $dst_hash{"mymake/mpifort"}=$bin;
     $dst_hash{"mymake/mpicxx"}=$bin;
+    if ($opts{"enable-mpi-abi"}) {
+        $dst_hash{"mymake/mpicc_abi"} = $bin;
+    }
 
     $autoconf_vars{MPILIBNAME} = "mpi";
+    $autoconf_vars{MPIABILIBNAME} = "mpi_abi";
     $autoconf_vars{MPIFCLIBNAME} = "mpifort";
     $autoconf_vars{MPICXXLIBNAME} = "mpicxx";
 
@@ -726,7 +743,8 @@ elsif ($what eq "test") {
     my @all_am = glob("test/mpi/*/Makefile.am");
     push @all_am, glob("test/mpi/threads/*/Makefile.am");
     push @all_am, glob("test/mpi/errors/*/Makefile.am");
-    push @all_am, glob("test/mpi/impls/mpich/comm/Makefile.am");
+    push @all_am, glob("test/mpi/impls/mpich/*/Makefile.am");
+    push @all_am, glob("test/mpi/impls/mpich/*/*/Makefile.am");
     if (!$opts{disable_fortran}) {
         $conds{HAS_F77} = 1;
         push @all_am, glob("test/mpi/f77/*/Makefile.am");

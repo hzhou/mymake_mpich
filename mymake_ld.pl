@@ -159,7 +159,7 @@ if ($info{output} =~ /libmpi/) {
     close Out;
 }
 else {
-    my $cmd = "$lt --mode=link --quiet --tag=CC";
+    my $cmd = "$lt --quiet --mode=link --tag=CC";
     $cmd .= " $info{CC}";
     if ($info{output}) {
         $cmd .= " -o $info{output}";

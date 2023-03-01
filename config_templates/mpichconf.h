@@ -111,6 +111,9 @@
 /* Define to skip initializing builtin world comm during MPI_Session_init */
 #undef ENABLE_LOCAL_SESSION_INIT
  
+/* Define to enable threadcomm feature */
+#undef ENABLE_THREADCOMM
+
 /* The value of false in Fortran */
 #undef F77_FALSE_VALUE
 
