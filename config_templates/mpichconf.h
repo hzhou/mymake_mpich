@@ -351,6 +351,9 @@
 /* Define to 1 if you have the `fabric' library (-lfabric). */
 #undef HAVE_LIBFABRIC
 
+/* Define if libfabric library has nic field in fi_info struct */
+#undef HAVE_LIBFABRIC_NIC
+
 /* Define to 1 if you have the `hcoll' library (-lhcoll). */
 #undef HAVE_LIBHCOLL
 
