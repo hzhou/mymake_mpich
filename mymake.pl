@@ -451,8 +451,11 @@ if (-f "src/pmi/maint/gen_pmi_msg.py") {
     chdir "../..";
 }
 if (-f "src/env/mpicc.def") {
+    $ENV{PERL5LIB} = "$pwd/mymake/mydef_boot/lib/perl5";
+    $ENV{MYDEFLIB} = "$pwd/mymake/mydef_boot/lib/MyDef";
+    my $mydef_page = "$pwd/mymake/mydef_boot/bin/mydef_page";
     chdir "src/env";
-    system "../../mymake/mydef_boot/bin/mydef_page mpicc.def";
+    system "$mydef_page mpicc.def";
     chdir "../..";
 }
 
