@@ -450,6 +450,12 @@ if (-f "src/pmi/maint/gen_pmi_msg.py") {
     }
     chdir "../..";
 }
+if (-f "src/env/mpicc.def") {
+    chdir "src/env";
+    system "../../mymake/mydef_boot/bin/mydef_page mpicc.def";
+    chdir "../..";
+}
+
 if (!$opts{disable_cxx}) {
     print ": buildiface - cxx\n";
     chdir "src/binding/cxx";

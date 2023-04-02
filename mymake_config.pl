@@ -507,7 +507,7 @@ if ($config eq "mpich") {
     if ($opts{"disable-error-checking"}) {
     }
     else {
-        $temp{HAVE_ERROR_CHECKING}='MPID_ERROR_LEVEL_ALL';
+        $temp{HAVE_ERROR_CHECKING}='MPID_ERROR_LEVEL_RUNTIME';
     }
     $temp{MPICH_ERROR_MSG_LEVEL} = 'MPICH_ERROR_MSG__ALL';
     $temp{MPICH_IS_THREADED} = 1;
@@ -529,8 +529,7 @@ if ($config eq "mpich") {
         }
         $temp{MPIDI_BUILD_CH4_LOCALITY_INFO}=1;
         $temp{MPIDI_CH4U_USE_PER_COMM_QUEUE}=1;
-        $temp{MPIDI_CH4_MAX_VCIS}=1;
-        $temp{MPIDI_CH4_RESERVED_VCIS}=0;
+        $temp{MPIDI_CH4_MAX_VCIS}=64;
         $temp{MPIDI_CH4_USE_MT_DIRECT}=1;
         $temp{MPIDI_CH4_VCI_METHOD}='MPICH_VCI__COMM';
         $temp{HAVE_CH4_SHM_EAGER_IQUEUE}=1;
