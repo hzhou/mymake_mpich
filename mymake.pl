@@ -953,6 +953,7 @@ else {
             if (!$opts{disable_romio}) {
                 $lib_dep .= " src/mpi/romio/adio/include/romioconf.h";
             }
+            $lib_dep .= " src/mpl/include/mplconfig.h";
 
             my @t = ("cd $subdir");
             push @t, "\x24(DO_stage) Configure PMI";

@@ -278,6 +278,7 @@ if ($what eq "mpich") {
             if (!$opts{disable_romio}) {
                 $lib_dep .= " src/mpi/romio/adio/include/romioconf.h";
             }
+            $lib_dep .= " src/mpl/include/mplconfig.h";
 
             push @extra_make_rules, "$config_h:";
             push @extra_make_rules, "\t\x24(DO_config) pmi && \x24(DO_makefile) pmi";
