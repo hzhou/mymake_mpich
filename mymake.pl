@@ -1333,6 +1333,7 @@ else {
     if ($t=~/x86_64/) {
         $ENV{FORTRAN_MPI_OFFSET}="integer*8";
     }
+    $ENV{COMPILER_TLS} = 1;
     if (!-f "subsys_include.m4") {
         print "---------------------------\n";
         print "-     maint/gen_subcfg_m4\n";
