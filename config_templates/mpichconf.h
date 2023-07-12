@@ -92,6 +92,15 @@
 /* Define to disable shared-memory communication */
 #undef ENABLE_NO_LOCAL
 
+/* Define to enable PMI 1 API */
+#undef ENABLE_PMI1
+
+/* Define to enable PMI 2 API */
+#undef ENABLE_PMI2
+
+/* Define to enable PMI X API */
+#undef ENABLE_PMIX
+
 /* Define to 1 to enable getdims-related MPI_T performance variables */
 #undef ENABLE_PVAR_DIMS
 

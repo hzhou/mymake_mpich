@@ -518,6 +518,9 @@ if ($config eq "mpich") {
     $temp{F77_NAME_LOWER_USCORE} = 1;
     $temp{HAVE_AINT_DIFFERENT_THAN_FINT} = 1;
 
+    $temp{ENABLE_PMI1} = 1;
+    $temp{ENABLE_PMI2} = 1;
+
     if ($opts{device}=~/ch4/) {
         $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__VCI';
         $temp{MPICH_THREAD_REFCOUNT} = 'MPICH_REFCOUNT__LOCKFREE';
