@@ -93,6 +93,7 @@ $hash_defines{"with-ch4-max-vcis"} = "MPIDI_CH4_MAX_VCIS";
 $hash_defines{"with-ch4-rank-bits"} = "CH4_RANK_BITS";
 $hash_defines{"enable-nolocal"} = "ENABLE_NO_LOCAL";
 $hash_defines{"enable-izem-queue"} = "ENABLE_IZEM_QUEUE";
+$hash_defines{"enable-mpit-events"} = "HAVE_MPIT_EVENTS";
 
 $hash_defines{"enable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";
 $hash_defines{"disable-ofi-domain"} = "MPIDI_OFI_VNI_USE_DOMAIN";

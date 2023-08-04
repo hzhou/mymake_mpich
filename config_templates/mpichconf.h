@@ -413,6 +413,8 @@
    special libraries */
 #undef HAVE_MPI_F_INIT_WORKS_WITH_C
 
+#undef HAVE_MPIT_EVENTS
+
 /* Define if multiple weak symbols may be defined */
 #undef HAVE_MULTIPLE_PRAGMA_WEAK
 
