@@ -552,7 +552,6 @@ if ($config eq "mpich") {
         }
 
         if ($opts{device}=~/ch4:ucx/) {
-            $temp{MPIDI_CH4_DIRECT_NETMOD}=1;
             $temp{HAVE_CH4_NETMOD_UCX}=1;
             $temp{HAVE_LIBUCP} = 1;
             $temp{HAVE_UCP_PUT_NB}=1;
