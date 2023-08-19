@@ -48,8 +48,6 @@ else
     if test -n "$HOSTS"; then
         export HOSTS=$PMRS/hosts.$HOSTS
     fi
-
-    export UCX_NET_DEVICES=mlx5_0:1
 fi
 if test -n $compiler ; then
     if test x$jenkins = xold ; then
