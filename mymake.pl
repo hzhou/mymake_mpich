@@ -87,14 +87,6 @@ $hash_define_vals{"MPIDI_CH4_VCI_METHOD"} = {
     "implicit" => "MPICH_VCI__IMPLICIT",
     "explicit" => "MPICH_VCI__EXPLICIT",
 };
-
-$hash_defines{"with-pmi"} = "USE_{PMI1_API,PMI2_API,PMIX_API}";
-$hash_define_vals{"USE_{PMI1_API,PMI2_API,PMIX_API}"} = {
-    "default" => "PMI1_API",
-    "pmi1"    => "PMI1_API",
-    "pmi2"    => "PMI2_API",
-    "pmix"    => "PMIX_API",
-};
 $opts{V}=0;
 my $need_save_args;
 if (!@ARGV && -f "mymake/args") {
