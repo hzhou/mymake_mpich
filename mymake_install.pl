@@ -20,6 +20,9 @@ if ($dst=~/\/lib$/) {
             if (/library_names='(\S+) (\S+) (\S+)'/) {
                 ($name1, $name2, $name3) = ($1, $2, $3);
             }
+            elsif (/library_names='(\S+) (\S+)'/) {
+                ($name1, $name2) = ($1, $2);
+            }
         }
         close In;
 
@@ -27,7 +30,9 @@ if ($dst=~/\/lib$/) {
         my $cwd = getcwd();
         system "ln -sf $cwd/$dir/.libs/$name1 $dst";
         system "ln -sf $name1 $dst/$name2";
-        system "ln -sf $name1 $dst/$name3";
+        if ($name3) {
+            system "ln -sf $name1 $dst/$name3";
+        }
     }
     else {
         system "./libtool --mode=install --silent install $obj $dst";

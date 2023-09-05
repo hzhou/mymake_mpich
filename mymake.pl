@@ -12,6 +12,7 @@ our %hash_define_vals;
 our %objects;
 our @programs;
 our @ltlibs;
+our %custom_make_vars;
 our @CONFIGS;
 our $I_list;
 our $L_list;
@@ -809,6 +810,9 @@ else {
     push @extra_make_rules, "$lib_la: $lib_dep";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
+    if ($opts{uname}=~/Darwin/) {
+        add_make_vars("LDFLAGS", "-framework Foundation -framework IOKit");
+    }
     my $L=$opts{"with-yaksa"};
     if ($L and -d $L) {
         $I_list .= " -I$L/include";
@@ -846,41 +850,43 @@ else {
     push @extra_make_rules, "";
     if (-f "maint/tuning/coll/json_gen.sh") {
         system "bash maint/tuning/coll/json_gen.sh";
-        my $L=$opts{"with-jsonc"};
-        if ($L and -d $L) {
-            $I_list .= " -I$L/include";
-            $L_list .= " -L$L/lib -ljsonc";
-        }
-        else {
-            push @CONFIGS, "\x24(MODDIR)/json-c/json.h";
-            $I_list .= " -I\x24(MODDIR)/json-c";
-            $L_list .= " \x24(MODDIR)/json-c/libjson-c.la";
-        }
-        my $configure = "./configure";
-        my $subdir="\x24(MODDIR)/json-c";
-        my $lib_la = "\x24(MODDIR)/json-c/libjson-c.la";
-        my $config_h = "\x24(MODDIR)/json-c/json.h";
-        my $lib_dep = $config_h;
+        if (-d "mymake/json-c") {
+            my $L=$opts{"with-jsonc"};
+            if ($L and -d $L) {
+                $I_list .= " -I$L/include";
+                $L_list .= " -L$L/lib -ljsonc";
+            }
+            else {
+                push @CONFIGS, "\x24(MODDIR)/json-c/json.h";
+                $I_list .= " -I\x24(MODDIR)/json-c";
+                $L_list .= " \x24(MODDIR)/json-c/libjson-c.la";
+            }
+            my $configure = "./configure";
+            my $subdir="\x24(MODDIR)/json-c";
+            my $lib_la = "\x24(MODDIR)/json-c/libjson-c.la";
+            my $config_h = "\x24(MODDIR)/json-c/json.h";
+            my $lib_dep = $config_h;
 
-        my @t = ("cd $subdir");
-        push @t, "\x24(DO_stage) Configure JSONC";
-        if (-f "$opts{moddir}/json-c/autogen.sh") {
-            push @t, "sh autogen.sh";
+            my @t = ("cd $subdir");
+            push @t, "\x24(DO_stage) Configure JSONC";
+            if (-f "$opts{moddir}/json-c/autogen.sh") {
+                push @t, "sh autogen.sh";
+            }
+            else {
+                push @t, "autoreconf -ivf";
+            }
+            push @t, "$configure";
+            push @t, "cp $pwd/libtool .";
+            push @extra_make_rules, "$config_h: ";
+            push @extra_make_rules, "\t(".join(' && ', @t).")";
+            push @extra_make_rules, "";
+            my $dep = "$config_h";
+            my @t = ("cd $subdir");
+            push @t, "\x24(MAKE)";
+            push @extra_make_rules, "$lib_la: $lib_dep";
+            push @extra_make_rules, "\t(".join(' && ', @t).")";
+            push @extra_make_rules, "";
         }
-        else {
-            push @t, "autoreconf -ivf";
-        }
-        push @t, "$configure";
-        push @t, "cp $pwd/libtool .";
-        push @extra_make_rules, "$config_h: ";
-        push @extra_make_rules, "\t(".join(' && ', @t).")";
-        push @extra_make_rules, "";
-        my $dep = "$config_h";
-        my @t = ("cd $subdir");
-        push @t, "\x24(MAKE)";
-        push @extra_make_rules, "$lib_la: $lib_dep";
-        push @extra_make_rules, "\t(".join(' && ', @t).")";
-        push @extra_make_rules, "";
     }
     if ($opts{enable_izem}) {
         my $L=$opts{"with-izem"};
@@ -921,7 +927,7 @@ else {
     }
 
     if (-f "src/pmi/configure.ac") {
-        if ($opts{"with-pmi"} !~ /slurm|cray/ and $opts{"with-pmilib"} !~/slurm|cray/) {
+        if (!$opts{"with-pmi"}) {
             system "rsync -r confdb/ src/pmi/confdb/";
             system "cp maint/version.m4 src/pmi/";
             my $L=$opts{"with-pmi"};
@@ -1940,6 +1946,11 @@ sub find_python3 {
     }
 }
 
+sub add_make_vars {
+    my ($key, $val) = @_;
+    $custom_make_vars{$key} .= " $val";
+}
+
 sub get_list {
     my ($key) = @_;
     my @t;
@@ -1961,9 +1972,9 @@ sub get_make_var {
     my ($name) = @_;
     my $t = $objects{$name};
     if ($t eq "-") {
-        return "\x24($name)";
+        $t = "\x24($name)";
     }
-    if (defined $t) {
+    elsif (defined $t) {
         if (ref($t) eq "ARRAY") {
             $t = join(' ', @$t);
         }
@@ -1971,14 +1982,17 @@ sub get_make_var {
         $t=~s/\s+/ /g;
 
         $t=~s/$opts{moddir}/\x24(MODDIR)/g;
-        return $t;
     }
     elsif ($name=~/^am__v_\w+/) {
-        return "";
+        $t = "";
     }
     else {
-        return "";
+        $t = "";
     }
+    if ($custom_make_vars{$name}) {
+        $t .= $custom_make_vars{$name};
+    }
+    return $t;
 }
 
 sub dump_makefile {
@@ -2776,14 +2790,8 @@ sub dump_makefile {
 
 sub get_make_var_unique {
     my ($name) = @_;
-    my (@t, %cache);
-    foreach my $k (split /\s+/, get_make_var($name)) {
-        if (!$cache{$k}) {
-            $cache{$k} = 1;
-            push @t, $k;
-        }
-    }
-    return join(' ', @t);
+    my $tlist = get_make_var_list($name);
+    return join(' ', @$tlist);
 }
 
 sub get_make_objects {
@@ -2803,10 +2811,20 @@ sub get_make_objects {
 sub get_make_var_list {
     my ($name) = @_;
     my (@tlist, %cache);
+    my $longopt;
     foreach my $k (split /\s+/, get_make_var($name)) {
         if (!$k) {
             next;
         }
+        if ($k =~ /^-framework$/) {
+            $longopt = $k;
+            next;
+        }
+        if ($longopt) {
+            $k = "$longopt $k";
+            undef $longopt;
+        }
+
         if (!$cache{$k}) {
             $cache{$k} = 1;
             push @tlist, $k;

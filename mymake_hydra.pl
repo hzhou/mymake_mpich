@@ -7,6 +7,7 @@ our @config_args;
 our %objects;
 our @programs;
 our @ltlibs;
+our %custom_make_vars;
 our @CONFIGS;
 our $I_list;
 our $L_list;
@@ -436,6 +437,9 @@ push @t, "\x24(MAKE)";
 push @extra_make_rules, "$lib_la: $lib_dep";
 push @extra_make_rules, "\t(".join(' && ', @t).")";
 push @extra_make_rules, "";
+if ($opts{uname}=~/Darwin/) {
+    add_make_vars("LDFLAGS", "-framework Foundation -framework IOKit");
+}
 if ($opts{argobots}) {
     $I_list .= " -I$opts{argobots}/include";
     $L_list .= " -L$opts{argobots}/lib -labt";
@@ -538,6 +542,11 @@ system "rm -f Makefile";
 system "ln -s mymake/Makefile.custom Makefile";
 
 # ---- subroutines --------------------------------------------
+sub add_make_vars {
+    my ($key, $val) = @_;
+    $custom_make_vars{$key} .= " $val";
+}
+
 sub get_list {
     my ($key) = @_;
     my @t;
@@ -559,9 +568,9 @@ sub get_make_var {
     my ($name) = @_;
     my $t = $objects{$name};
     if ($t eq "-") {
-        return "\x24($name)";
+        $t = "\x24($name)";
     }
-    if (defined $t) {
+    elsif (defined $t) {
         if (ref($t) eq "ARRAY") {
             $t = join(' ', @$t);
         }
@@ -569,14 +578,17 @@ sub get_make_var {
         $t=~s/\s+/ /g;
 
         $t=~s/$opts{moddir}/\x24(MODDIR)/g;
-        return $t;
     }
     elsif ($name=~/^am__v_\w+/) {
-        return "";
+        $t = "";
     }
     else {
-        return "";
+        $t = "";
     }
+    if ($custom_make_vars{$name}) {
+        $t .= $custom_make_vars{$name};
+    }
+    return $t;
 }
 
 sub dump_makefile {
@@ -1286,14 +1298,8 @@ sub dump_makefile {
 
 sub get_make_var_unique {
     my ($name) = @_;
-    my (@t, %cache);
-    foreach my $k (split /\s+/, get_make_var($name)) {
-        if (!$cache{$k}) {
-            $cache{$k} = 1;
-            push @t, $k;
-        }
-    }
-    return join(' ', @t);
+    my $tlist = get_make_var_list($name);
+    return join(' ', @$tlist);
 }
 
 sub get_make_objects {
@@ -1313,10 +1319,20 @@ sub get_make_objects {
 sub get_make_var_list {
     my ($name) = @_;
     my (@tlist, %cache);
+    my $longopt;
     foreach my $k (split /\s+/, get_make_var($name)) {
         if (!$k) {
             next;
         }
+        if ($k =~ /^-framework$/) {
+            $longopt = $k;
+            next;
+        }
+        if ($longopt) {
+            $k = "$longopt $k";
+            undef $longopt;
+        }
+
         if (!$cache{$k}) {
             $cache{$k} = 1;
             push @tlist, $k;

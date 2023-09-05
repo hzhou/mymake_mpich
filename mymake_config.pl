@@ -316,7 +316,7 @@ if ($ENV{CXX}) {
     $opts{CXX} = $ENV{CXX};
 }
 else {
-    $opts{CXX} = "gcc";
+    $opts{CXX} = "g++";
 }
 if ($ENV{F77}) {
     $opts{F77} = $ENV{F77};
@@ -336,7 +336,6 @@ if ($opts{cc_version}=~/gcc 4/) {
 }
 my @header_list=("stdio.h");
 my @type_list=("void *", "char", "short", "int", "long", "long long", "size_t", "off_t", "float", "double", "long double");
-push @type_list, "__float128";
 if ($config eq "mpich") {
     push @type_list, "pair:short";
     push @type_list, "pair:int";
@@ -405,6 +404,7 @@ if ($config eq "mpich") {
 
     get_sizeof_bsend_status($MPI_AINT);
 }
+
 my @header_list;
 open In, "$config_in" or die "Can't open $config_in: $!\n";
 while(<In>){
@@ -472,9 +472,15 @@ $config_defines{HAVE_INET_PTON}=1;
 
 if ($opts{uname}=~/Linux/i) {
     $config_defines{USE_SYM_HEAP} = 1;
-}
-if ($opts{uname}=~/Linux/i) {
     $config_defines{STRERROR_R_CHAR_P} = 1;
+}
+if ($opts{uname}=~/Darwin/i) {
+    $config_defines{HAVE_WEAK_ATTRIBUTE} = undef;
+    $config_defines{HAVE_PRAGMA_WEAK} = undef;
+    $config_defines{HAVE_MULTIPLE_PRAGMA_WEAK} = undef;
+    $config_defines{USE_WEAK_SYMBOLS} = undef;
+    $opts{cc_weak} = "no";
+    $opts{cflags} = "-O2 -fno-common -g";
 }
 
 if ($config eq "mpich") {
@@ -736,8 +742,14 @@ if ($config eq "mpich") {
     }
     $confs{LIBS} = $ENV{LIBS};
     $confs{MPILIBNAME} = "mpi";
+    $confs{PMPILIBNAME} = "pmpi";
     $confs{MPIABILIBNAME} = "mpi_abi";
-    $confs{LPMPILIBNAME} = "";
+    if ($opts{cc_weak} eq "no") {
+        $confs{LPMPILIBNAME} = "-lpmpi";
+    }
+    else {
+        $confs{LPMPILIBNAME} = "";
+    }
     $confs{MPICH_VERSION} = $version;
     $confs{CC} = $opts{CC};
     $confs{CXX} = $opts{CXX};
@@ -757,8 +769,6 @@ if ($config eq "mpich") {
     }
 
     my $tag="cc";
-    my $dtags="enable_dtags_flag=\"\\\$wl--enable-new-dtags\"\n";
-    $dtags  .="disable_dtags_flag=\"\\\$wl--disble-new-dtags\"\n";
     open In, "libtool" or die "Can't open libtool: $!\n";
     while(<In>){
         if (/^wl=/) {
@@ -766,7 +776,11 @@ if ($config eq "mpich") {
         }
         if (/^hardcode_libdir_flag_spec=/) {
             $confs{"${tag}_shlib_conf"} .= $_;
-            $confs{"${tag}_shlib_conf"} .= $dtags;
+            if ($opts{uname}=~/Linux/i) {
+                my $dtags="enable_dtags_flag=\"\\\$wl--enable-new-dtags\"\n";
+                $dtags  .="disable_dtags_flag=\"\\\$wl--disble-new-dtags\"\n";
+                $confs{"${tag}_shlib_conf"} .= $dtags;
+            }
         }
         elsif (/# ### BEGIN LIBTOOL TAG CONFIG: (\w+)/) {
             $tag = lc($1);
@@ -3311,7 +3325,12 @@ if ($config eq "mpich") {
     if ($opts{"enable-mpi-abi"}) {
         $make_conds{BUILD_ABI_LIB} = 1;
     }
-    $make_conds{BUILD_PROFILING_LIB} = 0;
+    if ($opts{cc_weak} eq "no") {
+        $make_conds{BUILD_PROFILING_LIB} = 1;
+    }
+    else {
+        $make_conds{BUILD_PROFILING_LIB} = 0;
+    }
     $make_conds{BUILD_COVERAGE} = 0;
     $make_conds{MAINTAINER_MODE} = 0;
     $make_conds{BUILD_BASH_SCRIPTS} = 0;
@@ -3460,8 +3479,12 @@ if ($config eq "mpich") {
     print Out "F77: $opts{F77}\n";
     print Out "FC: $opts{FC}\n";
     print Out "cc_version: $opts{cc_version}\n";
+    print Out "cc_weak: $opts{cc_weak}\n";
     my $cflags = "-g -O2";
     my $ldflags = "";
+    if ($opts{cflags}) {
+        $cflags = $opts{cflags};
+    }
     if (%config_cflags) {
         my @tlist = split /\s+/, $cflags;
         foreach my $a (@tlist) {
@@ -3487,6 +3510,9 @@ if ($config eq "mpich") {
         print(STDOUT "  -->  CFLAGS = $cflags\n");
     }
     print Out "cflags: $cflags\n";
+    if ($opts{ldflags}) {
+        $ldflags = $opts{ldflags};
+    }
     if (%config_ldflags) {
         my @tlist = split /\s+/, $ldflags;
         foreach my $a (@tlist) {

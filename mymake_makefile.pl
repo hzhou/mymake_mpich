@@ -170,7 +170,7 @@ if ($what eq "mpich") {
     push @extra_make_rules, "";
     my @t = ("cd $subdir");
     push @t, "\x24(MAKE)";
-    push @extra_make_rules, "$lib_la: $config_h";
+    push @extra_make_rules, "$lib_la: $lib_dep";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
 
@@ -190,6 +190,14 @@ if ($what eq "mpich") {
     my $config_h = "\x24(MODDIR)/hwloc/include/hwloc/autogen/config.h";
     my $lib_dep = $config_h;
 
+    my @t = ("cd $subdir");
+    push @t, "\x24(MAKE)";
+    push @extra_make_rules, "$lib_la: $lib_dep";
+    push @extra_make_rules, "\t(".join(' && ', @t).")";
+    push @extra_make_rules, "";
+    if ($opts{uname}=~/Darwin/) {
+        add_make_vars("LDFLAGS", "-framework Foundation -framework IOKit");
+    }
     my $L=$opts{"with-yaksa"};
     if ($L and -d $L) {
         $I_list .= " -I$L/include";
@@ -206,24 +214,36 @@ if ($what eq "mpich") {
     my $config_h = "\x24(MODDIR)/yaksa/src/frontend/include/yaksa_config.h";
     my $lib_dep = $config_h;
 
+    my @t = ("cd $subdir");
+    push @t, "\x24(MAKE)";
+    push @extra_make_rules, "$lib_la: $lib_dep";
+    push @extra_make_rules, "\t(".join(' && ', @t).")";
+    push @extra_make_rules, "";
     if (-f "maint/tuning/coll/json_gen.sh") {
         system "bash maint/tuning/coll/json_gen.sh";
-        my $L=$opts{"with-jsonc"};
-        if ($L and -d $L) {
-            $I_list .= " -I$L/include";
-            $L_list .= " -L$L/lib -ljsonc";
-        }
-        else {
-            push @CONFIGS, "\x24(MODDIR)/json-c/json.h";
-            $I_list .= " -I\x24(MODDIR)/json-c";
-            $L_list .= " \x24(MODDIR)/json-c/libjson-c.la";
-        }
-        my $configure = "./configure";
-        my $subdir="\x24(MODDIR)/json-c";
-        my $lib_la = "\x24(MODDIR)/json-c/libjson-c.la";
-        my $config_h = "\x24(MODDIR)/json-c/json.h";
-        my $lib_dep = $config_h;
+        if (-d "mymake/json-c") {
+            my $L=$opts{"with-jsonc"};
+            if ($L and -d $L) {
+                $I_list .= " -I$L/include";
+                $L_list .= " -L$L/lib -ljsonc";
+            }
+            else {
+                push @CONFIGS, "\x24(MODDIR)/json-c/json.h";
+                $I_list .= " -I\x24(MODDIR)/json-c";
+                $L_list .= " \x24(MODDIR)/json-c/libjson-c.la";
+            }
+            my $configure = "./configure";
+            my $subdir="\x24(MODDIR)/json-c";
+            my $lib_la = "\x24(MODDIR)/json-c/libjson-c.la";
+            my $config_h = "\x24(MODDIR)/json-c/json.h";
+            my $lib_dep = $config_h;
 
+            my @t = ("cd $subdir");
+            push @t, "\x24(MAKE)";
+            push @extra_make_rules, "$lib_la: $lib_dep";
+            push @extra_make_rules, "\t(".join(' && ', @t).")";
+            push @extra_make_rules, "";
+        }
     }
     if ($opts{enable_izem}) {
         my $L=$opts{"with-izem"};
@@ -242,10 +262,15 @@ if ($what eq "mpich") {
         my $config_h = "\x24(MODDIR)/izem/src/include/zm_config.h";
         my $lib_dep = $config_h;
 
+        my @t = ("cd $subdir");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$lib_la: $lib_dep";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
     }
 
     if (-f "src/pmi/configure.ac") {
-        if ($opts{"with-pmi"} !~ /slurm|cray/ and $opts{"with-pmilib"} !~/slurm|cray/) {
+        if (!$opts{"with-pmi"}) {
             system "rsync -r confdb/ src/pmi/confdb/";
             system "cp maint/version.m4 src/pmi/";
             my $L=$opts{"with-pmi"};
@@ -285,7 +310,7 @@ if ($what eq "mpich") {
             push @extra_make_rules, "";
             my @t = ("cd $subdir");
             push @t, "\x24(MAKE)";
-            push @extra_make_rules, "$lib_la: $config_h";
+            push @extra_make_rules, "$lib_la: $lib_dep";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
         }
@@ -322,6 +347,11 @@ if ($what eq "mpich") {
         my $config_h = "src/mpi/romio/adio/include/romioconf.h";
         my $lib_dep = $config_h;
 
+        my @t = ("cd $subdir");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$lib_la: $lib_dep";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
 
         $dst_hash{"src/mpi/romio/include/mpio.h"} = "$opts{prefix}/include";
         $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$opts{prefix}/include";
@@ -384,6 +414,11 @@ if ($what eq "mpich") {
             my $config_h = "\x24(MODDIR)/ucx/config.h";
             my $lib_dep = $config_h;
 
+            my @t = ("cd $subdir");
+            push @t, "\x24(MAKE)";
+            push @extra_make_rules, "$lib_la: $lib_dep";
+            push @extra_make_rules, "\t(".join(' && ', @t).")";
+            push @extra_make_rules, "";
         }
         else {
             my $L=$opts{"with-ucx"};
@@ -414,6 +449,11 @@ if ($what eq "mpich") {
             my $config_h = "\x24(MODDIR)/libfabric/config.h";
             my $lib_dep = $config_h;
 
+            my @t = ("cd $subdir");
+            push @t, "\x24(MAKE)";
+            push @extra_make_rules, "$lib_la: $lib_dep";
+            push @extra_make_rules, "\t(".join(' && ', @t).")";
+            push @extra_make_rules, "";
         }
         else {
             my $L=$opts{"with-libfabric"};
@@ -444,6 +484,11 @@ if ($what eq "mpich") {
             my $config_h = "\x24(MODDIR)/libfabric/config.h";
             my $lib_dep = $config_h;
 
+            my @t = ("cd $subdir");
+            push @t, "\x24(MAKE)";
+            push @extra_make_rules, "$lib_la: $lib_dep";
+            push @extra_make_rules, "\t(".join(' && ', @t).")";
+            push @extra_make_rules, "";
         }
         else {
             my $L=$opts{"with-libfabric"};
@@ -560,11 +605,14 @@ if ($what eq "mpich") {
     }
 
     $autoconf_vars{MPILIBNAME} = "mpi";
+    $autoconf_vars{PMPILIBNAME} = "pmpi";
     $autoconf_vars{MPIABILIBNAME} = "mpi_abi";
     $autoconf_vars{MPIFCLIBNAME} = "mpifort";
     $autoconf_vars{MPICXXLIBNAME} = "mpicxx";
 
-    $autoconf_vars{VISIBILITY_CFLAGS} = "-fvisibility=hidden";
+    if ($opts{cc_weak} ne "no") {
+        $autoconf_vars{VISIBILITY_CFLAGS} = "-fvisibility=hidden";
+    }
 
     if (!$opts{"disable-ch4-netmod-inline"}) {
         if ($opts{device} =~/ch4:ofi/) {
@@ -714,6 +762,14 @@ elsif ($what eq "hydra") {
     my $config_h = "\x24(MODDIR)/hwloc/include/hwloc/autogen/config.h";
     my $lib_dep = $config_h;
 
+    my @t = ("cd $subdir");
+    push @t, "\x24(MAKE)";
+    push @extra_make_rules, "$lib_la: $lib_dep";
+    push @extra_make_rules, "\t(".join(' && ', @t).")";
+    push @extra_make_rules, "";
+    if ($opts{uname}=~/Darwin/) {
+        add_make_vars("LDFLAGS", "-framework Foundation -framework IOKit");
+    }
     my %conds;
     $conds{HYDRA_HAVE_HWLOC}=1;
     $conds{hydra_have_hwloc}=1;
@@ -886,6 +942,16 @@ else {
 }
 
 # ---- subroutines --------------------------------------------
+sub add_make_vars {
+    my ($key, $val) = @_;
+    if (!$make_vars{$key}) {
+        $make_vars{$key} = $val;
+    }
+    else {
+        $make_vars{$key} .= " $val";
+    }
+}
+
 sub load_automake {
     my ($file, $cond_hash) = @_;
     my $cwd;
@@ -947,9 +1013,9 @@ sub load_automake {
         elsif (/^(\w+)_LTLIBRARIES\s*\+?=\s*(.*)/) {
             my ($dir, $t) = ($1, $2);
             foreach my $a (split /\s+/, $t) {
-                push @ltlibs, $t;
+                push @ltlibs, $a;
                 if ($dir ne "noinst") {
-                    $dst_hash{$t} = "\x24(PREFIX)/$dir";
+                    $dst_hash{$a} = "\x24(PREFIX)/$dir";
                 }
             }
         }
@@ -1696,14 +1762,8 @@ sub get_make_var {
 
 sub get_make_var_unique {
     my ($name) = @_;
-    my (@t, %cache);
-    foreach my $k (split /\s+/, get_make_var($name)) {
-        if (!$cache{$k}) {
-            $cache{$k} = 1;
-            push @t, $k;
-        }
-    }
-    return join(' ', @t);
+    my $tlist = get_make_var_list($name);
+    return join(' ', @$tlist);
 }
 
 sub get_make_objects {
@@ -1719,7 +1779,7 @@ sub get_make_objects {
     }
     my @tlist;
     foreach my $a (split /\s+/, $t) {
-        if ($a=~/(.*)\.(c|f|f90|cu)$/) {
+        if ($a=~/(.*)\.(c|f|f90|cu|cxx)$/) {
             if ($is_program) {
                 push @tlist, "$1.o";
             }
@@ -1735,10 +1795,20 @@ sub get_make_objects {
 sub get_make_var_list {
     my ($name) = @_;
     my (@tlist, %cache);
+    my $longopt;
     foreach my $k (split /\s+/, get_make_var($name)) {
         if (!$k) {
             next;
         }
+        if ($k =~ /^-framework$/) {
+            $longopt = $k;
+            next;
+        }
+        if ($longopt) {
+            $k = "$longopt $k";
+            undef $longopt;
+        }
+
         if (!$cache{$k}) {
             $cache{$k} = 1;
             push @tlist, $k;
