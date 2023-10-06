@@ -394,7 +394,7 @@ if ($config eq "mpich") {
     }
     $config_defines{HAVE_LONG_LONG_INT} = 1;
 
-    get_sizeof_bsend_status($MPI_AINT);
+    $sizeof_hash{MPII_BSEND_DATA_T} = 96;
 }
 
 my @header_list;
@@ -3969,40 +3969,6 @@ sub get_sizeof {
         while ($t=~/A(\d+):\s+(\d+)/g) {
             my $name = get_config_name($typelist->[$1]);
             $sizeof_hash{$name} = $2;
-        }
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-
-sub get_sizeof_bsend_status {
-    my ($MPI_AINT) = @_;
-    open Out, ">mymake/t.c" or die "Can't write mymake/t.c: $!\n";
-    print Out "#define MPI_Datatype int\n";
-    print Out "struct MPIR_Request;typedef struct MPIR_Request MPIR_Request;\n";
-    print Out "struct MPIR_Comm;typedef struct MPIR_Comm MPIR_Comm;\n";
-    print Out "typedef $MPI_AINT MPI_Aint;\n";
-    print Out "#include <stdio.h>\n";
-    print Out "#include <stdlib.h>\n";
-    print Out "#include <stdint.h>\n";
-    if (-f "src/include/mpir_bsend.h") {
-        print Out "#include \"$pwd/src/include/mpir_bsend.h\"\n";
-    }
-    elsif (-f "src/include/mpii_bsend.h") {
-        print Out "#include \"$pwd/src/include/mpii_bsend.h\"\n";
-    }
-    print Out "int main() {\n";
-    print Out "    printf(\"MPII_BSEND_DATA_T: %zu\\n\", sizeof(MPII_Bsend_data_t));\n";
-    print Out "    return 0;\n";
-    print Out "}\n";
-    close Out;
-
-    my $t = `$opts{CC} mymake/t.c -o mymake/t.out && mymake/t.out`;
-    if ($? == 0) {
-        while ($t=~/(\w+):\s+(\d+)/g) {
-            $sizeof_hash{$1} = $2;
         }
         return 1;
     }
