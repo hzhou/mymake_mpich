@@ -73,6 +73,11 @@ elsif ($config eq "dtpools") {
     $config_out = "test/mpi/dtpools/dtpoolsconf.h";
     symlink "../../../libtool", "test/mpi/dtpools/libtool";
 }
+elsif ($config eq "romio") {
+    $config_in = "$mymake_dir/config_templates/romioconf.h";
+    $config_out = "src/mpi/romio/adio/include/romioconf.h";
+    symlink "../../../libtool", "src/mpi/romio/libtool";
+}
 else {
     die "Usage: $0 [mpich]\n";
 }
@@ -520,6 +525,9 @@ if ($config eq "mpich") {
     $temp{ENABLE_PMI1} = 1;
     $temp{ENABLE_PMI2} = 1;
 
+    if (!$opts{disable_romio}) {
+        $temp{HAVE_ROMIO} = 1;
+    }
     if ($opts{device}=~/ch4/) {
         $temp{MPICH_THREAD_GRANULARITY} = 'MPICH_THREAD_GRANULARITY__VCI';
         $temp{MPICH_THREAD_REFCOUNT} = 'MPICH_REFCOUNT__LOCKFREE';
@@ -1064,6 +1072,12 @@ if ($config eq "mpich") {
         }
         else {
             $confs{FORTRAN_BINDING} = 0;
+        }
+        if (!$opts{disable_romio}) {
+            $confs{HAVE_CXX_IO} = 1;
+        }
+        else {
+            $confs{HAVE_CXX_IO} = 0;
         }
 
         $confs{MPIR_CXX_BOOL} = sprintf("0x4c00%02x33", $sizeof_hash{"CXX_BOOL"});
@@ -3419,9 +3433,6 @@ if ($config eq "mpich") {
         $make_conds{BUILD_MPID_COMMON_SHM} = 1;
     }
 
-    if (!$opts{disable_romio}) {
-        $make_conds{BUILD_ROMIO} = 1;
-    }
 
     if (!$opts{disable_cxx}) {
         $make_conds{BUILD_CXX_BINDING} = 1;
@@ -3815,6 +3826,104 @@ elsif ($config eq "dtpools") {
     $config_defines{PACKAGE_VERSION}="\"0.0\"";
     $config_defines{VERSION}="\"0.0\"";
     $config_defines{HAVE_MEMSET} = 1;
+}
+elsif ($config eq "romio") {
+    open In, "mymake/make_opts.mpich" or die "Can't open mymake/make_opts.mpich: $!\n";
+    while(<In>){
+        if (/^(\w+):\s*(.+)/) {
+            $opts{$1} = $2;
+        }
+    }
+    close In;
+    $config_defines{PACKAGE}='"romio"';
+    $config_defines{PACKAGE_BUGREPORT}='"discuss@mpich.org"';
+    $config_defines{PACKAGE_NAME}='"ROMIO"';
+    $config_defines{PACKAGE_STRING}="\"ROMIO $version\"";
+    $config_defines{PACKAGE_TARNAME}='"romio"';
+    $config_defines{PACKAGE_URL}='"http://www.mpich.org/"';
+    $config_defines{PACKAGE_VERSION}="\"$version\"";
+    $config_defines{VERSION}="\"$version\"";
+    $config_defines{_ALL_SOURCE}=1;
+    $config_defines{_GNU_SOURCE}=1;
+    $config_defines{_POSIX_PTHREAD_SEMANTICS}=1;
+    $config_defines{_TANDEM_SOURCE}=1;
+    $config_defines{__EXTENSIONS__}=1;
+    $config_defines{HAVE_AIO_H} = 1;
+    $config_defines{HAVE_DIRENT_H} = 1;
+    $config_defines{HAVE_DLFCN_H} = 1;
+    $config_defines{HAVE_FCNTL_H} = 1;
+    $config_defines{HAVE_INTTYPES_H} = 1;
+    $config_defines{HAVE_LIMITS_H} = 1;
+    $config_defines{HAVE_MALLOC_H} = 1;
+    $config_defines{HAVE_MEMORY_H} = 1;
+    $config_defines{HAVE_MPIX_H} = 1;
+    $config_defines{HAVE_SIGNAL_H} = 1;
+    $config_defines{HAVE_STDDEF_H} = 1;
+    $config_defines{HAVE_STDINT_H} = 1;
+    $config_defines{HAVE_STDLIB_H} = 1;
+    $config_defines{HAVE_STRINGS_H} = 1;
+    $config_defines{HAVE_STRING_H} = 1;
+    $config_defines{HAVE_SYS_MOUNT_H} = 1;
+    $config_defines{HAVE_SYS_PARAM_H} = 1;
+    $config_defines{HAVE_SYS_STATVFS_H} = 1;
+    $config_defines{HAVE_SYS_STAT_H} = 1;
+    $config_defines{HAVE_SYS_TYPES_H} = 1;
+    $config_defines{HAVE_SYS_VFS_H} = 1;
+    $config_defines{HAVE_TIME_H} = 1;
+    $config_defines{HAVE_UNISTD_H} = 1;
+    $config_defines{HAVE_FSYNC} = 1;
+    $config_defines{HAVE_FTRUNCATE} = 1;
+    $config_defines{HAVE_GCC_ATTRIBUTE} = 1;
+    $config_defines{HAVE_LSTAT} = 1;
+    $config_defines{HAVE_MEMALIGN} = 1;
+    $config_defines{HAVE_READLINK} = 1;
+    $config_defines{HAVE_STAT} = 1;
+    $config_defines{HAVE_STATFS} = 1;
+    $config_defines{HAVE_STATUS_SET_BYTES} = 1;
+    $config_defines{HAVE_STATVFS} = 1;
+    $config_defines{HAVE_STRDUP} = 1;
+    $config_defines{HAVE_STRERROR} = 1;
+    $config_defines{HAVE_USLEEP} = 1;
+
+    $config_defines{LT_OBJDIR} = ".libs/";
+
+    $config_defines{HAVE_LONG_LONG_64} = 1;
+    $config_defines{HAVE_INT_LT_POINTER} = 1;
+    $config_defines{HAVE_STRUCT_STATFS} = 1;
+    $config_defines{HAVE_STRUCT_AIOCB_AIO_FILDES} = 1;
+    $config_defines{HAVE_STRUCT_AIOCB_AIO_REQPRIO} = 1;
+    $config_defines{HAVE_STRUCT_AIOCB_AIO_SIGEVENT} = 1;
+
+    $config_defines{ROMIO_HAVE_STRUCT_STATFS_WITH_F_TYPE} = 1;
+    $config_defines{ROMIO_HAVE_WORKING_AIO} = 1;
+    $config_defines{ROMIO_INSIDE_MPICH} = 1;
+    $config_defines{ROMIO_UFS} = 1;
+    $config_defines{ROMIO_NFS} = 1;
+    $config_defines{ROMIO_TESTFS} = 1;
+    $config_defines{ROMIO_RUN_ON_LINUX} = 1;
+
+    $config_defines{HAVE_PRAGMA_WEAK} = 1;
+    $config_defines{HAVE_MULTIPLE_PRAGMA_WEAK} = 1;
+    $config_defines{HAVE_WEAK_ATTRIBUTE} = 1;
+    $config_defines{HAVE_WEAK_SYMBOLS} = 1;
+    $config_defines{USE_WEAK_SYMBOLS} = 1;
+    $config_defines{HAVE_VISIBILITY} = 1;
+    $config_defines{HAVE_MPIO_CONST} = "const";
+    $config_defines{HAVE_MPI_DARRAY_SUBARRAY} = 1;
+    $config_defines{HAVE_MPI_INFO} = 1;
+    $config_defines{HAVE_MPI_LONG_LONG_INT} = 1;
+    $config_defines{HAVE_MPI_STATUS_SET_ELEMENTS_X} = 1;
+    $config_defines{HAVE_MPI_TYPE_SIZE_X} = 1;
+    $config_defines{HAVE_MPIX_TYPE_IOV} = 1;
+
+    $config_defines{HAVE_DECL_PWRITE} = 1;
+    $config_defines{HAVE_DECL_MPI_COMBINER_HINDEXED_BLOCK} = 1;
+    my %confs;
+    $confs{DEFINE_HAVE_MPI_GREQUEST} = "#define HAVE_MPI_GREQUEST 1";
+    $confs{HAVE_MPI_INFO} = "#define HAVE_MPI_INFO";
+    $confs{HAVE_MPI_DARRAY_SUBARRAY} = "#define HAVE_MPI_DARRAY_SUBARRAY";
+    autoconf_file("src/mpi/romio/include/mpio.h", \%confs);
+    system "touch src/mpi/romio/include/mpiof.h";
 }
 
 open In, "$config_in" or die "Can't open $config_in: $!\n";

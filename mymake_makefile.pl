@@ -319,6 +319,7 @@ if ($what eq "mpich") {
     if (!$opts{disable_romio}) {
         system "rsync -r confdb/ src/mpi/romio/confdb/";
         system "cp maint/version.m4 src/mpi/romio/";
+        system "touch src/mpi/romio/include/mpio.h";
         system "ln -sf ../mpi/romio/include/mpio.h src/include/mpio.h";
         my $L=$opts{"with-romio"};
         if ($L and -d $L) {
@@ -346,7 +347,11 @@ if ($what eq "mpich") {
         my $lib_la = "src/mpi/romio/libromio.la";
         my $config_h = "src/mpi/romio/adio/include/romioconf.h";
         my $lib_dep = $config_h;
+        $lib_dep .= " src/mpl/include/mplconfig.h";
 
+        push @extra_make_rules, "$config_h:";
+        push @extra_make_rules, "\t\x24(DO_config) romio && \x24(DO_makefile) romio";
+        push @extra_make_rules, "";
         my @t = ("cd $subdir");
         push @t, "\x24(MAKE)";
         push @extra_make_rules, "$lib_la: $lib_dep";
@@ -557,11 +562,12 @@ if ($what eq "mpich") {
     }
 
     push @extra_make_rules, "src/mpi/errhan/errutil.lo: src/mpi/errhan/defmsg.h";
+    push @CONFIGS, "src/include/mpichconf.h";
+    push @CONFIGS, "src/include/mpir_cvars.h";
+    push @CONFIGS, "src/mpi/errhan/defmsg.h";
     push @extra_make_rules, "src/mpi/errhan/defmsg.h:";
     push @extra_make_rules, "\t\x24(DO_errmsg)";
     push @extra_make_rules, "";
-    push @CONFIGS, "src/include/mpichconf.h";
-    push @CONFIGS, "src/include/mpir_cvars.h";
     push @extra_make_rules, "src/include/mpir_cvars.h:";
     push @extra_make_rules, "\t\x24(DO_cvars)";
     push @extra_make_rules, "";
@@ -796,6 +802,7 @@ elsif ($what eq "hydra") {
 }
 elsif ($what eq "test") {
     my %conds;
+    $conds{BUILD_MPIX_TESTS} = 1;
     $autoconf_vars{threadlib} = "-lpthread";
     my @all_am = glob("test/mpi/*/Makefile.am");
     push @all_am, glob("test/mpi/threads/*/Makefile.am");
@@ -936,6 +943,17 @@ elsif ($what eq "dtpools") {
     $make_vars{LIBTOOL} = "/bin/sh ../libtool";
 
     dump_makefile("test/mpi/dtpools/src/Makefile");
+}
+elsif ($what eq "romio") {
+    my %conds;
+    $conds{BUILD_ROMIO_EMBEDDED} = 1;
+    $conds{MPIO_GLUE_MPICH} = 1;
+    $conds{BUILD_AD_UFS} = 1;
+    $conds{BUILD_AD_NFS} = 1;
+    $conds{BUILD_AD_TESTFS} = 1;
+    $autoconf_vars{mpl_includedir} = "-I../../mpl/include -I../../include";
+    load_automake("src/mpi/romio/Makefile.am", \%conds);
+    dump_makefile("src/mpi/romio/Makefile");
 }
 else {
     die "[$what] not implemented\n";

@@ -44,6 +44,8 @@ push @realclean_list, "src/mpl/include/mplconfig.h";
 push @realclean_list, "src/mpl/Makefile";
 push @realclean_list, "src/pmi/include/pmi_config.h";
 push @realclean_list, "src/pmi/Makefile";
+push @realclean_list, "src/mpi/romio/adio/include/romioconf.h";
+push @realclean_list, "src/mpi/romio/Makefile";
 if (-d "src/openpa") {
     push @realclean_list, "mymake/openpa";
 }

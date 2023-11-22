@@ -140,6 +140,9 @@
 /* Define to 1 if you have the `MPI_Type_size_x' function. */
 #undef HAVE_MPI_TYPE_SIZE_X
 
+/* Define to 1 if you have the `MPIX_Type_iov' function. */
+#undef HAVE_MPIX_TYPE_IOV
+
 /* Define if multiple weak symbols may be defined */
 #undef HAVE_MULTIPLE_PRAGMA_WEAK
 

@@ -420,9 +420,9 @@ if (-f "maint/gen_binding_c.py") {
         system("$python maint/gen_binding_c.py -single-source")== 0 or die "Failed $python maint/gen_binding_c.py -single-source\n";
     }
 }
-if (-f "src/binding/abi/gen_abi.py") {
-    print "[cd src/binding/abi && $python gen_abi.py]\n";
-    system("cd src/binding/abi && $python gen_abi.py")== 0 or die "Failed cd src/binding/abi && $python gen_abi.py\n";
+if (-f "maint/gen_abi.py") {
+    print "[$python maint/gen_abi.py]\n";
+    system("$python maint/gen_abi.py")== 0 or die "Failed $python maint/gen_abi.py\n";
 }
 if (-f "maint/gen_ch4_api.py") {
     if (!-f "src/mpid/ch4/netmod/include/netmod.h") {
@@ -979,6 +979,7 @@ else {
     if (!$opts{disable_romio}) {
         system "rsync -r confdb/ src/mpi/romio/confdb/";
         system "cp maint/version.m4 src/mpi/romio/";
+        system "touch src/mpi/romio/include/mpio.h";
         system "ln -sf ../mpi/romio/include/mpio.h src/include/mpio.h";
         my $L=$opts{"with-romio"};
         if ($L and -d $L) {
@@ -1006,6 +1007,7 @@ else {
         my $lib_la = "src/mpi/romio/libromio.la";
         my $config_h = "src/mpi/romio/adio/include/romioconf.h";
         my $lib_dep = $config_h;
+        $lib_dep .= " src/mpl/include/mplconfig.h";
 
         my @t = ("cd $subdir");
         push @t, "\x24(DO_stage) Configure ROMIO";
@@ -1280,11 +1282,12 @@ else {
     }
 
     push @extra_make_rules, "src/mpi/errhan/errutil.lo: src/mpi/errhan/defmsg.h";
+    push @CONFIGS, "src/include/mpichconf.h";
+    push @CONFIGS, "src/include/mpir_cvars.h";
+    push @CONFIGS, "src/mpi/errhan/defmsg.h";
     push @extra_make_rules, "src/mpi/errhan/defmsg.h:";
     push @extra_make_rules, "\t\x24(DO_errmsg)";
     push @extra_make_rules, "";
-    push @CONFIGS, "src/include/mpichconf.h";
-    push @CONFIGS, "src/include/mpir_cvars.h";
     push @extra_make_rules, "src/include/mpir_cvars.h:";
     push @extra_make_rules, "\t\x24(DO_cvars)";
     push @extra_make_rules, "";
@@ -1791,6 +1794,30 @@ else {
             my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
             open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
             print "  --> [mymake/mpifort]\n";
+            foreach my $l (@lines) {
+                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
+                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+                }
+                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
+                    my ($c, $flags) = ($1, $2);
+                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+                    }
+                }
+                print Out $l;
+            }
+            close Out;
+        }
+        if (-f "src/env/mpicc_abi.bash") {
+            my @lines;
+            {
+                open In, "src/env/mpicc_abi.bash" or die "Can't open src/env/mpicc_abi.bash.\n";
+                @lines=<In>;
+                close In;
+            }
+            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
+            open Out, ">mymake/mpicc_abi" or die "Can't write mymake/mpicc_abi: $!\n";
+            print "  --> [mymake/mpicc_abi]\n";
             foreach my $l (@lines) {
                 if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
                     $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
