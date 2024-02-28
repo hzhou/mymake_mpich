@@ -58,13 +58,17 @@ elsif ($config eq "hydra") {
     symlink "../../../libtool", "src/pm/hydra/libtool";
 }
 elsif ($config eq "test") {
+    my $MPICC = "mpicc";
+    if ($opts{"enable-mpi-abi"}) {
+        $MPICC = "mpicc_abi";
+    }
     $config_in = "$mymake_dir/config_templates/mpitestconf.h";
     $config_out = "test/mpi/include/mpitestconf.h";
     if ($ENV{CC}) {
-        system "sed -e 's/\"$ENV{CC}\"/\"mpicc\"/' libtool > test/mpi/libtool";
+        system "sed -e 's/\"$ENV{CC}\"/\"$MPICC\"/' libtool > test/mpi/libtool";
     }
     else {
-        system "sed -e 's/\"gcc\"/\"mpicc\"/' libtool > test/mpi/libtool";
+        system "sed -e 's/\"gcc\"/\"$MPICC\"/' libtool > test/mpi/libtool";
     }
     system "chmod a+x test/mpi/libtool";
 }
@@ -814,6 +818,10 @@ if ($config eq "mpich") {
             open Out, ">mymake/mpi$p" or die "Can't write mymake/mpi$p: $!\n";
             print "  --> [mymake/mpi$p]\n";
             foreach my $l (@lines) {
+                if ($l=~/cxxlibs="-l"/) {
+                    print Out "    cxxlibs=\n";
+                    next;
+                }
                 $l=~s/\@(\w+)\@/$confs{$1}/g;
                 $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$confs{$1}/;
                 print Out $l;
@@ -1011,6 +1019,8 @@ if ($config eq "mpich") {
         $confs{MPI_INTEGER8} = "MPI_DATATYPE_NULL";
         $confs{MPI_INTEGER16} = "MPI_DATATYPE_NULL";
     }
+    $confs{MPI_REAL2} = "MPI_DATATYPE_NULL";
+    $confs{MPI_COMPLEX4} = "MPI_DATATYPE_NULL";
 
     if (!$opts{disable_cxx}) {
         $confs{MPIR_CXX_BOOL} = sprintf("0x4c00%02x33", $sizeof_hash{"CXX_BOOL"});
@@ -1064,6 +1074,17 @@ if ($config eq "mpich") {
     $confs{MPICH_CUSTOM_STRING}="";
     $confs{MPICH_ABIVERSION} = "0:0:0";
     autoconf_file("src/include/mpichinfo.h", \%confs);
+    my %confs;
+    $confs{FC_REAL_MODEL} = "6, 37";
+    $confs{FC_DOUBLE_MODEL} = "15, 307";
+    $confs{FC_INTEGER_MODEL} = "9";
+    $confs{FC_INTEGER_MODEL_MAP} = "{9, 4, 4}, ";
+    if (-f "src/include/mpif90model.h.in") {
+        autoconf_file("src/include/mpif90model.h", \%confs);
+    }
+    elsif (-f "src/mpi/datatype/mpif90model.h.in") {
+        autoconf_file("src/mpi/datatype/mpif90model.h", \%confs);
+    }
     if (!$opts{disable_cxx}) {
         my %confs;
         $confs{HAVE_CXX_EXCEPTIONS}=0;
@@ -2014,17 +2035,6 @@ if ($config eq "mpich") {
         print Out "$sp SAVE   /MPIPRIVC/\n";
         close Out;
         my $dir="src/binding/fortran/use_mpi";
-        open Out, ">src/binding/fortran/use_mpi/mpif90model.h" or die "Can't write src/binding/fortran/use_mpi/mpif90model.h: $!\n";
-        print "  --> [src/binding/fortran/use_mpi/mpif90model.h]\n";
-        print Out "#ifndef MPIR_F90MODEL_INCLUDED\n";
-        print Out "#define MPIR_F90MODEL_INCLUDED\n";
-        print Out "#define MPIR_F90_REAL_MODEL    6, 37\n";
-        print Out "#define MPIR_F90_DOUBLE_MODEL 15, 307\n";
-        print Out "#define MPIR_F90_INTEGER_MODEL 9\n";
-        print Out "#define MPIR_F90_ALL_INTEGER_MODELS 2, 1, 4, 2, 9, 4, 18, 8,\n";
-        print Out "#define MPIR_F90_INTEGER_MODEL_MAP {2, 1, 1}, {4, 2, 2}, {9, 4, 4}, {18, 8, 8},\n";
-        print Out "#endif\n";
-        close Out;
         open Out, ">$dir/mpi_constants.f90" or die "Can't write $dir/mpi_constants.f90: $!\n";
         print "  --> [$dir/mpi_constants.f90]\n";
         print Out "MODULE MPI_CONSTANTS\n";
@@ -3686,7 +3696,7 @@ elsif ($config eq "hydra") {
     $config_defines{HAVE_BSS_PERSIST}=1;
     $config_defines{HAVE_ERROR_CHECKING}=1;
     $config_defines{HAVE_EXTERN_ENVIRON}=1;
-    if ($opts{uname}=~/FreeBSD/i) {
+    if ($opts{uname}=~/FreeBSD|Darwin/i) {
         $config_defines{MANUAL_EXTERN_ENVIRON}=1;
     }
     $config_defines{ENABLE_PROFILING}=1;
@@ -3750,6 +3760,10 @@ elsif ($config eq "test") {
         }
     }
     close In;
+    my $MPICC = "mpicc";
+    if ($opts{"enable-mpi-abi"}) {
+        $MPICC = "mpicc_abi";
+    }
     $config_defines{PACKAGE}='"mpich-testsuite"';
     $config_defines{PACKAGE_BUGREPORT}='"discuss@mpich.org"';
     $config_defines{PACKAGE_NAME}='"mpich-testsuite"';

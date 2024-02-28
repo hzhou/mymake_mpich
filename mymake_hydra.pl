@@ -753,7 +753,7 @@ sub dump_makefile {
     }
 
     foreach my $target (@ltlibs, @programs) {
-        if ($target=~/^(lib|bin)\//) {
+        if ($target=~/^(bin)\//) {
             $dst_hash{$target} = "\x24(PREFIX)/$1";
         }
     }
@@ -1280,11 +1280,13 @@ sub dump_makefile {
 
     if (@install_list) {
         print Out "\x23 --------------------\n";
-        print Out ".PHONY: install\n";
+        print Out ".PHONY: install all-install\n";
         print Out "install: @install_deps\n";
         foreach my $l (@install_list) {
             print Out "\t$l\n";
         }
+        print Out "\n";
+        print Out "all-install: install hydra-install\n";
         print Out "\n";
     }
     print Out "\x23 --------------------\n";

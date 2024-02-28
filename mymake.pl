@@ -461,21 +461,6 @@ if (!$opts{disable_cxx}) {
 }
 if (!$opts{disable_fortran}) {
     if (!-f "configure") {
-        print ": buildiface - mpif_h\n";
-        chdir "src/binding/fortran/mpif_h";
-        system "perl buildiface >/dev/null";
-        chdir $pwd;
-        print ": buildiface - use_mpi\n";
-        chdir "src/binding/fortran/use_mpi";
-        if (-f "buildiface") {
-            system "perl buildiface >/dev/null";
-            system "perl ../mpif_h/buildiface -infile=cf90t.h -deffile=./cf90tdefs";
-        }
-        chdir $pwd;
-        print ": buildiface - use_mpi_f08\n";
-        chdir "src/binding/fortran/use_mpi_f08";
-        system "perl buildiface >/dev/null";
-        chdir $pwd;
         if (-f "maint/gen_binding_f77.py") {
             system "$python maint/gen_binding_f77.py";
         }
@@ -484,19 +469,6 @@ if (!$opts{disable_fortran}) {
         }
         if (-f "maint/gen_binding_f08.py") {
             system "$python maint/gen_binding_f08.py";
-        }
-        else {
-            print ": buildiface - use_mpi_f08/wrappers_c\n";
-            chdir "src/binding/fortran/use_mpi_f08/wrappers_c";
-            system "rm -f Makefile.mk";
-            if (-f "$pwd/src/include/mpi_proto.h") {
-                system "perl buildiface $pwd/src/include/mpi_proto.h";
-            }
-            else {
-                system "perl buildiface $pwd/src/include/mpi.h.in";
-            }
-            system "perl buildiface $pwd/src/mpi/romio/include/mpio.h.in";
-            chdir $pwd;
         }
     }
 }
@@ -577,7 +549,7 @@ else {
         push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_sizeofs.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
         push @extra_make_rules, "src/binding/fortran/use_mpi/mpi_constants.lo: src/binding/fortran/use_mpi/mpifnoext.h", "";
         push @extra_make_rules, "src/binding/fortran/use_mpi/mpifnoext.h: src/binding/fortran/mpif_h/mpif.h";
-        push @extra_make_rules, "\tsed -e 's/^C/!/g' -e '/EXTERNAL/d' -e '/MPI_WTICK/d' \$< > \$@";
+        push @extra_make_rules, "\tsed -e 's/^C/!/g' -e '/EXTERNAL/d' -e '/PMPI_/d' \$< > \$@";
         push @extra_make_rules, "";
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_nobuf.lo src/binding/fortran/use_mpi_f08/mpi_c_interface_cdesc.lo", "";
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_nobuf.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_glue.lo", "";
@@ -590,10 +562,10 @@ else {
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo: src/binding/fortran/use_mpi_f08/mpi_f08_types.lo", "";
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_f08_types.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo", "";
         push @extra_make_rules, "src/binding/fortran/use_mpi_f08/mpi_c_interface_cdesc.lo: src/binding/fortran/use_mpi_f08/mpi_c_interface_types.lo src/binding/fortran/use_mpi_f08/mpi_f08_link_constants.lo", "";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/f_sync_reg_f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/pf_sync_reg_f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
-        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/pf08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/f_sync_reg_f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/pf_sync_reg_f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/f08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo";
+        push @extra_make_rules, "src/binding/fortran/use_mpi_f08/wrappers_f/pf08ts.lo: src/binding/fortran/use_mpi_f08/mpi_f08.lo src/binding/fortran/use_mpi_f08/mpi_c_interface.lo";
         $dst_hash{"src/binding/fortran/mpif_h/mpif.h"}="$opts{prefix}/include";
         $dst_hash{"mymake/mpifort"}=$bin;
         $dst_hash{"LN_S-$bin/mpif90"}="$bin/mpifort";
@@ -634,90 +606,28 @@ else {
     push @extra_make_rules, "";
     push @extra_make_rules, "realclean: clean";
     push @extra_make_rules, "\t\x24(DO_clean)";
-    if ($opts{pm} eq "gforker") {
-        push @extra_make_rules,  "libmpiexec_la_OBJECTS = \\";
-        foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface)) {
-            push @extra_make_rules,  "    src/pm/util/$a.lo \\";
-        }
-        push @extra_make_rules,  "    src/pm/util/simple_pmiutil2.lo";
-        push @extra_make_rules, "";
-
-        my $objs = "\x24(libmpiexec_la_OBJECTS) \x24(MODDIR)/mpl/libmpl.la";
-        push @extra_make_rules,  "libmpiexec.la: $objs";
-        push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
-        push @extra_make_rules, "";
-
-        my $objs = "src/pm/gforker/mpiexec.o libmpiexec.la";
-        push @extra_make_rules,  "mpiexec.gforker: $objs";
-        push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
-        push @extra_make_rules, "";
-
-        push @extra_make_rules,  ".PHONY: gforker-install";
-        push @extra_make_rules,  "gforker-install: mpiexec.gforker";
-        my $bin = "\x24(PREFIX)/bin";
-        push @extra_make_rules,  "\tinstall -d $bin";
-        push @extra_make_rules,  "\t/bin/sh ./libtool --mode=install --quiet install mpiexec.gforker $bin";
-        push @extra_make_rules,  "\trm -f $bin/mpiexec  && ln -s $bin/mpiexec.gforker $bin/mpiexec";
-        push @extra_make_rules,  "\trm -f $bin/mpirun  && ln -s $bin/mpiexec.gforker $bin/mpirun";
-        push @extra_make_rules, "";
-
-        push @extra_INCLUDES, "-Isrc/pm/util";
-        push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE_SIGACTION";
+    my $mkfile="src/pm/hydra/Makefile";
+    my $add="src/mpl/libmpl.la src/pmi/libpmi.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+    push @extra_make_rules, ".PHONY: hydra hydra-install";
+    push @extra_make_rules, "hydra: $mkfile $add";
+    push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
+    push @extra_make_rules, "";
+    push @extra_make_rules, "hydra-install: $mkfile";
+    push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) install )";
+    push @extra_make_rules, "";
+    push @extra_make_rules, "hydra-clean:";
+    push @extra_make_rules, "\t(cd src/pm/hydra && rm -f Makefile && rm -rf mymake )";
+    push @extra_make_rules, "";
+    push @extra_make_rules, "$mkfile:";
+    my $config_args = "--prefix=\x24(PREFIX)";
+    if ($opts{"with-argobots"}) {
+        $config_args .= " --with-argobots=$opts{argobots}";
     }
-    elsif ($opts{pm} eq "remshell") {
-        push @extra_make_rules,  "libmpiexec_la_OBJECTS = \\";
-        foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface)) {
-            push @extra_make_rules,  "    src/pm/util/$a.lo \\";
-        }
-        push @extra_make_rules,  "    src/pm/util/simple_pmiutil2.lo";
-        push @extra_make_rules, "";
-
-        my $objs = "\x24(libmpiexec_la_OBJECTS) \x24(MODDIR)/mpl/libmpl.la";
-        push @extra_make_rules,  "libmpiexec.la: $objs";
-        push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
-        push @extra_make_rules, "";
-
-        my $objs = "src/pm/remshell/mpiexec.o libmpiexec.la";
-        push @extra_make_rules,  "mpiexec.remshell: $objs";
-        push @extra_make_rules,  "\t\@echo LTLD \$\@ && \x24(LTLD) -o \$\@ $objs";
-        push @extra_make_rules, "";
-
-        push @extra_make_rules,  ".PHONY: remshell-install";
-        push @extra_make_rules,  "remshell-install: mpiexec.remshell";
-        my $bin = "\x24(PREFIX)/bin";
-        push @extra_make_rules,  "\tinstall -d $bin";
-        push @extra_make_rules,  "\t/bin/sh ./libtool --mode=install --quiet install mpiexec.remshell $bin";
-        push @extra_make_rules,  "\trm -f $bin/mpiexec  && ln -s $bin/mpiexec.remshell $bin/mpiexec";
-        push @extra_make_rules,  "\trm -f $bin/mpirun  && ln -s $bin/mpiexec.remshell $bin/mpirun";
-        push @extra_make_rules, "";
-
-        push @extra_INCLUDES, "-Isrc/pm/util";
-        push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE_SIGACTION";
+    if ($opts{"with-cuda"}) {
+        $config_args .= " --with-cuda=$opts{cuda}";
     }
-    else {
-        my $mkfile="src/pm/hydra/Makefile";
-        my $add="src/mpl/libmpl.la src/pmi/libpmi.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
-        push @extra_make_rules, ".PHONY: hydra hydra-install";
-        push @extra_make_rules, "hydra: $mkfile $add";
-        push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
-        push @extra_make_rules, "";
-        push @extra_make_rules, "hydra-install: $mkfile";
-        push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) install )";
-        push @extra_make_rules, "";
-        push @extra_make_rules, "hydra-clean:";
-        push @extra_make_rules, "\t(cd src/pm/hydra && rm -f Makefile && rm -rf mymake )";
-        push @extra_make_rules, "";
-        push @extra_make_rules, "$mkfile:";
-        my $config_args = "--prefix=\x24(PREFIX)";
-        if ($opts{"with-argobots"}) {
-            $config_args .= " --with-argobots=$opts{argobots}";
-        }
-        if ($opts{"with-cuda"}) {
-            $config_args .= " --with-cuda=$opts{cuda}";
-        }
-        push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
-        push @extra_make_rules, "";
-    }
+    push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
+    push @extra_make_rules, "";
     if (!$opts{quick} && !-d "src/mpl/confdb") {
         my $cmd = "cp -r confdb src/mpl/";
         print "$cmd\n";
@@ -1227,6 +1137,54 @@ else {
         }
     }
 
+    push @extra_make_rules,  "gforker_OBJECTS = \\";
+    foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface simple_pmiutil)) {
+        push @extra_make_rules,  "    src/pm/util/$a.o \\";
+    }
+    push @extra_make_rules,  "    src/pm/gforker/mpiexec.o";
+    push @extra_make_rules, "";
+
+    push @extra_make_rules,  "\x24(gforker_OBJECTS): src/mpl/include/mplconfig.h";
+    push @extra_make_rules, "";
+    push @extra_make_rules,  "src/pm/gforker/mpiexec.gforker: \x24(gforker_OBJECTS) src/mpl/libmpl.la";
+    push @extra_make_rules,  "\t\@echo LINK \$\@ && \x24(LINK) -o \$\@ \x24(gforker_OBJECTS) src/mpl/.libs/libmpl.a";
+    push @extra_make_rules, "";
+
+    push @extra_make_rules,  ".PHONY: gforker-install";
+    push @extra_make_rules,  "gforker-install: src/pm/gforker/mpiexec.gforker";
+    my $bin = "\x24(PREFIX)/bin";
+    push @extra_make_rules,  "\tinstall -d $bin";
+    push @extra_make_rules,  "\tcp src/pm/gforker/mpiexec.gforker $bin";
+    push @extra_make_rules,  "\trm -f $bin/mpiexec  && ln -s $bin/mpiexec.gforker $bin/mpiexec";
+    push @extra_make_rules,  "\trm -f $bin/mpirun  && ln -s $bin/mpiexec.gforker $bin/mpirun";
+    push @extra_make_rules, "";
+
+    push @extra_INCLUDES, "-Isrc/pm/util";
+    push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE_SIGACTION";
+    push @extra_make_rules,  "remshell_OBJECTS = \\";
+    foreach my $a (qw(cmnargs process ioloop pmiserv labelout env newsession rm pmiport dbgiface simple_pmiutil)) {
+        push @extra_make_rules,  "    src/pm/util/$a.o \\";
+    }
+    push @extra_make_rules,  "    src/pm/remshell/mpiexec.o";
+    push @extra_make_rules, "";
+
+    push @extra_make_rules,  "\x24(remshell_OBJECTS): src/mpl/include/mplconfig.h";
+    push @extra_make_rules, "";
+    push @extra_make_rules,  "src/pm/remshell/mpiexec.remshell: \x24(remshell_OBJECTS) src/mpl/libmpl.la";
+    push @extra_make_rules,  "\t\@echo LINK \$\@ && \x24(LINK) -o \$\@ \x24(remshell_OBJECTS) src/mpl/.libs/libmpl.a";
+    push @extra_make_rules, "";
+
+    push @extra_make_rules,  ".PHONY: remshell-install";
+    push @extra_make_rules,  "remshell-install: src/pm/remshell/mpiexec.remshell";
+    my $bin = "\x24(PREFIX)/bin";
+    push @extra_make_rules,  "\tinstall -d $bin";
+    push @extra_make_rules,  "\tcp src/pm/remshell/mpiexec.remshell $bin";
+    push @extra_make_rules,  "\trm -f $bin/mpiexec  && ln -s $bin/mpiexec.remshell $bin/mpiexec";
+    push @extra_make_rules,  "\trm -f $bin/mpirun  && ln -s $bin/mpiexec.remshell $bin/mpirun";
+    push @extra_make_rules, "";
+
+    push @extra_INCLUDES, "-Isrc/pm/util";
+    push @extra_DEFS, "-DHAVE_GETTIMEOFDAY -DUSE_SIGACTION";
     push @extra_make_rules, "cpi: ";
     push @extra_make_rules, "\tmpicc -o cpi examples/cpi.c";
     push @extra_make_rules, "";
@@ -2176,7 +2134,7 @@ sub dump_makefile {
     }
 
     foreach my $target (@ltlibs, @programs) {
-        if ($target=~/^(lib|bin)\//) {
+        if ($target=~/^(bin)\//) {
             $dst_hash{$target} = "\x24(PREFIX)/$1";
         }
     }
@@ -2791,11 +2749,13 @@ sub dump_makefile {
 
     if (@install_list) {
         print Out "\x23 --------------------\n";
-        print Out ".PHONY: install\n";
+        print Out ".PHONY: install all-install\n";
         print Out "install: @install_deps\n";
         foreach my $l (@install_list) {
             print Out "\t$l\n";
         }
+        print Out "\n";
+        print Out "all-install: install hydra-install\n";
         print Out "\n";
     }
     print Out "\x23 --------------------\n";
