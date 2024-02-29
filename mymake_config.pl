@@ -3568,7 +3568,12 @@ elsif ($config eq "mpl") {
         $config_defines{POSIX_MUTEX_NAME} = "MPL_POSIX_MUTEX_NATIVE";
     }
 
-    $config_defines{USE_MMAP_SHM} = 1;
+    if ($opts{"with-shared-memory"} eq "sysv") {
+        $config_defines{USE_SYSV_SHM} = 1;
+    }
+    else {
+        $config_defines{USE_MMAP_SHM} = 1;
+    }
     $config_defines{USE_NOTHING_FOR_YIELD} = 1;
 
     $config_defines{HAVE_CLOCK_GETTIME} = 1;
