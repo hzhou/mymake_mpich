@@ -655,7 +655,7 @@ if ($what eq "mpich") {
     $dst_hash{"mymake/mpifort"}=$bin;
     $dst_hash{"mymake/mpicxx"}=$bin;
     if ($opts{"enable-mpi-abi"}) {
-        $dst_hash{"mymake/mpicc_abi"} = $bin;
+        $dst_hash{"LN_S-$bin/mpicc_abi"}="$bin/mpicc";
     }
 
     $autoconf_vars{MPILIBNAME} = "mpi";

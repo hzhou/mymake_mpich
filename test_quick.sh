@@ -213,8 +213,8 @@ which autoconf
 autoconf --version
 which automake
 automake --version
-which libtool
-libtool --version
+which libtoolize
+libtoolize --version
 
 if test $compiler = "sun" ; then
     optV="-V"

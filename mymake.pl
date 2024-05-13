@@ -1285,7 +1285,7 @@ else {
     $dst_hash{"mymake/mpifort"}=$bin;
     $dst_hash{"mymake/mpicxx"}=$bin;
     if ($opts{"enable-mpi-abi"}) {
-        $dst_hash{"mymake/mpicc_abi"} = $bin;
+        $dst_hash{"LN_S-$bin/mpicc_abi"}="$bin/mpicc";
     }
 
     my $ret=0;
@@ -1752,30 +1752,6 @@ else {
             my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
             open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
             print "  --> [mymake/mpifort]\n";
-            foreach my $l (@lines) {
-                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
-                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-                }
-                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
-                    my ($c, $flags) = ($1, $2);
-                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
-                    }
-                }
-                print Out $l;
-            }
-            close Out;
-        }
-        if (-f "src/env/mpicc_abi.bash") {
-            my @lines;
-            {
-                open In, "src/env/mpicc_abi.bash" or die "Can't open src/env/mpicc_abi.bash.\n";
-                @lines=<In>;
-                close In;
-            }
-            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-            open Out, ">mymake/mpicc_abi" or die "Can't write mymake/mpicc_abi: $!\n";
-            print "  --> [mymake/mpicc_abi]\n";
             foreach my $l (@lines) {
                 if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
                     $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
