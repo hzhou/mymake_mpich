@@ -477,6 +477,10 @@ $config_defines{HAVE_INET_PTON}=1;
 if ($opts{uname}=~/Linux/i) {
     $config_defines{USE_SYM_HEAP} = 1;
     $config_defines{STRERROR_R_CHAR_P} = 1;
+    if ($opts{CC}=~/icx/) {
+        $config_defines{HAVE_PRAGMA_WEAK} = undef;
+        $config_defines{HAVE_MULTIPLE_PRAGMA_WEAK} = undef;
+    }
 }
 if ($opts{uname}=~/Darwin/i) {
     $config_defines{HAVE_WEAK_ATTRIBUTE} = undef;
