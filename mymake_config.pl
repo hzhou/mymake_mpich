@@ -222,6 +222,9 @@ foreach my $a (@tlist, @ARGV) {
             elsif ($t eq "handlealloc") {
                 $config_defines{MPICH_DEBUG_HANDLEALLOC} = 1;
             }
+            elsif ($t eq "progress") {
+                $config_defines{MPICH_DEBUG_PROGRESS} = 1;
+            }
             elsif ($t eq "asan") {
                 $config_cflags{O}=1;
                 $config_cflags{"-g"} = 1;
@@ -528,6 +531,11 @@ if ($config eq "mpich") {
 
     $temp{ENABLE_PMI1} = 1;
     $temp{ENABLE_PMI2} = 1;
+    $temp{ENABLE_PMIX} = 1;
+    if ($opts{"with-pmix"}) {
+        $temp{ENABLE_PMI1} = undef;
+        $temp{ENABLE_PMI2} = undef;
+    }
 
     if (!$opts{disable_romio}) {
         $temp{HAVE_ROMIO} = 1;
@@ -558,6 +566,10 @@ if ($config eq "mpich") {
             if ($opts{"with-xpmem"}) {
                 $temp{MPIDI_CH4_SHM_ENABLE_XPMEM}=1;
                 $make_conds{BUILD_SHM_IPC_XPMEM} = 1;
+            }
+            if ($opts{"with-cma"}) {
+                $temp{MPIDI_CH4_SHM_ENABLE_CMA}=1;
+                $make_conds{BUILD_SHM_IPC_CMA} = 1;
             }
         }
 

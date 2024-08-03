@@ -721,6 +721,9 @@
 /* Define to enable mutex debugging */
 #undef MPICH_DEBUG_MUTEX
 
+/* Define to enable progress debugging */
+#undef MPICH_DEBUG_PROGRESS
+
 /* define to enable error messages */
 #undef MPICH_ERROR_MSG_LEVEL
 
@@ -780,6 +783,9 @@
 
 /* Silently disable XPMEM, if it fails at runtime */
 #undef MPIDI_CH4_SHM_XPMEM_ALLOW_SILENT_FALLBACK
+
+/* Enable CMA shared memory submodule in CH4 */
+#undef MPIDI_CH4_SHM_ENABLE_CMA
 
 /* Define to enable direct multi-threading model */
 #undef MPIDI_CH4_USE_MT_DIRECT

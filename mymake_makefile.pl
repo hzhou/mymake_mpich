@@ -270,9 +270,9 @@ if ($what eq "mpich") {
     }
 
     if (-f "src/pmi/configure.ac") {
-        if (!$opts{"with-pmi"}) {
-            system "rsync -r confdb/ src/pmi/confdb/";
-            system "cp maint/version.m4 src/pmi/";
+        system "rsync -r confdb/ src/pmi/confdb/";
+        system "cp maint/version.m4 src/pmi/";
+        if (!$opts{"with-pmi"} and !$opts{"with-pmix"}) {
             my $L=$opts{"with-pmi"};
             if ($L and -d $L) {
                 $I_list .= " -I$L/include";
@@ -283,36 +283,42 @@ if ($what eq "mpich") {
                 $I_list .= " -Isrc/pmi/include";
                 $L_list .= " src/pmi/libpmi.la";
             }
-            my @t_env;
-            push @t_env, "FROM_MPICH=yes";
-            push @t_env, "main_top_srcdir=$pwd";
-            push @t_env, "main_top_builddir=$pwd";
-            push @t_env, "CPPFLAGS='-I$pwd/src/mpl/include'";
-            if ($opts{argobots}) {
-                $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
-            }
-            if (!$opts{disable_romio}) {
-                my $t_dir = "$pwd/src/mpi/romio/include";
-                $t_env[-1] =~s/'$/ -I\/$t_dir'/;
-            }
-            my $configure = "@t_env ./configure --enable-embedded";
-            my $subdir="src/pmi";
-            my $lib_la = "src/pmi/libpmi.la";
-            my $config_h = "src/pmi/include/pmi_config.h";
-            my $lib_dep = $config_h;
-            if (!$opts{disable_romio}) {
-                $lib_dep .= " src/mpi/romio/adio/include/romioconf.h";
-            }
-            $lib_dep .= " src/mpl/include/mplconfig.h";
+        }
+        my @t_env;
+        push @t_env, "FROM_MPICH=yes";
+        push @t_env, "main_top_srcdir=$pwd";
+        push @t_env, "main_top_builddir=$pwd";
+        push @t_env, "CPPFLAGS='-I$pwd/src/mpl/include'";
+        if ($opts{argobots}) {
+            $t_env[-1] =~s/'$/ -I$opts{argobots}\/include'/;
+        }
+        if (!$opts{disable_romio}) {
+            my $t_dir = "$pwd/src/mpi/romio/include";
+            $t_env[-1] =~s/'$/ -I\/$t_dir'/;
+        }
+        my $configure = "@t_env ./configure --enable-embedded";
+        my $subdir="src/pmi";
+        my $lib_la = "src/pmi/libpmi.la";
+        my $config_h = "src/pmi/include/pmi_config.h";
+        my $lib_dep = $config_h;
+        if (!$opts{disable_romio}) {
+            $lib_dep .= " src/mpi/romio/adio/include/romioconf.h";
+        }
+        $lib_dep .= " src/mpl/include/mplconfig.h";
 
-            push @extra_make_rules, "$config_h:";
-            push @extra_make_rules, "\t\x24(DO_config) pmi && \x24(DO_makefile) pmi";
-            push @extra_make_rules, "";
-            my @t = ("cd $subdir");
-            push @t, "\x24(MAKE)";
-            push @extra_make_rules, "$lib_la: $lib_dep";
-            push @extra_make_rules, "\t(".join(' && ', @t).")";
-            push @extra_make_rules, "";
+        push @extra_make_rules, "$config_h:";
+        push @extra_make_rules, "\t\x24(DO_config) pmi && \x24(DO_makefile) pmi";
+        push @extra_make_rules, "";
+        my @t = ("cd $subdir");
+        push @t, "\x24(MAKE)";
+        push @extra_make_rules, "$lib_la: $lib_dep";
+        push @extra_make_rules, "\t(".join(' && ', @t).")";
+        push @extra_make_rules, "";
+
+        if ($opts{"with-pmix"}) {
+            my $L=$opts{"with-pmix"};
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -lpmix";
         }
     }
 
