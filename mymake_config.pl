@@ -571,8 +571,12 @@ if ($config eq "mpich") {
                 $temp{MPIDI_CH4_SHM_ENABLE_XPMEM}=1;
                 $make_conds{BUILD_SHM_IPC_XPMEM} = 1;
             }
-            if ($opts{"with-cma"}) {
-                $temp{MPIDI_CH4_SHM_ENABLE_CMA}=1;
+            if ($opts{"without-cma"}) {
+                $temp{MPIDI_CH4_SHM_ENABLE_CMA}=0;
+                $make_conds{BUILD_SHM_IPC_CMA} = 0;
+            }
+            else {
+                $temp{MPIDI_CH4_SHM_ENABLE_CMA} = 1;
                 $make_conds{BUILD_SHM_IPC_CMA} = 1;
             }
         }
@@ -3591,6 +3595,8 @@ elsif ($config eq "mpl") {
         $config_defines{USE_MMAP_SHM} = 1;
     }
     $config_defines{USE_NOTHING_FOR_YIELD} = 1;
+
+    $config_defines{HAVE_BACKTRACE} = 1;
 
     $config_defines{HAVE_CLOCK_GETTIME} = 1;
     $config_defines{HAVE_CLOCK_GETRES} = 1;
