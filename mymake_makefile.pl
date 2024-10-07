@@ -136,6 +136,7 @@ if ($what eq "mpich") {
     push @extra_make_rules, "";
 
     $opts{so_version}="0:0:0";
+    $opts{"embed_mpl"} = 1;
     if (!$opts{quick} && !-d "src/mpl/confdb") {
         my $cmd = "cp -r confdb src/mpl/";
         print "$cmd\n";
@@ -270,9 +271,10 @@ if ($what eq "mpich") {
     }
 
     if (-f "src/pmi/configure.ac") {
-        system "rsync -r confdb/ src/pmi/confdb/";
-        system "cp maint/version.m4 src/pmi/";
         if (!$opts{"with-pmi"} and !$opts{"with-pmix"} and !$opts{"with-pmi1"} and !$opts{"with-pmi2"}) {
+            $opts{"embed_pmi"} = 1;
+            system "rsync -r confdb/ src/pmi/confdb/";
+            system "cp maint/version.m4 src/pmi/";
             my $L=$opts{"with-pmi"};
             if ($L and -d $L) {
                 $I_list .= " -I$L/include";
