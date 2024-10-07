@@ -131,14 +131,26 @@ elsif ($opts{device} eq "ch4") {
 if ($opts{CC}) {
     $ENV{CC}=$opts{CC};
 }
+elsif ($ENV{CC}) {
+    $opts{CC} = $ENV{CC};
+}
 if ($opts{CXX}) {
     $ENV{CXX}=$opts{CXX};
+}
+elsif ($ENV{CXX}) {
+    $opts{CXX} = $ENV{CXX};
 }
 if ($opts{F77}) {
     $ENV{F77}=$opts{F77};
 }
+elsif ($ENV{F77}) {
+    $opts{F77} = $ENV{F77};
+}
 if ($opts{FC}) {
     $ENV{FC}=$opts{FC};
+}
+elsif ($ENV{FC}) {
+    $opts{FC} = $ENV{FC};
 }
 if (!$opts{prefix}) {
     $opts{prefix}="$pwd/_inst";
