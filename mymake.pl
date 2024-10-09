@@ -1583,13 +1583,15 @@ else {
             }
         }
         close In;
-        open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
-        while(<In>){
-            if (/libmpi_so_version_m4.*\[([\d:]*)\]/) {
-                $opts{so_version}=$1;
+        if (!$opts{so_version} or $opts{so_version} eq "0:0:0") {
+            open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
+            while(<In>){
+                if (/libmpi_so_version_m4.*\[([\d:]*)\]/) {
+                    $opts{so_version}=$1;
+                }
             }
+            close In;
         }
-        close In;
         open In, "config.status" or die "Can't open config.status: $!\n";
         while(<In>){
             if (/S\["WRAPPER_LIBS"\]="(.*)"/) {

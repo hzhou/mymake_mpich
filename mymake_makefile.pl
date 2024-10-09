@@ -135,7 +135,9 @@ if ($what eq "mpich") {
     push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) install )";
     push @extra_make_rules, "";
 
-    $opts{so_version}="0:0:0";
+    if (!$opts{so_version}) {
+        $opts{so_version}="0:0:0";
+    }
     $opts{"embed_mpl"} = 1;
     if (!$opts{quick} && !-d "src/mpl/confdb") {
         my $cmd = "cp -r confdb src/mpl/";
