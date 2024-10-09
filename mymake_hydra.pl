@@ -59,7 +59,7 @@ elsif (@ARGV) {
     $need_save_args = 1;
 }
 foreach my $a (@ARGV) {
-    if ($a=~/^-(quick|f08|noclean|sh)/) {
+    if ($a=~/^-(quick|f08|noclean|sh|so_version)/) {
         $opts{$1}=1;
     }
     elsif ($a=~/^--(.*?)=(.*)/) {
