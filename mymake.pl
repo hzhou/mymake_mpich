@@ -105,7 +105,7 @@ elsif (@ARGV) {
     $need_save_args = 1;
 }
 foreach my $a (@ARGV) {
-    if ($a=~/^-(quick|f08|noclean|sh|so_version)/) {
+    if ($a=~/^-(quick|f08|noclean|sh)/) {
         $opts{$1}=1;
     }
     elsif ($a=~/^--(.*?)=(.*)/) {
