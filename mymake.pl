@@ -108,6 +108,9 @@ foreach my $a (@ARGV) {
     if ($a=~/^-(quick|f08|noclean|sh)/) {
         $opts{$1}=1;
     }
+    elsif ($a=~/^-(.*?)=(.*)/) {
+        $opts{$1}=$2;
+    }
     elsif ($a=~/^--(.*?)=(.*)/) {
         my ($o, $v) = ($1, $2);
         $opts{$1}=$2;
