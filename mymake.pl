@@ -1523,6 +1523,12 @@ else {
         print "---------------------------\n";
         print "-     Configure MPICH\n";
         print "---------------------------\n";
+        $ENV{COMPILER_TLS}="_Thread_local";
+        foreach my $t (@config_args) {
+            if ($t=~/--with-(cuda|hip|ze)/) {
+                $ENV{GPU_SUPPORT}=uc($1);
+            }
+        }
         system "rm -f Makefile";
         my $t = join ' ', @config_args;
         if (!$ret) {
