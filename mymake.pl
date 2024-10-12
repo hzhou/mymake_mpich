@@ -604,7 +604,7 @@ else {
         system "touch src/binding/fortran/use_mpi_f08/mpi_c_interface_types.f90.in";
     }
 
-    if (!$opts{"with-pmi"} and !$opts{"with-pmix"} and !$opts{"with-pmi1"} and !$opts{"with-pmi2"}) {
+    if ($opts{"with-pmi"} or $opts{"with-pmix"} or $opts{"with-pmi1"} or $opts{"with-pmi2"}) {
         $opts{"3rd-party-pmi"} = 1;
     }
     push @extra_make_rules, "DO_stage = perl $opts{mymake}_stage.pl";
