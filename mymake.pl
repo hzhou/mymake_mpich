@@ -603,6 +603,10 @@ else {
         system "touch src/binding/fortran/use_mpi_f08/mpi_f08_compile_constants.f90.in";
         system "touch src/binding/fortran/use_mpi_f08/mpi_c_interface_types.f90.in";
     }
+
+    if (!$opts{"with-pmi"} and !$opts{"with-pmix"} and !$opts{"with-pmi1"} and !$opts{"with-pmi2"}) {
+        $opts{"3rd-party-pmi"} = 1;
+    }
     push @extra_make_rules, "DO_stage = perl $opts{mymake}_stage.pl";
     push @extra_make_rules, "DO_clean = perl $opts{mymake}_clean.pl";
     push @extra_make_rules, "DO_errmsg = perl $opts{mymake}_errmsg.pl";
@@ -624,28 +628,30 @@ else {
     push @extra_make_rules, "";
     push @extra_make_rules, "realclean: clean";
     push @extra_make_rules, "\t\x24(DO_clean)";
-    my $mkfile="src/pm/hydra/Makefile";
-    my $add="src/mpl/libmpl.la src/pmi/libpmi.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
-    push @extra_make_rules, ".PHONY: hydra hydra-install";
-    push @extra_make_rules, "hydra: $mkfile $add";
-    push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
-    push @extra_make_rules, "";
-    push @extra_make_rules, "hydra-install: $mkfile";
-    push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) install )";
-    push @extra_make_rules, "";
-    push @extra_make_rules, "hydra-clean:";
-    push @extra_make_rules, "\t(cd src/pm/hydra && rm -f Makefile && rm -rf mymake )";
-    push @extra_make_rules, "";
-    push @extra_make_rules, "$mkfile:";
-    my $config_args = "--prefix=\x24(PREFIX)";
-    if ($opts{"with-argobots"}) {
-        $config_args .= " --with-argobots=$opts{argobots}";
+    if (!$opts{"3rd-party-pmi"}) {
+        my $mkfile="src/pm/hydra/Makefile";
+        my $add="src/mpl/libmpl.la src/pmi/libpmi.la \x24(MODDIR)/hwloc/hwloc/libhwloc_embedded.la";
+        push @extra_make_rules, ".PHONY: hydra hydra-install";
+        push @extra_make_rules, "hydra: $mkfile $add";
+        push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) )";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "hydra-install: $mkfile";
+        push @extra_make_rules, "\t(cd src/pm/hydra && \x24(MAKE) install )";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "hydra-clean:";
+        push @extra_make_rules, "\t(cd src/pm/hydra && rm -f Makefile && rm -rf mymake )";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "$mkfile:";
+        my $config_args = "--prefix=\x24(PREFIX)";
+        if ($opts{"with-argobots"}) {
+            $config_args .= " --with-argobots=$opts{argobots}";
+        }
+        if ($opts{"with-cuda"}) {
+            $config_args .= " --with-cuda=$opts{cuda}";
+        }
+        push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
+        push @extra_make_rules, "";
     }
-    if ($opts{"with-cuda"}) {
-        $config_args .= " --with-cuda=$opts{cuda}";
-    }
-    push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
-    push @extra_make_rules, "";
     $opts{"embed_mpl"} = 1;
     if (!$opts{quick} && !-d "src/mpl/confdb") {
         my $cmd = "cp -r confdb src/mpl/";
@@ -695,7 +701,6 @@ else {
     push @extra_make_rules, "$lib_la: $lib_dep";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-
     my $L=$opts{"with-hwloc"};
     if ($L and -d $L) {
         $I_list .= " -I$L/include";
@@ -847,7 +852,7 @@ else {
         push @extra_make_rules, "";
     }
 
-    if (-f "src/pmi/configure.ac") {
+    if (-f "src/pmi/configure.ac" && !$opts{"3rd-party-pmi"}) {
         if (!$opts{"with-pmi"} and !$opts{"with-pmix"} and !$opts{"with-pmi1"} and !$opts{"with-pmi2"}) {
             $opts{"embed_pmi"} = 1;
             system "rsync -r confdb/ src/pmi/confdb/";

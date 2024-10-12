@@ -176,7 +176,6 @@ if ($what eq "mpich") {
     push @extra_make_rules, "$lib_la: $lib_dep";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-
     my $L=$opts{"with-hwloc"};
     if ($L and -d $L) {
         $I_list .= " -I$L/include";
@@ -272,7 +271,7 @@ if ($what eq "mpich") {
         push @extra_make_rules, "";
     }
 
-    if (-f "src/pmi/configure.ac") {
+    if (-f "src/pmi/configure.ac" && !$opts{"3rd-party-pmi"}) {
         if (!$opts{"with-pmi"} and !$opts{"with-pmix"} and !$opts{"with-pmi1"} and !$opts{"with-pmi2"}) {
             $opts{"embed_pmi"} = 1;
             system "rsync -r confdb/ src/pmi/confdb/";
@@ -819,7 +818,6 @@ elsif ($what eq "hydra") {
     $L_list .= " ../../../src/mpl/libmpl.la";
     push @extra_make_rules, "../../../src/mpl/libmpl.la:";
     push @extra_make_rules, "\t\x24(MAKE) -C ../../.. src/mpl/libmpl.la";
-
     if (-f "src/pmi/configure.ac") {
         $I_list .= " -I../../../src/pmi/src";
         $L_list .= " ../../../src/pmi/libpmi.la";
