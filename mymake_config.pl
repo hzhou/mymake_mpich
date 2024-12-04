@@ -3818,6 +3818,8 @@ elsif ($config eq "test") {
 
     $config_defines{SIZEOF_MPI_OFFSET} = $sizeof_hash{VOID_P};
 
+    $config_defines{MPIO_USES_MPI_REQUEST} = 1;
+
     $config_defines{THREAD_PACKAGE_NAME} = "THREAD_PACKAGE_POSIX";
     $config_defines{HAVE_MPI_WIN_CREATE} = 1;
     if ($opts{device}!~/ch4:ucx/) {

@@ -1022,12 +1022,14 @@ elsif ($what eq "dtpools") {
 }
 elsif ($what eq "romio") {
     my %conds;
+    $conds{BUILD_BINDING} = 0;
     $conds{BUILD_ROMIO_EMBEDDED} = 1;
     $conds{MPIO_GLUE_MPICH} = 1;
     $conds{BUILD_AD_UFS} = 1;
     $conds{BUILD_AD_NFS} = 1;
     $conds{BUILD_AD_TESTFS} = 1;
     $autoconf_vars{mpl_includedir} = "-I../../mpl/include -I../../include";
+    $autoconf_vars{DEFINE_HAVE_MPI_GREQUEST}="#define HAVE_MPI_GREQUEST 1";
     load_automake("src/mpi/romio/Makefile.am", \%conds);
     dump_makefile("src/mpi/romio/Makefile");
 }
