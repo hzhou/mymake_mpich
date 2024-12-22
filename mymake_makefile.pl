@@ -375,6 +375,13 @@ if ($what eq "mpich") {
         push @extra_make_rules, "$lib_la: $lib_dep";
         push @extra_make_rules, "\t(".join(' && ', @t).")";
         push @extra_make_rules, "";
+        if ($opts{"enable-mpi-abi"}) {
+            my @t = ("cd $subdir");
+            push @t, "\x24(MAKE)";
+            push @extra_make_rules, "src/mpi/romio/libromio_abi.la: $lib_dep";
+            push @extra_make_rules, "\t(".join(' && ', @t).")";
+            push @extra_make_rules, "";
+        }
 
         $dst_hash{"src/mpi/romio/include/mpio.h"} = "$opts{prefix}/include";
         $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$opts{prefix}/include";
@@ -764,7 +771,9 @@ if ($what eq "mpich") {
     }
 
     if ($opts{"enable-mpi-abi"}) {
-        $make_vars{lib_libmpi_abi_la_LIBADD} .= " $L_list";
+        my $t = $L_list;
+        $t=~s/libromio\.la/libromio_abi.la/;
+        $make_vars{lib_libmpi_abi_la_LIBADD} .= " $t";
     }
 
     if ($opts{"with-xpmem"}) {
@@ -959,6 +968,11 @@ elsif ($what eq "test") {
         push @extra_make_rules, "$top_srcdir/util/libmtest_single.la:";
         push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libmtest_single.la)";
         push @extra_make_rules, "";
+        if (-f "test/mpi/maint/gen_all_mpitests.py") {
+            push @extra_make_rules, "$top_srcdir/util/librun_mpitests.la:";
+            push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) librun_mpitests.la)";
+            push @extra_make_rules, "";
+        }
         if ($a =~ /threads/) {
             push @extra_make_rules, "$top_srcdir/util/libmtest_thread.la:";
             push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libmtest_thread.la)";
@@ -1009,6 +1023,70 @@ elsif ($what eq "test") {
             dump_makefile("test/mpi/$dir/Makefile");
         }
     }
+    if (-e "test/mpi/util/run_mpitests.c") {
+        %make_vars = ();
+        @ltlibs = ();
+        @programs = ();
+
+        $make_vars{LIBTOOL} = "./libtool";
+        if (!$opts{CC}) {
+            $make_vars{CC} = "gcc";
+        }
+        else {
+            $make_vars{CC} = $opts{CC};
+        }
+        if (!$opts{CXX}) {
+            $make_vars{CXX} = "g++";
+        }
+        else {
+            $make_vars{CXX} = $opts{CXX};
+        }
+        if (!$opts{F77}) {
+            $make_vars{F77} = "gfortran";
+        }
+        else {
+            $make_vars{F77} = $opts{F77};
+        }
+        if (!$opts{FC}) {
+            $make_vars{FC} = "gfortran";
+        }
+        else {
+            $make_vars{FC} = $opts{FC};
+        }
+        $make_vars{CCLD} = $make_vars{CC};
+        $make_vars{CXXLD} = $make_vars{CXX};
+        $make_vars{FCLD} = $make_vars{FC};
+        $make_vars{DEFS} = "-DHAVE_CONFIG_H";
+
+        $make_vars{CFLAGS} = $opts{cflags};
+        $make_vars{LDFLAGS} = $opts{ldflags};
+        $make_vars{FFLAGS} = '-O2';
+        $make_vars{FCFLAGS} = '-O2';
+
+        $make_vars{EXEEXT}="";
+        $make_vars{OBJEXT}="o";
+
+        $make_vars{"MODS"} = "-";
+        $make_vars{"MODDIR"} = "-";
+        $make_vars{"PREFIX"} = "-";
+        my $top_srcdir = ".";
+        $make_vars{top_srcdir}=".";
+        load_automake("test/mpi/Makefile.am", \%conds);
+
+        @extra_make_rules=();
+        push @extra_make_rules, "$top_srcdir/dtpools/src/libdtpools.la:";
+        push @extra_make_rules, "\t(cd $top_srcdir/dtpools/src && \x24(MAKE) libdtpools.la)";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "$top_srcdir/util/libmtest_single.la:";
+        push @extra_make_rules, "\t(cd $top_srcdir/util && \x24(MAKE) libmtest_single.la)";
+        push @extra_make_rules, "";
+
+        $make_vars{LIBTOOL} = "$top_srcdir/libtool";
+        $make_vars{CC} = "$MPICC";
+        $make_vars{CCLD} = "$MPICC";
+
+        dump_makefile("test/mpi/Makefile");
+    }
 }
 elsif ($what eq "dtpools") {
     my %conds;
@@ -1028,6 +1106,10 @@ elsif ($what eq "romio") {
     $conds{BUILD_AD_UFS} = 1;
     $conds{BUILD_AD_NFS} = 1;
     $conds{BUILD_AD_TESTFS} = 1;
+    if ($opts{"enable-mpi-abi"}) {
+        $conds{BUILD_ABI_LIB} = 1;
+        $special_targets{libromio_abi_la} = "\x24(LTCC) -DBUILD_MPI_ABI";
+    }
     $autoconf_vars{mpl_includedir} = "-I../../mpl/include -I../../include";
     $autoconf_vars{DEFINE_HAVE_MPI_GREQUEST}="#define HAVE_MPI_GREQUEST 1";
     load_automake("src/mpi/romio/Makefile.am", \%conds);

@@ -71,6 +71,11 @@ elsif ($config eq "test") {
         system "sed -e 's/\"gcc\"/\"$MPICC\"/' libtool > test/mpi/libtool";
     }
     system "chmod a+x test/mpi/libtool";
+    if (-f "test/mpi/maint/gen_all_mpitests.py") {
+        chdir "test/mpi";
+        system "python maint/gen_all_mpitests.py";
+        chdir "../..";
+    }
 }
 elsif ($config eq "dtpools") {
     $config_in = "$mymake_dir/config_templates/dtpoolsconf.h";
@@ -3931,7 +3936,7 @@ elsif ($config eq "romio") {
     $config_defines{LT_OBJDIR} = ".libs/";
 
     $config_defines{HAVE_LONG_LONG_64} = 1;
-    $config_defines{HAVE_INT_LT_POINTER} = 1;
+    $config_defines{INT_LT_POINTER} = 1;
     $config_defines{HAVE_STRUCT_STATFS} = 1;
     $config_defines{HAVE_STRUCT_AIOCB_AIO_FILDES} = 1;
     $config_defines{HAVE_STRUCT_AIOCB_AIO_REQPRIO} = 1;
