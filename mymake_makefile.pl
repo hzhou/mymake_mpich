@@ -99,6 +99,14 @@ if ($what eq "mpich") {
         my $p = $opts{"with-cuda"};
         $make_vars{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
     }
+    elsif ($opts{"with-hip"}) {
+        my $p = $opts{"with-hip"};
+        $make_vars{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
+    }
+    elsif ($opts{"with-ze"}) {
+        my $p = $opts{"with-ze"};
+        $make_vars{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
+    }
 
     push @extra_make_rules, "DO_stage = perl $opts{mymake}_stage.pl";
     push @extra_make_rules, "DO_clean = perl $opts{mymake}_clean.pl";
@@ -798,6 +806,20 @@ elsif ($what eq "mpl") {
         $make_vars{CPPFLAGS} .= " -I$p/include";
         $make_vars{LDFLAGS} .= " -L$p/lib64";
         $make_vars{LIBS} .= " -lcudart -lcuda";
+    }
+    elsif ($opts{"with-hip"}) {
+        my $p = $opts{"with-hip"};
+        $conds{MPL_HAVE_HIP} = 1;
+        $make_vars{CPPFLAGS} .= " -I$p/include";
+        $make_vars{LDFLAGS} .= " -L$p/lib64";
+        $make_vars{LIBS} .= " -lhip";
+    }
+    elsif ($opts{"with-ze"}) {
+        my $p = $opts{"with-ze"};
+        $conds{MPL_HAVE_ZE} = 1;
+        $make_vars{CPPFLAGS} .= " -I$p/include";
+        $make_vars{LDFLAGS} .= " -L$p/lib64";
+        $make_vars{LIBS} .= " -lze_loader";
     }
     load_automake("src/mpl/Makefile.am", \%conds);
     @programs=();

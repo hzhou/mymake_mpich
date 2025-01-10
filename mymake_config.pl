@@ -569,7 +569,7 @@ if ($config eq "mpich") {
         $temp{ENABLE_THREADCOMM}=1;
 
         if (!$temp{MPIDI_CH4_DIRECT_NETMOD}) {
-            if ($opts{"with-cuda"}) {
+            if ($opts{"with-cuda"} or $opts{"with-hip"} or $opts{"with-ze"}) {
                 $temp{MPIDI_CH4_SHM_ENABLE_GPU}=1;
                 $make_conds{BUILD_SHM_IPC_GPU} = 1;
             }
@@ -3638,6 +3638,14 @@ elsif ($config eq "mpl") {
     if ($opts{"with-cuda"}) {
         $config_defines{HAVE_GPU} = 1;
         $config_defines{HAVE_CUDA} = 1;
+    }
+    elsif ($opts{"with-hip"}) {
+        $config_defines{HAVE_GPU} = 1;
+        $config_defines{HAVE_HIP} = 1;
+    }
+    elsif ($opts{"with-ze"}) {
+        $config_defines{HAVE_GPU} = 1;
+        $config_defines{HAVE_ZE} = 1;
     }
 
     $config_defines{HAVE_PTHREAD_MUTEXATTR_SETPSHARED} = 1;
