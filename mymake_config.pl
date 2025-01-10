@@ -544,6 +544,7 @@ if ($config eq "mpich") {
     if ($opts{"with-pmix"}) {
         $temp{ENABLE_PMI1} = undef;
         $temp{ENABLE_PMI2} = undef;
+        $temp{PMI_FROM_3RD_PARTY} = 1;
     }
 
     if (!$opts{disable_romio}) {
