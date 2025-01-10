@@ -3614,6 +3614,8 @@ elsif ($config eq "mpl") {
     $config_defines{HAVE_GCC_INTRINSIC_ATOMIC}=1;
     $config_defines{HAVE_GCC_INTRINSIC_SYNC}=1;
 
+    $config_defines{HAVE_X86INTRIN_H}=1;
+
     if ($opts{cc_version}=~/gcc 4/) {
         $config_defines{COMPILER_TLS}="__thread";
     }
