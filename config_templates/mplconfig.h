@@ -262,6 +262,9 @@
 /* Define to 1 if you have the `yield' function. */
 #undef HAVE_YIELD
 
+/* Define to 1 if you have the <x86intrin.h> header file. */
+#undef HAVE_X86INTRIN_H
+
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
