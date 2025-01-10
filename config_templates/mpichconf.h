@@ -943,6 +943,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Define if using 3rd party PMI (e.g. libpmix) */
+#undef PMI_FROM_3RD_PARTY
+
 /* Define to turn on the prefetching optimization in Nemesis code */
 #undef PREFETCH_CELL
 
