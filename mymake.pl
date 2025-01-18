@@ -670,7 +670,7 @@ else {
     }
     my $configure = "./configure --disable-versioning --enable-embedded";
     foreach my $t (@config_args) {
-        if ($t=~/--enable-(g|strict)/) {
+        if ($t=~/--enable-(g|strict|fast)/) {
             $configure.=" $t";
         }
         elsif ($t=~/--with(out)?-(mpl|thread-package|argobots|uti|cuda|hip|ze)/) {
