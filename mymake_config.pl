@@ -265,6 +265,7 @@ foreach my $a (@tlist, @ARGV) {
             $config_cflags{-mavx} = 1;
             $config_defines{HAVE_MM256_STREAM_SI256} = 1;
         }
+        $opts{fast}=$g;
     }
     elsif ($a=~/--enable-strict/) {
         $config_cflags{"-Wall"} = 1;

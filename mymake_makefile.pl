@@ -163,8 +163,11 @@ if ($what eq "mpich") {
         $L_list .= " src/mpl/libmpl.la";
     }
     my $configure = "./configure --disable-versioning --enable-embedded";
+    if ($opts{fast}) {
+        $configure.=" --enable-fast=$opts{fast}";
+    }
     foreach my $t (@config_args) {
-        if ($t=~/--enable-(g|strict|fast)/) {
+        if ($t=~/--enable-(g|strict)/) {
             $configure.=" $t";
         }
         elsif ($t=~/--with(out)?-(mpl|thread-package|argobots|uti|cuda|hip|ze)/) {
