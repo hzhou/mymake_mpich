@@ -1303,10 +1303,26 @@ sub dump_makefile {
         print Out "all-install: install hydra-install\n";
         print Out "\n";
     }
+    my $root = ".";
+    my @prune_dirs;
+    if (-d "src") {
+        $root = "src";
+
+        foreach my $d ("src/pmi", "src/mpl") {
+            if (-d $d) {
+                push @prune_dirs, "-path $d";
+            }
+        }
+    }
+    my $prune;
+    if (@prune_dirs) {
+        $prune = "-type d \\( ". join(' -o ', @prune_dirs) . " \\) -prune -o";
+    }
+
     print Out "\x23 --------------------\n";
     print Out ".PHONY: clean\n";
     print Out "clean:\n";
-    print Out "\t(find src -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' |xargs rm -f)\n";
+    print Out "\t(find $root $prune \\( -name '*.o' -o -name '*.lo' -o -name '*.a' -o -name '*.la' \\) -print |xargs rm -f)\n";
     print Out "\n";
     close Out;
 
