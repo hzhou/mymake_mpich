@@ -759,6 +759,127 @@ if ($config eq "mpich") {
         $temp{HAVE_NAMESPACES}=1;
         $temp{HAVE_NAMESPACE_STD}=1;
     }
+    $temp{MPIR_ALT_FLOAT96_CTYPE} = "long double";
+    $temp{MPIR_ALT_FLOAT128_CTYPE} = "long double";
+    $temp{MPIR_FLOAT32_CTYPE} = "float";
+    $temp{MPIR_FLOAT64_CTYPE} = "double";
+    $temp{MPIR_INT8_CTYPE} = "char";
+    $temp{MPIR_INT16_CTYPE} = "short";
+    $temp{MPIR_INT32_CTYPE} = "int";
+    $temp{MPIR_INT64_CTYPE} = "long";
+    $temp{MPIR_UINT8_CTYPE} = "unsigned char";
+    $temp{MPIR_UINT16_CTYPE} = "unsigned short";
+    $temp{MPIR_UINT32_CTYPE} = "unsigned int";
+    $temp{MPIR_UINT64_CTYPE} = "unsigned long";
+
+    $temp{MPIR_CHAR_INTERNAL} = "MPIR_INT8";
+    $temp{MPIR_UNSIGNED_CHAR_INTERNAL} = "MPIR_UINT8";
+    my $len = $sizeof_hash{"SHORT"} * 8;
+    $temp{MPIR_SHORT_INTERNAL} = "MPIR_INT$len";
+    $temp{MPIR_UNSIGNED_SHORT_INTERNAL} = "MPIR_UINT$len";
+    my $len = $sizeof_hash{"INT"} * 8;
+    $temp{MPIR_INT_INTERNAL} = "MPIR_INT$len";
+    $temp{MPIR_UNSIGNED_INTERNAL} = "MPIR_UINT$len";
+    my $len = $sizeof_hash{"LONG"} * 8;
+    $temp{MPIR_LONG_INTERNAL} = "MPIR_INT$len";
+    $temp{MPIR_UNSIGNED_LONG_INTERNAL} = "MPIR_UINT$len";
+    my $len = $sizeof_hash{"LONG_LONG"} * 8;
+    $temp{MPIR_LONG_LONG_INT_INTERNAL} = "MPIR_INT$len";
+    my $len = $sizeof_hash{"FLOAT"} * 8;
+    $temp{MPIR_FLOAT_INTERNAL} = "MPIR_FLOAT$len";
+    my $len = $sizeof_hash{"DOUBLE"} * 8;
+    $temp{MPIR_DOUBLE_INTERNAL} = "MPIR_FLOAT$len";
+    my $len = $sizeof_hash{"LONG_DOUBLE"} * 8;
+    if ($len == 64) {
+        $temp{MPIR_LONG_DOUBLE_INTERNAL} = "MPIR_FLOAT$len";
+    }
+    else {
+        $temp{MPIR_LONG_DOUBLE_INTERNAL} = "MPIR_ALT_FLOAT$len";
+    }
+    $temp{MPIR_BYTE_INTERNAL} = "MPIR_UINT8";
+    my $len = $sizeof_hash{"WCHAR"} * 8;
+    $temp{MPIR_WCHAR_INTERNAL} = "MPIR_INT$len";
+    $temp{MPIR_PACKED_INTERNAL} = "MPIR_FIXED8";
+    $temp{MPIR_LB_INTERNAL} = "MPIR_FIXED0";
+    $temp{MPIR_UB_INTERNAL} = "MPIR_FIXED0";
+    my $len = $sizeof_hash{"INT"} * 8;
+    $temp{MPIR_2INT_INTERNAL} = "MPIR_2INT$len";
+    $temp{MPIR_SIGNED_CHAR_INTERNAL} = "MPIR_INT8";
+    my $len = $sizeof_hash{"LONG_LONG"} * 8;
+    $temp{MPIR_UNSIGNED_LONG_LONG_INTERNAL} = "MPIR_INT$len";
+    my $len = $sizeof_hash{"pac_cv_f77_sizeof_character"} * 8;
+    $temp{MPIR_CHARACTER_INTERNAL} = "MPIR_INT$len";
+    my $len = $sizeof_hash{"pac_cv_f77_sizeof_integer"} * 8;
+    $temp{MPIR_INTEGER_INTERNAL} = "MPIR_INT$len";
+    my $len = $sizeof_hash{"pac_cv_f77_sizeof_real"} * 8;
+    $temp{MPIR_REAL_INTERNAL} = "MPIR_INT$len";
+    my $len = $sizeof_hash{"pac_cv_f77_sizeof_logical"} * 8;
+    $temp{MPIR_LOGICAL_INTERNAL} = "MPIR_FORTRAN_LOGICAL$len";
+    my $len = $sizeof_hash{"pac_cv_f77_sizeof_real"} * 8;
+    $temp{MPIR_COMPLEX_INTERNAL} = "MPIR_COMPLEX$len";
+    my $len = $sizeof_hash{"pac_cv_f77_sizeof_double_precision"} * 8;
+    $temp{MPIR_DOUBLE_PRECISION_INTERNAL} = "MPIR_FLOAT$len";
+    my $len = $sizeof_hash{"pac_cv_f77_sizeof_integer"} * 8;
+    $temp{MPIR_2INTEGER_INTERNAL} = "MPIR_2INT$len";
+    my $len = $sizeof_hash{"pac_cv_f77_sizeof_real"} * 8;
+    $temp{MPIR_2REAL_INTERNAL} = "MPIR_2FLOAT$len";
+    my $len = $sizeof_hash{"pac_cv_f77_sizeof_double_precision"} * 8;
+    $temp{MPIR_DOUBLE_COMPLEX_INTERNAL} = "MPIR_COMPLEX$len";
+    $temp{MPIR_2DOUBLE_PRECISION_INTERNAL} = "MPIR_2FLOAT$len";
+    $temp{MPIR_REAL2_INTERNAL} = "MPIR_FLOAT16";
+    $temp{MPIR_REAL4_INTERNAL} = "MPIR_FLOAT32";
+    $temp{MPIR_COMPLEX8_INTERNAL} = "MPIR_COMPLEX32";
+    $temp{MPIR_REAL8_INTERNAL} = "MPIR_FLOAT64";
+    $temp{MPIR_COMPLEX16_INTERNAL} = "MPIR_COMPLEX64";
+    $temp{MPIR_REAL16_INTERNAL} = "MPIR_FLOAT128";
+    $temp{MPIR_COMPLEX32_INTERNAL} = "MPIR_COMPLEX128";
+    $temp{MPIR_INTEGER1_INTERNAL} = "MPIR_INT8";
+    $temp{MPIR_COMPLEX4_INTERNAL} = "MPIR_COMPLEX16";
+    $temp{MPIR_INTEGER2_INTERNAL} = "MPIR_INT16";
+    $temp{MPIR_INTEGER4_INTERNAL} = "MPIR_INT32";
+    $temp{MPIR_INTEGER8_INTERNAL} = "MPIR_INT64";
+    $temp{MPIR_INTEGER16_INTERNAL} = "MPIR_INT128";
+    my $len = $sizeof_hash{"BOOL"} * 8;
+    $temp{MPIR_CXX_BOOL_INTERNAL} = "MPIR_INT$len";
+    my $len = $sizeof_hash{"FLOAT"} * 8;
+    $temp{MPIR_CXX_FLOAT_COMPLEX_INTERNAL} = "MPIR_COMPLEX$len";
+    my $len = $sizeof_hash{"DOUBLE"} * 8;
+    $temp{MPIR_CXX_DOUBLE_COMPLEX_INTERNAL} = "MPIR_COMPLEX$len";
+    my $len = $sizeof_hash{"LONG_DOUBLE"} * 8;
+    if ($len == 64) {
+        $temp{MPIR_CXX_LONG_DOUBLE_COMPLEX_INTERNAL} = "MPIR_COMPLEX$len";
+    }
+    else {
+        $temp{MPIR_CXX_LONG_DOUBLE_COMPLEX_INTERNAL} = "MPIR_ALT_COMPLEX$len";
+    }
+    $temp{MPIR_INT8_T_INTERNAL} = "MPIR_INT8";
+    $temp{MPIR_INT16_T_INTERNAL} = "MPIR_INT16";
+    $temp{MPIR_INT32_T_INTERNAL} = "MPIR_INT32";
+    $temp{MPIR_INT64_T_INTERNAL} = "MPIR_INT64";
+    $temp{MPIR_UINT8_T_INTERNAL} = "MPIR_UINT8";
+    $temp{MPIR_UINT16_T_INTERNAL} = "MPIR_UINT16";
+    $temp{MPIR_UINT32_T_INTERNAL} = "MPIR_UINT32";
+    $temp{MPIR_UINT64_T_INTERNAL} = "MPIR_UINT64";
+    my $len = $sizeof_hash{"BOOL"} * 8;
+    $temp{MPIR_C_BOOL_INTERNAL} = "MPIR_INT$len";
+    my $len = $sizeof_hash{"FLOAT"}* 8;
+    $temp{MPIR_C_COMPLEX_INTERNAL} = "MPIR_COMPLEX$len";
+    my $len = $sizeof_hash{"DOUBLE"} * 8;
+    $temp{MPIR_C_DOUBLE_COMPLEX_INTERNAL} = "MPIR_COMPLEX$len";
+    my $len = $sizeof_hash{"LONG_DOUBLE"} * 8;
+    if ($len == 64) {
+        $temp{MPIR_C_LONG_DOUBLE_COMPLEX_INTERNAL} = "MPIR_COMPLEX$len";
+    }
+    else {
+        $temp{MPIR_C_LONG_DOUBLE_COMPLEX_INTERNAL} = "MPIR_ALT_COMPLEX$len";
+    }
+    my $len = $sizeof_hash{"MPI_SIZEOF_AINT"} * 8;
+    $temp{MPIR_AINT_INTERNAL} = "MPIR_INT$len";
+    my $len = $sizeof_hash{"MPI_SIZEOF_OFFSET"} * 8;
+    $temp{MPIR_OFFSET_INTERNAL} = "MPIR_INT$len";
+    my $len = $sizeof_hash{"MPI_SIZEOF_COUNT"} * 8;
+    $temp{MPIR_COUNT_INTERNAL} = "MPIR_INT$len";
+    $temp{MPIR_C_FLOAT16_INTERNAL} = "MPIR_FLOAT16";
     while (my ($k, $v) = each %temp) {
         if (!exists $config_defines{$k}) {
             $config_defines{$k} = $v;

@@ -59,16 +59,8 @@
 /* Define the number of CH3_RANK_BITS */
 #undef CH3_RANK_BITS
 
-/* Define the number of CH4_UCX_RANKBITS */
+/* Define the number of rank bits used in UCX */
 #undef CH4_UCX_RANKBITS
-
-/* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
-   systems. This function is required for `alloca.c' support on those systems.
-   */
-#undef CRAY_STACKSEG_END
-
-/* Define to 1 if using `alloca.c'. */
-#undef C_ALLOCA
 
 /* Define the search path for machines files */
 #undef DEFAULT_MACHINES_PATH
@@ -76,33 +68,36 @@
 /* Define the default remote shell program to use */
 #undef DEFAULT_REMOTE_SHELL
 
+/* Define to workaround interprocess mutex issue on FreeBSD */
+#undef DELAY_SHM_MUTEX_DESTROY
+
 /* Define to enable shared-memory collectives */
 #undef ENABLED_SHM_COLLECTIVES
 
 /* Application checkpointing enabled */
 #undef ENABLE_CHECKPOINTING
 
-/* define to add per-vc function pointers to override send and recv functions
-   */
-#undef ENABLE_COMM_OVERRIDES
-
-/* Define to enable using Izem queues */
-#undef ENABLE_IZEM_QUEUE
+/* Define to skip initializing builtin world comm during MPI_Session_init */
+#undef ENABLE_LOCAL_SESSION_INIT
 
 /* Define to disable shared-memory communication */
 #undef ENABLE_NO_LOCAL
 
-/* Define to enable PMI 1 API */
+/* Define to enable PMI1 protocol */
 #undef ENABLE_PMI1
 
-/* Define to enable PMI 2 API */
+/* Define to enable PMI2 protocol */
 #undef ENABLE_PMI2
 
-/* Define to enable PMI X API */
+/* Define to enable PMIX protocol */
 #undef ENABLE_PMIX
 
 /* Define to 1 to enable getdims-related MPI_T performance variables */
 #undef ENABLE_PVAR_DIMS
+
+/* Define to 1 to enable message count transmitted through multiple NICs MPI_T
+   performance variables */
+#undef ENABLE_PVAR_MULTINIC
 
 /* Define to 1 to enable nemesis-related MPI_T performance variables */
 #undef ENABLE_PVAR_NEM
@@ -114,13 +109,10 @@
 /* Define to 1 to enable rma-related MPI_T performance variables */
 #undef ENABLE_PVAR_RMA
 
-/* Define to 1 to enable ... */
-#undef ENABLE_PVAR_MULTINIC
+/* Define if QMPI enabled */
+#undef ENABLE_QMPI
 
-/* Define to skip initializing builtin world comm during MPI_Session_init */
-#undef ENABLE_LOCAL_SESSION_INIT
- 
-/* Define to enable threadcomm feature */
+/* "set to enable threadcomm feature" */
 #undef ENABLE_THREADCOMM
 
 /* The value of false in Fortran */
@@ -175,6 +167,9 @@
 /* Directory to use in namepub */
 #undef FILE_NAMEPUB_BASEDIR
 
+/* Define if PMIx_Load_topology is available */
+#undef HAS_PMIX_LOAD_TOPOLOGY
+
 /* Define if addresses are a different size than Fortran integers */
 #undef HAVE_AINT_DIFFERENT_THAN_FINT
 
@@ -183,13 +178,6 @@
 
 /* Define to 1 if you have the `alarm' function. */
 #undef HAVE_ALARM
-
-/* Define to 1 if you have `alloca', as a function or macro. */
-#undef HAVE_ALLOCA
-
-/* Define to 1 if you have <alloca.h> and it should be used (not on Ultrix).
-   */
-#undef HAVE_ALLOCA_H
 
 /* Define if int32_t works with any alignment */
 #undef HAVE_ANY_INT32_T_ALIGNMENT
@@ -212,9 +200,6 @@
 /* Define if C11 _Static_assert is supported. */
 #undef HAVE_C11__STATIC_ASSERT
 
-/* define if the compiler defines __FUNC__ */
-#undef HAVE_CAP__FUNC__
-
 /* Define to 1 if you have the `CFUUIDCreate' function. */
 #undef HAVE_CFUUIDCREATE
 
@@ -226,9 +211,6 @@
 
 /* UCX netmod is built */
 #undef HAVE_CH4_NETMOD_UCX
-
-/* FBOX submodule is built */
-#undef HAVE_CH4_SHM_EAGER_FBOX
 
 /* IQUEUE submodule is built */
 #undef HAVE_CH4_SHM_EAGER_IQUEUE
@@ -251,11 +233,17 @@
 /* Define if C++ is supported */
 #undef HAVE_CXX_BINDING
 
-/* Define is C++ supports complex types */
+/* Define if C++ supports bool types */
+#undef HAVE_CXX_BOOL
+
+/* Define if C++ supports complex types */
 #undef HAVE_CXX_COMPLEX
 
 /* define if the compiler supports exceptions */
 #undef HAVE_CXX_EXCEPTIONS
+
+/* Define if C++ supports long double complex */
+#undef HAVE_CXX_LONG_DOUBLE_COMPLEX
 
 /* Define if multiple __attribute__((alias)) are supported */
 #undef HAVE_C_MULTI_ATTR_ALIAS
@@ -288,23 +276,20 @@
 /* Define if environ extern is available */
 #undef HAVE_EXTERN_ENVIRON
 
-/* Define to 1 to enable Fortran 2008 binding */
+/* Define to 1 if we have Fortran 2008 binding */
 #undef HAVE_F08_BINDING
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define if Fortran 90 type routines available */
-#undef HAVE_FC_TYPE_ROUTINES
-
 /* Define if Fortran integer are the same size as C ints */
 #undef HAVE_FINT_IS_INT
 
-/* Define if _Float16 is supported */
-#undef HAVE_FLOAT16
-
 /* Define if __float128 is supported */
 #undef HAVE_FLOAT128
+
+/* Define if _Float16 is supported */
+#undef HAVE_FLOAT16
 
 /* Define to 1 if the system has the type `float _Complex'. */
 #undef HAVE_FLOAT__COMPLEX
@@ -321,14 +306,11 @@
 /* Define to 1 if you have the `getsid' function. */
 #undef HAVE_GETSID
 
+/* Define if building hcoll */
+#undef HAVE_HCOLL
+
 /* Define if hwloc is available */
 #undef HAVE_HWLOC
-
-/* Define to 1 if you have the <hwloc.h> header file. */
-#undef HAVE_HWLOC_H
-
-/* Define if struct hostent contains h_addr_list */
-#undef HAVE_H_ADDR_LIST
 
 /* Define to 1 if you have the `inet_pton' function. */
 #undef HAVE_INET_PTON
@@ -363,23 +345,11 @@
 /* Define if libfabric library has nic field in fi_info struct */
 #undef HAVE_LIBFABRIC_NIC
 
-/* Define to 1 if you have the `hcoll' library (-lhcoll). */
-#undef HAVE_LIBHCOLL
-
-/* Define to 1 if you have the `hwloc' library (-lhwloc). */
-#undef HAVE_LIBHWLOC
-
 /* Define to 1 if you have the `pmi' library (-lpmi). */
 #undef HAVE_LIBPMI
 
-/* Define to 1 if you have the `pmix' library (-lpmix). */
-#undef HAVE_LIBPMIX
-
 /* Define to 1 if you have the `ucp' library (-lucp). */
 #undef HAVE_LIBUCP
-
-/* Define to 1 if you have the `xpmem' library (-lxpmem). */
-#undef HAVE_LIBXPMEM
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
@@ -399,21 +369,19 @@
 /* Define if C99-style variable argument list macro functionality */
 #undef HAVE_MACRO_VA_ARGS
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
-/* Define to 1 if you have the `mkstemp' function. */
-#undef HAVE_MKSTEMP
+/* Define to 1 if you have the <minix/config.h> header file. */
+#undef HAVE_MINIX_CONFIG_H
 
 /* Define so that we can test whether the mpichconf.h file has been included
    */
 #undef HAVE_MPICHCONF
 
+/* Define if MPI_T Events are enabled */
+#undef HAVE_MPIT_EVENTS
+
 /* Define if the Fortran init code for MPI works from C programs without
    special libraries */
 #undef HAVE_MPI_F_INIT_WORKS_WITH_C
-
-#undef HAVE_MPIT_EVENTS
 
 /* Define if multiple weak symbols may be defined */
 #undef HAVE_MULTIPLE_PRAGMA_WEAK
@@ -436,18 +404,20 @@
 /* Define to 1 if you have the <netinet/tcp.h> header file. */
 #undef HAVE_NETINET_TCP_H
 
-/* Define if netloc is available in either user specified path or in system
-   path */
+/* Define if netloc is available */
 #undef HAVE_NETLOC
 
-/* Define if you have the <net/if.h> header file. */
+/* Define to 1 if you have the <net/if.h> header file. */
 #undef HAVE_NET_IF_H
 
 /* Define if the Fortran types are not available in C */
 #undef HAVE_NO_FORTRAN_MPI_TYPES_IN_C
 
-/* Define is the OSX thread affinity policy macros defined */
+/* Define if the OSX thread affinity policy macros defined */
 #undef HAVE_OSX_THREAD_AFFINITY
+
+/* Define if PMI2_Set_threaded exist */
+#undef HAVE_PMI2_SET_THREADED
 
 /* Define to 1 if you have the <poll.h> header file. */
 #undef HAVE_POLL_H
@@ -461,6 +431,9 @@
 /* Supports weak pragma */
 #undef HAVE_PRAGMA_WEAK
 
+/* Define to 1 if you have the `process_vm_readv' function. */
+#undef HAVE_PROCESS_VM_READV
+
 /* Define to 1 if you have the `ptrace' function. */
 #undef HAVE_PTRACE
 
@@ -472,9 +445,6 @@
 
 /* Define to 1 if you have the `qsort' function. */
 #undef HAVE_QSORT
-
-/* Define to 1 if you have the `rand' function. */
-#undef HAVE_RAND
 
 /* Define to 1 if you have the <random.h> header file. */
 #undef HAVE_RANDOM_H
@@ -515,14 +485,8 @@
 /* Define to 1 if you have the `sigset' function. */
 #undef HAVE_SIGSET
 
-/* Define to 1 if you have the `snprintf' function. */
-#undef HAVE_SNPRINTF
-
 /* Define if socklen_t is available */
 #undef HAVE_SOCKLEN_T
-
-/* Define to 1 if you have the `srand' function. */
-#undef HAVE_SRAND
 
 /* Define to 1 if you have the <stdarg.h> header file. */
 #undef HAVE_STDARG_H
@@ -548,7 +512,7 @@
 /* Define to 1 if you have the `strerror' function. */
 #undef HAVE_STRERROR
 
-/* Define to 1 if you have the `strerror_r' function. */
+/* Define if you have `strerror_r'. */
 #undef HAVE_STRERROR_R
 
 /* Define to 1 if you have the <strings.h> header file. */
@@ -562,12 +526,6 @@
 
 /* Define to 1 if you have the `strsignal' function. */
 #undef HAVE_STRSIGNAL
-
-/* Define if struct ifconf can be used */
-#undef HAVE_STRUCT_IFCONF
-
-/* Define if struct ifreq can be used */
-#undef HAVE_STRUCT_IFREQ
 
 /* Define to 1 if the system has the type `struct random_data'. */
 #undef HAVE_STRUCT_RANDOM_DATA
@@ -617,9 +575,6 @@
 /* Define to 1 if you have the <sys/uio.h> header file. */
 #undef HAVE_SYS_UIO_H
 
-/* Define to 1 if you have the <sys/un.h> header file. */
-#undef HAVE_SYS_UN_H
-
 /* Define to enable tag error bits */
 #undef HAVE_TAG_ERROR_BITS
 
@@ -631,12 +586,6 @@
 
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
-
-/* Define if ucp_get_nb is defined in ucx */
-#undef HAVE_UCP_GET_NB
-
-/* Define if ucp_put_nb is defined in ucx */
-#undef HAVE_UCP_PUT_NB
 
 /* Define if uint16_t is supported by the C compiler */
 #undef HAVE_UINT16_T
@@ -665,9 +614,6 @@
 /* Define to 1 if you have the <uuid/uuid.h> header file. */
 #undef HAVE_UUID_UUID_H
 
-/* Define if we have va_copy */
-#undef HAVE_VA_COPY
-
 /* Whether C compiler supports symbol visibility or not */
 #undef HAVE_VISIBILITY
 
@@ -680,20 +626,14 @@
 /* Define to 1 if you have the <wait.h> header file. */
 #undef HAVE_WAIT_H
 
+/* Define to 1 if you have the <wchar.h> header file. */
+#undef HAVE_WCHAR_H
+
 /* Attribute style weak pragma */
 #undef HAVE_WEAK_ATTRIBUTE
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
-
-/* define if the compiler defines __FUNCTION__ */
-#undef HAVE__FUNCTION__
-
-/* define if the compiler defines __func__ */
-#undef HAVE__FUNC__
-
-/* Define if we have __va_copy */
-#undef HAVE___VA_COPY
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
@@ -701,6 +641,9 @@
 /* Controls byte alignment of structures (for aligning allocated structures)
    */
 #undef MAX_ALIGNMENT
+
+/* Define if PMI2_KEYVAL_T is missing */
+#undef MISSING_PMI2_KEYVAL_T
 
 /* Datatype engine */
 #undef MPICH_DATATYPE_ENGINE
@@ -721,11 +664,8 @@
 /* Define to enable mutex debugging */
 #undef MPICH_DEBUG_MUTEX
 
-/* Define to enable progress debugging */
+/* Define to enable mutex debugging */
 #undef MPICH_DEBUG_PROGRESS
-
-/* define to enable error messages */
-#undef MPICH_ERROR_MSG_LEVEL
 
 /* Define as the name of the debugger support library */
 #undef MPICH_INFODLL_LOC
@@ -746,34 +686,38 @@
    */
 #undef MPICH_THREAD_SUPPRESS_PREDEFINED_REFCOUNTS
 
-/* CH4 should build locality info */
-#undef MPIDI_BUILD_CH4_LOCALITY_INFO
-
-/* Define if CH4U will use per-communicator message queues */
-#undef MPIDI_CH4U_USE_PER_COMM_QUEUE
-
 /* CH4 Directly transfers data through the chosen netmode */
 #undef MPIDI_CH4_DIRECT_NETMOD
 
 /* Number of VCIs configured in CH4 */
 #undef MPIDI_CH4_MAX_VCIS
 
-#undef MPIDI_CH4_RESERVED_VCIS
-
-/* CH4-OFI should skip providers with IPv6 */
-#undef MPIDI_CH4_OFI_SKIP_IPV6
-
 /* Define to use bgq capability set */
 #undef MPIDI_CH4_OFI_USE_SET_BGQ
 
+/* Define to use cxi capability set */
+#undef MPIDI_CH4_OFI_USE_SET_CXI
+
+/* Define to use gni capability set */
+#undef MPIDI_CH4_OFI_USE_SET_GNI
+
 /* Define to use PSM2 capability set */
 #undef MPIDI_CH4_OFI_USE_SET_PSM2
+
+/* Define to use PSM3 capability set */
+#undef MPIDI_CH4_OFI_USE_SET_PSM3
 
 /* Define to use runtime capability set */
 #undef MPIDI_CH4_OFI_USE_SET_RUNTIME
 
 /* Define to use sockets capability set */
 #undef MPIDI_CH4_OFI_USE_SET_SOCKETS
+
+/* Define to use verbs;ofi_rxm capability set */
+#undef MPIDI_CH4_OFI_USE_SET_VERBS_RXM
+
+/* Enable CMA IPC in CH4 */
+#undef MPIDI_CH4_SHM_ENABLE_CMA
 
 /* Define if GPU IPC submodule is enabled */
 #undef MPIDI_CH4_SHM_ENABLE_GPU
@@ -784,14 +728,11 @@
 /* Silently disable XPMEM, if it fails at runtime */
 #undef MPIDI_CH4_SHM_XPMEM_ALLOW_SILENT_FALLBACK
 
-/* Enable CMA shared memory submodule in CH4 */
-#undef MPIDI_CH4_SHM_ENABLE_CMA
-
 /* Define to enable direct multi-threading model */
 #undef MPIDI_CH4_USE_MT_DIRECT
 
-/* Define to enable hand-off multi-threading model */
-#undef MPIDI_CH4_USE_MT_HANDOFF
+/* Define to enable lockless multi-threading model */
+#undef MPIDI_CH4_USE_MT_LOCKLESS
 
 /* Define to enable runtime multi-threading model */
 #undef MPIDI_CH4_USE_MT_RUNTIME
@@ -802,7 +743,7 @@
 /* Enables AM-only communication */
 #undef MPIDI_ENABLE_AM_ONLY
 
-/* CH4/OFI should use domain for vni contexts */
+/* CH4/OFI should use domain for vci contexts */
 #undef MPIDI_OFI_VNI_USE_DOMAIN
 
 /* Define to turn on the inlining optimizations in Nemesis code */
@@ -811,17 +752,80 @@
 /* Method for local large message transfers. */
 #undef MPID_NEM_LOCAL_LMT_IMPL
 
-/* always enabled since 2020-02 */
-#define MPID_NEM_USE_LOCK_FREE_QUEUES 1
-
 /* Define if a port may be used to communicate with the processes */
 #undef MPIEXEC_ALLOW_PORT
 
-/* Size of an MPI_STATUS, in Fortran, in Fortran integers */
-#undef MPIF_STATUS_SIZE
+/* Internal type for MPI_2DOUBLE_PRECISION */
+#undef MPIR_2DOUBLE_PRECISION_INTERNAL
+
+/* Internal type for MPI_2INTEGER */
+#undef MPIR_2INTEGER_INTERNAL
+
+/* Internal type for MPI_2INT */
+#undef MPIR_2INT_INTERNAL
+
+/* Internal type for MPI_2REAL */
+#undef MPIR_2REAL_INTERNAL
+
+/* Internal type for MPI_AINT_DATATYPE */
+#undef MPIR_AINT_INTERNAL
 
 /* limits.h _MAX constant for MPI_Aint */
 #undef MPIR_AINT_MAX
+
+/* limits.h _MIN constant for MPI_Aint */
+#undef MPIR_AINT_MIN
+
+/* The C type for MPIR_ALT_COMPLEX128 */
+#undef MPIR_ALT_COMPLEX128_CTYPE
+
+/* The C type for MPIR_ALT_COMPLEX96 */
+#undef MPIR_ALT_COMPLEX96_CTYPE
+
+/* The C type for MPIR_ALT_FLOAT128 */
+#undef MPIR_ALT_FLOAT128_CTYPE
+
+/* The C type for MPIR_ALT_FLOAT96 */
+#undef MPIR_ALT_FLOAT96_CTYPE
+
+/* Internal type for MPI_BYTE */
+#undef MPIR_BYTE_INTERNAL
+
+/* Internal type for MPI_CHARACTER */
+#undef MPIR_CHARACTER_INTERNAL
+
+/* Internal type for MPI_CHAR */
+#undef MPIR_CHAR_INTERNAL
+
+/* The C type for MPIR_COMPLEX128 */
+#undef MPIR_COMPLEX128_CTYPE
+
+/* The C type for MPIR_COMPLEX16 */
+#undef MPIR_COMPLEX16_CTYPE
+
+/* Internal type for MPI_COMPLEX16 */
+#undef MPIR_COMPLEX16_INTERNAL
+
+/* The C type for MPIR_COMPLEX32 */
+#undef MPIR_COMPLEX32_CTYPE
+
+/* Internal type for MPI_COMPLEX32 */
+#undef MPIR_COMPLEX32_INTERNAL
+
+/* Internal type for MPI_COMPLEX4 */
+#undef MPIR_COMPLEX4_INTERNAL
+
+/* The C type for MPIR_COMPLEX64 */
+#undef MPIR_COMPLEX64_CTYPE
+
+/* Internal type for MPI_COMPLEX8 */
+#undef MPIR_COMPLEX8_INTERNAL
+
+/* Internal type for MPI_COMPLEX */
+#undef MPIR_COMPLEX_INTERNAL
+
+/* Internal type for MPI_COUNT_DATATYPE */
+#undef MPIR_COUNT_INTERNAL
 
 /* limits.h _MAX constant for MPI_Count */
 #undef MPIR_COUNT_MAX
@@ -829,56 +833,203 @@
 /* a C type used to compute C++ bool reductions */
 #undef MPIR_CXX_BOOL_CTYPE
 
-/* Define as the MPI Datatype handle for MPI::BOOL */
-#undef MPIR_CXX_BOOL_VALUE
+/* Internal type for MPI_CXX_BOOL */
+#undef MPIR_CXX_BOOL_INTERNAL
 
-/* Define as the MPI Datatype handle for MPI::COMPLEX */
-#undef MPIR_CXX_COMPLEX_VALUE
+/* Internal type for MPI_CXX_DOUBLE_COMPLEX */
+#undef MPIR_CXX_DOUBLE_COMPLEX_INTERNAL
 
-/* Define as the MPI Datatype handle for MPI::DOUBLE_COMPLEX */
-#undef MPIR_CXX_DOUBLE_COMPLEX_VALUE
+/* Internal type for MPI_CXX_FLOAT_COMPLEX */
+#undef MPIR_CXX_FLOAT_COMPLEX_INTERNAL
 
-/* Define as the MPI Datatype handle for MPI::LONG_DOUBLE_COMPLEX */
-#undef MPIR_CXX_LONG_DOUBLE_COMPLEX_VALUE
+/* Internal type for MPI_CXX_LONG_DOUBLE_COMPLEX */
+#undef MPIR_CXX_LONG_DOUBLE_COMPLEX_INTERNAL
 
-/* The C type for FORTRAN DOUBLE PRECISION */
-#undef MPIR_FC_DOUBLE_CTYPE
+/* Internal type for MPI_C_BOOL */
+#undef MPIR_C_BOOL_INTERNAL
 
-/* The C type for FORTRAN REAL */
-#undef MPIR_FC_REAL_CTYPE
+/* Internal type for MPI_C_COMPLEX */
+#undef MPIR_C_COMPLEX_INTERNAL
 
-/* C type to use for MPI_INTEGER16 */
-#undef MPIR_INTEGER16_CTYPE
+/* Internal type for MPI_C_DOUBLE_COMPLEX */
+#undef MPIR_C_DOUBLE_COMPLEX_INTERNAL
 
-/* C type to use for MPI_INTEGER1 */
-#undef MPIR_INTEGER1_CTYPE
+/* Internal type for MPIX_C_FLOAT16 */
+#undef MPIR_C_FLOAT16_INTERNAL
 
-/* C type to use for MPI_INTEGER2 */
-#undef MPIR_INTEGER2_CTYPE
+/* Internal type for MPI_C_LONG_DOUBLE_COMPLEX */
+#undef MPIR_C_LONG_DOUBLE_COMPLEX_INTERNAL
 
-/* C type to use for MPI_INTEGER4 */
-#undef MPIR_INTEGER4_CTYPE
+/* Internal type for MPI_DOUBLE_COMPLEX */
+#undef MPIR_DOUBLE_COMPLEX_INTERNAL
 
-/* C type to use for MPI_INTEGER8 */
-#undef MPIR_INTEGER8_CTYPE
+/* Internal type for MPI_DOUBLE */
+#undef MPIR_DOUBLE_INTERNAL
+
+/* Internal type for MPI_DOUBLE_PRECISION */
+#undef MPIR_DOUBLE_PRECISION_INTERNAL
+
+/* The C type for MPIR_FLOAT128 */
+#undef MPIR_FLOAT128_CTYPE
+
+/* The C type for MPIR_FLOAT16 */
+#undef MPIR_FLOAT16_CTYPE
+
+/* The C type for MPIR_FLOAT32 */
+#undef MPIR_FLOAT32_CTYPE
+
+/* The C type for MPIR_FLOAT64 */
+#undef MPIR_FLOAT64_CTYPE
+
+/* The C type for MPIR_FLOAT8 */
+#undef MPIR_FLOAT8_CTYPE
+
+/* Internal type for MPI_FLOAT */
+#undef MPIR_FLOAT_INTERNAL
+
+/* The C type for MPIR_INT128 */
+#undef MPIR_INT128_CTYPE
+
+/* The C type for MPIR_INT16 */
+#undef MPIR_INT16_CTYPE
+
+/* Internal type for MPI_INT16_T */
+#undef MPIR_INT16_T_INTERNAL
+
+/* The C type for MPIR_INT32 */
+#undef MPIR_INT32_CTYPE
+
+/* Internal type for MPI_INT32_T */
+#undef MPIR_INT32_T_INTERNAL
+
+/* The C type for MPIR_INT64 */
+#undef MPIR_INT64_CTYPE
+
+/* Internal type for MPI_INT64_T */
+#undef MPIR_INT64_T_INTERNAL
+
+/* The C type for MPIR_INT8 */
+#undef MPIR_INT8_CTYPE
+
+/* Internal type for MPI_INT8_T */
+#undef MPIR_INT8_T_INTERNAL
+
+/* Internal type for MPI_INTEGER16 */
+#undef MPIR_INTEGER16_INTERNAL
+
+/* Internal type for MPI_INTEGER1 */
+#undef MPIR_INTEGER1_INTERNAL
+
+/* Internal type for MPI_INTEGER2 */
+#undef MPIR_INTEGER2_INTERNAL
+
+/* Internal type for MPI_INTEGER4 */
+#undef MPIR_INTEGER4_INTERNAL
+
+/* Internal type for MPI_INTEGER8 */
+#undef MPIR_INTEGER8_INTERNAL
+
+/* Internal type for MPI_INTEGER */
+#undef MPIR_INTEGER_INTERNAL
+
+/* Internal type for MPI_INT */
+#undef MPIR_INT_INTERNAL
+
+/* Internal type for MPI_LB */
+#undef MPIR_LB_INTERNAL
+
+/* Internal type for MPI_LOGICAL */
+#undef MPIR_LOGICAL_INTERNAL
+
+/* Internal type for MPI_LONG_DOUBLE */
+#undef MPIR_LONG_DOUBLE_INTERNAL
+
+/* Internal type for MPI_LONG */
+#undef MPIR_LONG_INTERNAL
+
+/* Internal type for MPI_LONGLONG_INT */
+#undef MPIR_LONG_LONG_INT_INTERNAL
+
+/* Internal type for MPI_OFFSET_DATATYPE */
+#undef MPIR_OFFSET_INTERNAL
 
 /* limits.h _MAX constant for MPI_Offset */
 #undef MPIR_OFFSET_MAX
 
-/* C type to use for MPI_REAL16 */
-#undef MPIR_REAL16_CTYPE
+/* Internal type for MPI_PACKED */
+#undef MPIR_PACKED_INTERNAL
 
-/* C type to use for MPI_REAL4 */
-#undef MPIR_REAL4_CTYPE
+/* Internal type for MPI_REAL16 */
+#undef MPIR_REAL16_INTERNAL
 
-/* C type to use for MPI_REAL8 */
-#undef MPIR_REAL8_CTYPE
+/* Internal type for MPI_REAL2 */
+#undef MPIR_REAL2_INTERNAL
+
+/* Internal type for MPI_REAL4 */
+#undef MPIR_REAL4_INTERNAL
+
+/* Internal type for MPI_REAL8 */
+#undef MPIR_REAL8_INTERNAL
+
+/* Internal type for MPI_REAL */
+#undef MPIR_REAL_INTERNAL
+
+/* Internal type for MPI_SHORT */
+#undef MPIR_SHORT_INTERNAL
+
+/* Internal type for MPI_SIGNED_CHAR */
+#undef MPIR_SIGNED_CHAR_INTERNAL
+
+/* Internal type for MPI_UB */
+#undef MPIR_UB_INTERNAL
+
+/* The C type for MPIR_UINT128 */
+#undef MPIR_UINT128_CTYPE
+
+/* The C type for MPIR_UINT16 */
+#undef MPIR_UINT16_CTYPE
+
+/* Internal type for MPI_UINT16_T */
+#undef MPIR_UINT16_T_INTERNAL
+
+/* The C type for MPIR_UINT32 */
+#undef MPIR_UINT32_CTYPE
+
+/* Internal type for MPI_UINT32_T */
+#undef MPIR_UINT32_T_INTERNAL
+
+/* The C type for MPIR_UINT64 */
+#undef MPIR_UINT64_CTYPE
+
+/* Internal type for MPI_UINT64_T */
+#undef MPIR_UINT64_T_INTERNAL
+
+/* The C type for MPIR_UINT8 */
+#undef MPIR_UINT8_CTYPE
+
+/* Internal type for MPI_UINT8_T */
+#undef MPIR_UINT8_T_INTERNAL
+
+/* Internal type for MPI_UNSIGNED_CHAR */
+#undef MPIR_UNSIGNED_CHAR_INTERNAL
+
+/* Internal type for MPI_UNSIGNED */
+#undef MPIR_UNSIGNED_INTERNAL
+
+/* Internal type for MPI_UNSIGNED_LONG */
+#undef MPIR_UNSIGNED_LONG_INTERNAL
+
+/* Internal type for MPI_UNSIGNED_LONG_LONG */
+#undef MPIR_UNSIGNED_LONG_LONG_INTERNAL
+
+/* Internal type for MPI_UNSIGNED_SHORT */
+#undef MPIR_UNSIGNED_SHORT_INTERNAL
 
 /* MPIR_Ucount is an unsigned MPI_Count-sized integer */
 #undef MPIR_Ucount
 
-/* MPIR_Ufint is an unsigned Fortran INTEGER-sized integer */
-#undef MPIR_Ufint
+/* Internal type for MPI_WCHAR */
+#undef MPIR_WCHAR_INTERNAL
 
 /* Define to enable timing mutexes */
 #undef MPIU_MUTEX_WAIT_TIME
@@ -895,17 +1046,11 @@
 /* Define if getsid needs a declaration */
 #undef NEEDS_GETSID_DECL
 
-/* Define if mkstemp needs a declaration */
-#undef NEEDS_MKSTEMP_DECL
-
 /* Define if _POSIX_SOURCE needed to get sigaction */
 #undef NEEDS_POSIX_FOR_SIGACTION
 
 /* Define if putenv needs a declaration */
 #undef NEEDS_PUTENV_DECL
-
-/* Define if snprintf needs a declaration */
-#undef NEEDS_SNPRINTF_DECL
 
 /* Define if strdup needs a declaration */
 #undef NEEDS_STRDUP_DECL
@@ -921,6 +1066,12 @@
 
 /* Define if vsnprintf needs a declaration */
 #undef NEEDS_VSNPRINTF_DECL
+
+/* Define if PMIX_INFO_LOAD macro is needed */
+#undef NEED_PMIX_INFO_LOAD
+
+/* The PMI library does not have PMI_Spawn_multiple. */
+#undef NO_PMI_SPAWN_MULTIPLE
 
 /* Name of package */
 #undef PACKAGE
@@ -943,7 +1094,8 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define if using 3rd party PMI (e.g. libpmix) */
+/* define if PMI is supplied from 3rd party (thus we should limit usage of
+   MPICH extensions) */
 #undef PMI_FROM_3RD_PARTY
 
 /* Define to turn on the prefetching optimization in Nemesis code */
@@ -977,6 +1129,9 @@
 #undef SIZEOF_F77_INTEGER
 
 /* Define size of PAC_TYPE_NAME */
+#undef SIZEOF_F77_LOGICAL
+
+/* Define size of PAC_TYPE_NAME */
 #undef SIZEOF_F77_REAL
 
 /* The size of `float', as computed by sizeof. */
@@ -990,6 +1145,18 @@
 
 /* The size of `int', as computed by sizeof. */
 #undef SIZEOF_INT
+
+/* The size of `int16_t', as computed by sizeof. */
+#undef SIZEOF_INT16_T
+
+/* The size of `int32_t', as computed by sizeof. */
+#undef SIZEOF_INT32_T
+
+/* The size of `int64_t', as computed by sizeof. */
+#undef SIZEOF_INT64_T
+
+/* The size of `int8_t', as computed by sizeof. */
+#undef SIZEOF_INT8_T
 
 /* The size of `long', as computed by sizeof. */
 #undef SIZEOF_LONG
@@ -1015,9 +1182,6 @@
 /* The size of `MPII_Bsend_data_t', as computed by sizeof. */
 #undef SIZEOF_MPII_BSEND_DATA_T
 
-/* legacy */
-#undef SIZEOF_OPA_PTR_T
-
 /* The size of `short', as computed by sizeof. */
 #undef SIZEOF_SHORT
 
@@ -1026,6 +1190,18 @@
 
 /* The size of `two_int', as computed by sizeof. */
 #undef SIZEOF_TWO_INT
+
+/* The size of `uint16_t', as computed by sizeof. */
+#undef SIZEOF_UINT16_T
+
+/* The size of `uint32_t', as computed by sizeof. */
+#undef SIZEOF_UINT32_T
+
+/* The size of `uint64_t', as computed by sizeof. */
+#undef SIZEOF_UINT64_T
+
+/* The size of `uint8_t', as computed by sizeof. */
+#undef SIZEOF_UINT8_T
 
 /* The size of `unsigned char', as computed by sizeof. */
 #undef SIZEOF_UNSIGNED_CHAR
@@ -1057,18 +1233,12 @@
 /* The size of `__float128', as computed by sizeof. */
 #undef SIZEOF___FLOAT128
 
-/* If using the C implementation of alloca, define if you know the
-   direction of stack growth for your system; otherwise it will be
-   automatically deduced at runtime.
-	STACK_DIRECTION > 0 => grows toward higher addresses
-	STACK_DIRECTION < 0 => grows toward lower addresses
-	STACK_DIRECTION = 0 => direction of growth unknown */
-#undef STACK_DIRECTION
-
 /* Define calling convention */
 #undef STDCALL
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* Define to 1 if strerror_r returns char *. */
@@ -1081,8 +1251,8 @@
    values */
 #undef USE_AINT_FOR_ATTRVAL
 
-/* Define if alloca should be used if available */
-#undef USE_ALLOCA
+/* define to use global config file */
+#undef USE_CONFIGFILE
 
 /* Define if performing coverage tests */
 #undef USE_COVERAGE
@@ -1103,18 +1273,11 @@
 /* Define if mpiexec should create a new process group session */
 #undef USE_NEW_SESSION
 
-/* Define if _POSIX_C_SOURCE needs to be undefined for struct ifconf */
-#undef USE_NOPOSIX_FOR_IFCONF
+/* Define if using Slurm PMI 1 */
+#undef USE_PMI1_SLURM
 
-/* Define if PMI2 API must be used */
-#undef USE_PMI2_API
-
-/* Define if PMIx API must be used */
-#undef USE_PMIX_API
-
-/* Define if access to PMI information through a port rather than just an fd
-   is allowed */
-#undef USE_PMI_PORT
+/* Define if using Slurm PMI 2 */
+#undef USE_PMI2_SLURM
 
 /* Define if sigaction should be used to set signals */
 #undef USE_SIGACTION
@@ -1125,9 +1288,6 @@
 /* Define it the socket verify macros should be enabled */
 #undef USE_SOCK_VERIFY
 
-/* Define if _SVID_SOURCE needs to be defined for struct ifconf */
-#undef USE_SVIDSOURCE_FOR_IFCONF
-
 /* Define if we can use a symmetric heap */
 #undef USE_SYM_HEAP
 
@@ -1135,21 +1295,87 @@
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
 #endif
+/* Enable general extensions on macOS.  */
+#ifndef _DARWIN_C_SOURCE
+# undef _DARWIN_C_SOURCE
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# undef __EXTENSIONS__
+#endif
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
 # undef _GNU_SOURCE
 #endif
-/* Enable threading extensions on Solaris.  */
+/* Enable X/Open compliant socket functions that do not require linking
+   with -lxnet on HP-UX 11.11.  */
+#ifndef _HPUX_ALT_XOPEN_SOCKET_API
+# undef _HPUX_ALT_XOPEN_SOCKET_API
+#endif
+/* Identify the host operating system as Minix.
+   This macro does not affect the system headers' behavior.
+   A future release of Autoconf may stop defining this macro.  */
+#ifndef _MINIX
+# undef _MINIX
+#endif
+/* Enable general extensions on NetBSD.
+   Enable NetBSD compatibility extensions on Minix.  */
+#ifndef _NETBSD_SOURCE
+# undef _NETBSD_SOURCE
+#endif
+/* Enable OpenBSD compatibility extensions on NetBSD.
+   Oddly enough, this does nothing on OpenBSD.  */
+#ifndef _OPENBSD_SOURCE
+# undef _OPENBSD_SOURCE
+#endif
+/* Define to 1 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_SOURCE
+# undef _POSIX_SOURCE
+#endif
+/* Define to 2 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_1_SOURCE
+# undef _POSIX_1_SOURCE
+#endif
+/* Enable POSIX-compatible threading on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
 # undef _POSIX_PTHREAD_SEMANTICS
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-5:2014.  */
+#ifndef __STDC_WANT_IEC_60559_ATTRIBS_EXT__
+# undef __STDC_WANT_IEC_60559_ATTRIBS_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-1:2014.  */
+#ifndef __STDC_WANT_IEC_60559_BFP_EXT__
+# undef __STDC_WANT_IEC_60559_BFP_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-2:2015.  */
+#ifndef __STDC_WANT_IEC_60559_DFP_EXT__
+# undef __STDC_WANT_IEC_60559_DFP_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-4:2015.  */
+#ifndef __STDC_WANT_IEC_60559_FUNCS_EXT__
+# undef __STDC_WANT_IEC_60559_FUNCS_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-3:2015.  */
+#ifndef __STDC_WANT_IEC_60559_TYPES_EXT__
+# undef __STDC_WANT_IEC_60559_TYPES_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TR 24731-2:2010.  */
+#ifndef __STDC_WANT_LIB_EXT2__
+# undef __STDC_WANT_LIB_EXT2__
+#endif
+/* Enable extensions specified by ISO/IEC 24747:2009.  */
+#ifndef __STDC_WANT_MATH_SPEC_FUNCS__
+# undef __STDC_WANT_MATH_SPEC_FUNCS__
 #endif
 /* Enable extensions on HP NonStop.  */
 #ifndef _TANDEM_SOURCE
 # undef _TANDEM_SOURCE
 #endif
-/* Enable general extensions on Solaris.  */
-#ifndef __EXTENSIONS__
-# undef __EXTENSIONS__
+/* Enable X/Open extensions.  Define to 500 only if necessary
+   to make mbstate_t available.  */
+#ifndef _XOPEN_SOURCE
+# undef _XOPEN_SOURCE
 #endif
 
 
@@ -1177,31 +1403,6 @@
 /* Define if configure will not tell us, for universal binaries */
 #undef WORDS_UNIVERSAL_ENDIAN
 
-/* Define to 1 if on MINIX. */
-#undef _MINIX
-
-/* Define to 2 if the system does not provide POSIX.1 features except with
-   this defined. */
-#undef _POSIX_1_SOURCE
-
-/* Define to 1 if you need to in order for `stat' and other things to work. */
-#undef _POSIX_SOURCE
-
-/* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
-   #define below would cause a syntax error. */
-#undef _UINT32_T
-
-/* Define for Solaris 2.5.1 so the uint64_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
-   #define below would cause a syntax error. */
-#undef _UINT64_T
-
-/* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
-   #define below would cause a syntax error. */
-#undef _UINT8_T
-
 /* define if bool is a built-in type */
 #undef bool
 
@@ -1214,35 +1415,20 @@
 #undef inline
 #endif
 
-/* Define to the type of a signed integer type of width exactly 16 bits if
-   such a type exists and the standard includes do not define it. */
-#undef int16_t
-
-/* Define to the type of a signed integer type of width exactly 32 bits if
-   such a type exists and the standard includes do not define it. */
-#undef int32_t
-
-/* Define to the type of a signed integer type of width exactly 64 bits if
-   such a type exists and the standard includes do not define it. */
-#undef int64_t
-
-/* Define to the type of a signed integer type of width exactly 8 bits if such
-   a type exists and the standard includes do not define it. */
-#undef int8_t
-
-/* Define to `int' if <sys/types.h> does not define. */
+/* Define as a signed integer type capable of holding a process identifier. */
 #undef pid_t
 
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
-   supported directly.  */
+   supported only directly.  */
 #undef restrict
-/* Work around a bug in Sun C++: it does not support _Restrict or
-   __restrict__, even though the corresponding Sun C compiler ends up with
-   "#define restrict _Restrict" or "#define restrict __restrict__" in the
-   previous line.  Perhaps some future version of Sun C++ will work with
-   restrict; if so, hopefully it defines __RESTRICT like Sun C does.  */
-#if defined __SUNPRO_CC && !defined __RESTRICT
+/* Work around a bug in older versions of Sun C++, which did not
+   #define __restrict__ or support _Restrict or __restrict__
+   even though the corresponding Sun C compiler ended up with
+   "#define restrict _Restrict" or "#define restrict __restrict__"
+   in the previous line.  This workaround can be removed once
+   we assume Oracle Developer Studio 12.5 (2016) or later.  */
+#if defined __SUNPRO_CC && !defined __RESTRICT && !defined __restrict__
 # define _Restrict
 # define __restrict__
 #endif
@@ -1252,22 +1438,6 @@
 
 /* Define if socklen_t is not defined */
 #undef socklen_t
-
-/* Define to the type of an unsigned integer type of width exactly 16 bits if
-   such a type exists and the standard includes do not define it. */
-#undef uint16_t
-
-/* Define to the type of an unsigned integer type of width exactly 32 bits if
-   such a type exists and the standard includes do not define it. */
-#undef uint32_t
-
-/* Define to the type of an unsigned integer type of width exactly 64 bits if
-   such a type exists and the standard includes do not define it. */
-#undef uint64_t
-
-/* Define to the type of an unsigned integer type of width exactly 8 bits if
-   such a type exists and the standard includes do not define it. */
-#undef uint8_t
 
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
    code using `volatile' can become incorrect without. Disable with care. */
