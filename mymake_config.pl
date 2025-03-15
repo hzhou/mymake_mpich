@@ -873,11 +873,11 @@ if ($config eq "mpich") {
     else {
         $temp{MPIR_C_LONG_DOUBLE_COMPLEX_INTERNAL} = "MPIR_ALT_COMPLEX$len";
     }
-    my $len = $sizeof_hash{"MPI_SIZEOF_AINT"} * 8;
+    my $len = $sizeof_hash{"VOID_P"} * 8;
     $temp{MPIR_AINT_INTERNAL} = "MPIR_INT$len";
-    my $len = $sizeof_hash{"MPI_SIZEOF_OFFSET"} * 8;
+    my $len = $sizeof_hash{"VOID_P"} * 8;
     $temp{MPIR_OFFSET_INTERNAL} = "MPIR_INT$len";
-    my $len = $sizeof_hash{"MPI_SIZEOF_COUNT"} * 8;
+    my $len = 8 * 8;
     $temp{MPIR_COUNT_INTERNAL} = "MPIR_INT$len";
     $temp{MPIR_C_FLOAT16_INTERNAL} = "MPIR_FLOAT16";
     while (my ($k, $v) = each %temp) {
@@ -4104,7 +4104,6 @@ elsif ($config eq "romio") {
     $confs{HAVE_MPI_INFO} = "#define HAVE_MPI_INFO";
     $confs{HAVE_MPI_DARRAY_SUBARRAY} = "#define HAVE_MPI_DARRAY_SUBARRAY";
     autoconf_file("src/mpi/romio/include/mpio.h", \%confs);
-    system "touch src/mpi/romio/include/mpiof.h";
 }
 
 open In, "$config_in" or die "Can't open $config_in: $!\n";

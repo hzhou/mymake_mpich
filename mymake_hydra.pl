@@ -743,7 +743,7 @@ sub dump_makefile {
         $flags.=" $am_flags";
         if ($flags=~/-I(\S+)/) {
             my ($modpath) = ($1);
-            if ($fc =~/^(pgfortran|ifort)/) {
+            if ($fc =~/^(pgfortran|ifort|ifx)/) {
                 $flags.=" -module $modpath";
             }
             elsif ($fc =~/^sunf\d+/) {

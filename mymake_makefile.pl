@@ -393,9 +393,6 @@ if ($what eq "mpich") {
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
         }
-
-        $dst_hash{"src/mpi/romio/include/mpio.h"} = "$opts{prefix}/include";
-        $dst_hash{"src/mpi/romio/include/mpiof.h"} = "$opts{prefix}/include";
     }
     if ($opts{device}=~/:ucx/) {
         if (!$opts{"with-ucx"} or $opts{"with-ucx"} eq "embedded") {
@@ -1379,7 +1376,7 @@ sub dump_makefile {
         $flags.=" $am_flags";
         if ($flags=~/-I(\S+)/) {
             my ($modpath) = ($1);
-            if ($fc =~/^(pgfortran|ifort)/) {
+            if ($fc =~/^(pgfortran|ifort|ifx)/) {
                 $flags.=" -module $modpath";
             }
             elsif ($fc =~/^sunf\d+/) {
