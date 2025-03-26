@@ -911,6 +911,48 @@
 /* The C type for MPIR_INT8 */
 #undef MPIR_INT8_CTYPE
 
+/* The alignment for MPIR_INT32 */
+#undef MPIR_INT8_ALIGN
+
+/* The alignment for MPIR_INT32 */
+#undef MPIR_INT16_ALIGN
+
+/* The alignment for MPIR_INT32 */
+#undef MPIR_INT32_ALIGN
+
+/* The alignment for MPIR_INT32 */
+#undef MPIR_INT64_ALIGN
+
+/* The alignment for MPIR_INT32 */
+#undef MPIR_FLOAT16_ALIGN
+
+/* The alignment for MPIR_INT32 */
+#undef MPIR_FLOAT32_ALIGN
+
+/* The alignment for MPIR_INT32 */
+#undef MPIR_FLOAT64_ALIGN
+
+/* The alignment for MPIR_INT32 */
+#undef MPIR_ALT_FLOAT128_ALIGN
+
+/* Internal type for MPI_LOGICAL1 */
+#undef MPIR_LOGICAL1_INTERNAL
+
+/* Internal type for MPI_LOGICAL2 */
+#undef MPIR_LOGICAL2_INTERNAL
+
+/* Internal type for MPI_LOGICAL4 */
+#undef MPIR_LOGICAL4_INTERNAL
+
+/* Internal type for MPI_LOGICAL8 */
+#undef MPIR_LOGICAL8_INTERNAL
+
+/* Internal type for MPI_LOGICAL16 */
+#undef MPIR_LOGICAL16_INTERNAL
+
+/* Internal type for MPI_BFLOAT16 */
+#undef MPIR_BFLOAT16_INTERNAL
+
 /* Internal type for MPI_INT8_T */
 #undef MPIR_INT8_T_INTERNAL
 

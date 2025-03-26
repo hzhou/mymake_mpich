@@ -771,6 +771,14 @@ if ($config eq "mpich") {
     $temp{MPIR_UINT16_CTYPE} = "unsigned short";
     $temp{MPIR_UINT32_CTYPE} = "unsigned int";
     $temp{MPIR_UINT64_CTYPE} = "unsigned long";
+    $temp{MPIR_INT8_ALIGN} = "1";
+    $temp{MPIR_INT16_ALIGN} = "2";
+    $temp{MPIR_INT32_ALIGN} = "4";
+    $temp{MPIR_INT64_ALIGN} = "8";
+    $temp{MPIR_FLOAT16_ALIGN} = "2";
+    $temp{MPIR_FLOAT32_ALIGN} = "4";
+    $temp{MPIR_FLOAT64_ALIGN} = "8";
+    $temp{MPIR_ALT_FLOAT128_ALIGN} = "16";
 
     $temp{MPIR_CHAR_INTERNAL} = "MPIR_INT8";
     $temp{MPIR_UNSIGNED_CHAR_INTERNAL} = "MPIR_UINT8";
@@ -880,6 +888,12 @@ if ($config eq "mpich") {
     my $len = 8 * 8;
     $temp{MPIR_COUNT_INTERNAL} = "MPIR_INT$len";
     $temp{MPIR_C_FLOAT16_INTERNAL} = "MPIR_FLOAT16";
+    $temp{MPIR_LOGICAL1_INTERNAL} = "MPIR_INT8";
+    $temp{MPIR_LOGICAL2_INTERNAL} = "MPIR_INT16";
+    $temp{MPIR_LOGICAL4_INTERNAL} = "MPIR_INT32";
+    $temp{MPIR_LOGICAL8_INTERNAL} = "MPIR_INT64";
+    $temp{MPIR_LOGICAL16_INTERNAL} = "MPIR_INT128";
+    $temp{MPIR_BFLOAT16_INTERNAL} = "MPIR_BFLOAT16";
     while (my ($k, $v) = each %temp) {
         if (!exists $config_defines{$k}) {
             $config_defines{$k} = $v;
