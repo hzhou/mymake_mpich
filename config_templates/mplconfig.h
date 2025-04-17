@@ -139,6 +139,12 @@
 /* Define to 1 if you have the `posix_memalign' function. */
 #undef HAVE_POSIX_MEMALIGN
 
+/* Define to 1 if you have the `shm_open' function */
+#undef HAVE_POSIX_SHM
+
+/* Define to 1 if you have the `shm_open' function */
+#undef HAVE_INITSHM
+
 /* Define to 1 if you have the <pthread.h> header file. */
 #undef HAVE_PTHREAD_H
 

@@ -1763,6 +1763,10 @@ else {
                         $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
                     }
                 }
+                elsif ($l=~/cxxlibs="-l"/) {
+                    print Out "    cxxlibs=\n";
+                    next;
+                }
                 print Out $l;
             }
             close Out;
@@ -1787,6 +1791,10 @@ else {
                         $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
                     }
                 }
+                elsif ($l=~/cxxlibs="-l"/) {
+                    print Out "    cxxlibs=\n";
+                    next;
+                }
                 print Out $l;
             }
             close Out;
@@ -1810,6 +1818,10 @@ else {
                     if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
                         $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
                     }
+                }
+                elsif ($l=~/cxxlibs="-l"/) {
+                    print Out "    cxxlibs=\n";
+                    next;
                 }
                 print Out $l;
             }

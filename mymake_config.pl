@@ -3786,6 +3786,8 @@ elsif ($config eq "mpl") {
         $config_defines{HAVE_ZE} = 1;
     }
 
+    $config_defines{HAVE_POSIX_SHM}=1;
+    $config_defines{HAVE_INITSHM}=1;
     $config_defines{HAVE_PTHREAD_MUTEXATTR_SETPSHARED} = 1;
 
     $config_defines{backtrace_size_t} = "int";

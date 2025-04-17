@@ -831,6 +831,9 @@ elsif ($what eq "pmi") {
     $conds{EMBEDDED_MODE} = 1;
     $autoconf_vars{mpl_includedir} = "-I../mpl/include -I../include";
 
+    push @extra_make_rules, "test_pmi1: examples/test_pmi1.o libpmi.la";
+    push @extra_make_rules, "\t\@echo LTLD \$@ && \x24(LTLD) -o \$@ \$^ ../mpl/libmpl.la";
+
     load_automake("src/pmi/Makefile.am", \%conds);
     @programs=();
     dump_makefile("src/pmi/Makefile");
