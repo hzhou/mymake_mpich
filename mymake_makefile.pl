@@ -709,6 +709,9 @@ if ($what eq "mpich") {
             $make_vars{CPPFLAGS} = "-DNETMOD_INLINE=__netmod_inline_ucx__ ";
         }
     }
+    if (!$opts{"disable-ch4-shm-inline"}) {
+        $make_vars{CPPFLAGS} .= " -DPOSIX_EAGER_INLINE=__posix_eager_inline_iqueue__ ";
+    }
 
     $make_vars{CPPFLAGS}.="-D_REENTRANT ";
 
