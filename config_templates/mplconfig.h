@@ -49,6 +49,12 @@
 /* Define to 1 if you have the <drd.h> header file. */
 #undef HAVE_DRD_H
 
+/* Define to 1 if you have the <drm/i915_drm.h> header file. */
+#undef HAVE_DRM_I915_DRM_H
+
+/* Define to 1 if you have the <libdrm/i915_drm.h> header file. */
+#undef HAVE_LIBDRM_I915_DRM_H
+
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
 

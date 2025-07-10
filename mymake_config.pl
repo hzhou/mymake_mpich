@@ -3752,6 +3752,10 @@ elsif ($config eq "mpl") {
 
     $config_defines{HAVE_X86INTRIN_H}=1;
 
+    if (-f "/usr/include/libdrm/i915_drm.h") {
+        $config_defines{HAVE_LIBDRM_I915_DRM_H} = 1;
+    }
+
     if ($opts{cc_version}=~/gcc 4/) {
         $config_defines{COMPILER_TLS}="__thread";
     }
