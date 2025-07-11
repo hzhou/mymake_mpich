@@ -541,7 +541,6 @@ if ($config eq "mpich") {
 
     $temp{ENABLE_PMI1} = 1;
     $temp{ENABLE_PMI2} = 1;
-    $temp{ENABLE_PMIX} = 1;
     if ($opts{"with-pmix"}) {
         $temp{ENABLE_PMI1} = undef;
         $temp{ENABLE_PMI2} = undef;
