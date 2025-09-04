@@ -778,8 +778,12 @@ else {
     push @extra_make_rules, "$lib_la: $lib_dep";
     push @extra_make_rules, "\t(".join(' && ', @t).")";
     push @extra_make_rules, "";
-    if (-f "maint/tuning/coll/json_gen.sh") {
-        system "bash maint/tuning/coll/json_gen.sh";
+    my $json_gen = "maint/tuning/coll/json_gen.sh";
+    if (-f "maint/json_gen.sh") {
+        $json_gen = "maint/json_gen.sh";
+    }
+    if (-f $json_gen) {
+        system "bash $json_gen";
         if (-d "mymake/json-c") {
             my $L=$opts{"with-jsonc"};
             if ($L and -d $L) {
