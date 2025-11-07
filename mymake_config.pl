@@ -291,21 +291,6 @@ foreach my $a (@tlist, @ARGV) {
     }
 
 }
-if ($config_defines{MPIDI_CH4_MAX_VCIS} > 1 and !$config_defines{MPIDI_CH4_VCI_METHOD}) {
-    $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__COMM";
-}
-if ($config_defines{MPICH_THREAD_GRANULARITY} =~/VCI|POBJ/) {
-    $config_defines{MPICH_THREAD_REFCOUNT} = "MPICH_REFCOUNT__LOCKFREE";
-    if (!$config_defines{MPIDI_CH4_MAX_VCIS}) {
-        $config_defines{MPIDI_CH4_MAX_VCIS} = 64;
-    }
-    if (!$config_defines{MPIDI_CH4_VCI_METHOD}) {
-        $config_defines{MPIDI_CH4_VCI_METHOD} = "MPICH_VCI__COMM";
-    }
-}
-else {
-    $config_defines{MPICH_THREAD_REFCOUNT} = "MPICH_REFCOUNT__NONE";
-}
 
 open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
 while(<In>){
@@ -515,6 +500,8 @@ if ($config eq "mpich") {
     $config_defines{__EXTENSIONS__}=1;
     my %temp;
     $temp{HAVE_MPICHCONF}=1;
+    my $commit = `git rev-parse --short HEAD`;
+    $temp{MPICH_COMMIT_HASH}="\"$commit\"";
 
     $temp{uc("ENABLE_PVAR_nem")} = 0;
     $temp{uc("ENABLE_PVAR_recvq")} = 0;

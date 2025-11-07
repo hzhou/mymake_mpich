@@ -749,6 +749,8 @@ sub dump_makefile {
             elsif ($fc =~/^sunf\d+/) {
                 $flags.=" -moddir=$modpath";
             }
+            elsif ($fc =~/^nag+/) {
+            }
             elsif ($fc =~/^af\d+/) {
                 $flags.=" -YMOD_OUT_DIR=$modpath";
             }

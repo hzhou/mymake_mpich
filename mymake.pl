@@ -433,6 +433,13 @@ print "prefix: $opts{prefix}\n";
 print "device: $opts{device}\n";
 
 my $python = find_python3();
+
+my $commit = `git rev-parse --short HEAD`;
+open Out, ">MPICH_COMMIT_HASH" or die "Can't write MPICH_COMMIT_HASH: $!\n";
+print Out "MPICH_COMMIT_HASH=$commit\n";
+close Out;
+system "chmod a+x MPICH_COMMIT_HASH";
+
 if (-f "maint/gen_binding_c.py") {
     if (!-f "src/mpi/pt2pt/send.c") {
         print "[$python maint/gen_binding_c.py -single-source]\n";
@@ -2158,6 +2165,8 @@ sub dump_makefile {
             }
             elsif ($fc =~/^sunf\d+/) {
                 $flags.=" -moddir=$modpath";
+            }
+            elsif ($fc =~/^nag+/) {
             }
             elsif ($fc =~/^af\d+/) {
                 $flags.=" -YMOD_OUT_DIR=$modpath";

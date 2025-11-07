@@ -11,20 +11,11 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
-/* The normal alignment of `bool', in bytes. */
-#undef ALIGNOF_BOOL
-
-/* The normal alignment of `char', in bytes. */
-#undef ALIGNOF_CHAR
-
 /* The normal alignment of `double', in bytes. */
 #undef ALIGNOF_DOUBLE
 
 /* The normal alignment of `float', in bytes. */
 #undef ALIGNOF_FLOAT
-
-/* The normal alignment of `int', in bytes. */
-#undef ALIGNOF_INT
 
 /* The normal alignment of `int16_t', in bytes. */
 #undef ALIGNOF_INT16_T
@@ -38,23 +29,23 @@
 /* The normal alignment of `int8_t', in bytes. */
 #undef ALIGNOF_INT8_T
 
-/* The normal alignment of `long', in bytes. */
-#undef ALIGNOF_LONG
-
 /* The normal alignment of `long double', in bytes. */
 #undef ALIGNOF_LONG_DOUBLE
-
-/* The normal alignment of `long long', in bytes. */
-#undef ALIGNOF_LONG_LONG
 
 /* The normal alignment of `max_align_t', in bytes. */
 #undef ALIGNOF_MAX_ALIGN_T
 
-/* The normal alignment of `short', in bytes. */
-#undef ALIGNOF_SHORT
+/* The normal alignment of `_Float16', in bytes. */
+#undef ALIGNOF__FLOAT16
 
-/* The normal alignment of `wchar_t', in bytes. */
-#undef ALIGNOF_WCHAR_T
+/* The normal alignment of `__float128', in bytes. */
+#undef ALIGNOF___FLOAT128
+
+/* The normal alignment of `__fp16', in bytes. */
+#undef ALIGNOF___FP16
+
+/* The normal alignment of `__int128', in bytes. */
+#undef ALIGNOF___INT128
 
 /* Define the number of CH3_RANK_BITS */
 #undef CH3_RANK_BITS
@@ -74,11 +65,17 @@
 /* Define to enable shared-memory collectives */
 #undef ENABLED_SHM_COLLECTIVES
 
+/* define if have any ccls */
+#undef ENABLE_CCLCOMM
+
 /* Application checkpointing enabled */
 #undef ENABLE_CHECKPOINTING
 
 /* Define to skip initializing builtin world comm during MPI_Session_init */
 #undef ENABLE_LOCAL_SESSION_INIT
+
+/* define if have libnccl */
+#undef ENABLE_NCCL
 
 /* Define to disable shared-memory communication */
 #undef ENABLE_NO_LOCAL
@@ -111,6 +108,9 @@
 
 /* Define if QMPI enabled */
 #undef ENABLE_QMPI
+
+/* define if have librccl */
+#undef ENABLE_RCCL
 
 /* "set to enable threadcomm feature" */
 #undef ENABLE_THREADCOMM
@@ -166,9 +166,6 @@
 
 /* Directory to use in namepub */
 #undef FILE_NAMEPUB_BASEDIR
-
-/* Define if PMIx_Load_topology is available */
-#undef HAS_PMIX_LOAD_TOPOLOGY
 
 /* Define if addresses are a different size than Fortran integers */
 #undef HAVE_AINT_DIFFERENT_THAN_FINT
@@ -285,12 +282,6 @@
 /* Define if Fortran integer are the same size as C ints */
 #undef HAVE_FINT_IS_INT
 
-/* Define if __float128 is supported */
-#undef HAVE_FLOAT128
-
-/* Define if _Float16 is supported */
-#undef HAVE_FLOAT16
-
 /* Define to 1 if the system has the type `float _Complex'. */
 #undef HAVE_FLOAT__COMPLEX
 
@@ -314,18 +305,6 @@
 
 /* Define to 1 if you have the `inet_pton' function. */
 #undef HAVE_INET_PTON
-
-/* Define if int16_t is supported by the C compiler */
-#undef HAVE_INT16_T
-
-/* Define if int32_t is supported by the C compiler */
-#undef HAVE_INT32_T
-
-/* Define if int64_t is supported by the C compiler */
-#undef HAVE_INT64_T
-
-/* Define if int8_t is supported by the C compiler */
-#undef HAVE_INT8_T
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -416,8 +395,14 @@
 /* Define if the OSX thread affinity policy macros defined */
 #undef HAVE_OSX_THREAD_AFFINITY
 
-/* Define if PMI2_Set_threaded exist */
-#undef HAVE_PMI2_SET_THREADED
+/* Define to 1 if you have the `PMIx_Info_load' function. */
+#undef HAVE_PMIX_INFO_LOAD
+
+/* Define to 1 if you have the `PMIx_Load_topology' function. */
+#undef HAVE_PMIX_LOAD_TOPOLOGY
+
+/* Define to 1 if you have the `PMI_Barrier_group' function. */
+#undef HAVE_PMI_BARRIER_GROUP
 
 /* Define to 1 if you have the <poll.h> header file. */
 #undef HAVE_POLL_H
@@ -587,17 +572,8 @@
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
 
-/* Define if uint16_t is supported by the C compiler */
-#undef HAVE_UINT16_T
-
-/* Define if uint32_t is supported by the C compiler */
-#undef HAVE_UINT32_T
-
-/* Define if uint64_t is supported by the C compiler */
-#undef HAVE_UINT64_T
-
-/* Define if uint8_t is supported by the C compiler */
-#undef HAVE_UINT8_T
+/* Define if building ucc */
+#undef HAVE_UCC
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
@@ -644,6 +620,9 @@
 
 /* Define if PMI2_KEYVAL_T is missing */
 #undef MISSING_PMI2_KEYVAL_T
+
+/* Git HEAD commit hash */
+#undef MPICH_COMMIT_HASH
 
 /* Datatype engine */
 #undef MPICH_DATATYPE_ENGINE
@@ -782,11 +761,20 @@
 /* The C type for MPIR_ALT_COMPLEX96 */
 #undef MPIR_ALT_COMPLEX96_CTYPE
 
+/* The alignment for MPIR_ALT_FLOAT128 */
+#undef MPIR_ALT_FLOAT128_ALIGN
+
 /* The C type for MPIR_ALT_FLOAT128 */
 #undef MPIR_ALT_FLOAT128_CTYPE
 
+/* The alignment for MPIR_ALT_FLOAT96 */
+#undef MPIR_ALT_FLOAT96_ALIGN
+
 /* The C type for MPIR_ALT_FLOAT96 */
 #undef MPIR_ALT_FLOAT96_CTYPE
+
+/* Internal type for MPIX_BFLOAT16 */
+#undef MPIR_BFLOAT16_INTERNAL
 
 /* Internal type for MPI_BYTE */
 #undef MPIR_BYTE_INTERNAL
@@ -796,12 +784,6 @@
 
 /* Internal type for MPI_CHAR */
 #undef MPIR_CHAR_INTERNAL
-
-/* The C type for MPIR_COMPLEX128 */
-#undef MPIR_COMPLEX128_CTYPE
-
-/* The C type for MPIR_COMPLEX16 */
-#undef MPIR_COMPLEX16_CTYPE
 
 /* Internal type for MPI_COMPLEX16 */
 #undef MPIR_COMPLEX16_INTERNAL
@@ -869,26 +851,41 @@
 /* Internal type for MPI_DOUBLE_PRECISION */
 #undef MPIR_DOUBLE_PRECISION_INTERNAL
 
+/* The alignment for MPIR_FLOAT64 */
+#undef MPIR_FLOAT128_ALIGN
+
 /* The C type for MPIR_FLOAT128 */
 #undef MPIR_FLOAT128_CTYPE
+
+/* The alignment for MPIR_FLOAT16 */
+#undef MPIR_FLOAT16_ALIGN
 
 /* The C type for MPIR_FLOAT16 */
 #undef MPIR_FLOAT16_CTYPE
 
+/* The alignment for MPIR_FLOAT32 */
+#undef MPIR_FLOAT32_ALIGN
+
 /* The C type for MPIR_FLOAT32 */
 #undef MPIR_FLOAT32_CTYPE
+
+/* The alignment for MPIR_FLOAT64 */
+#undef MPIR_FLOAT64_ALIGN
 
 /* The C type for MPIR_FLOAT64 */
 #undef MPIR_FLOAT64_CTYPE
 
-/* The C type for MPIR_FLOAT8 */
-#undef MPIR_FLOAT8_CTYPE
-
 /* Internal type for MPI_FLOAT */
 #undef MPIR_FLOAT_INTERNAL
 
+/* The alignment for MPIR_INT128 */
+#undef MPIR_INT128_ALIGN
+
 /* The C type for MPIR_INT128 */
 #undef MPIR_INT128_CTYPE
+
+/* The alignment for MPIR_INT16 */
+#undef MPIR_INT16_ALIGN
 
 /* The C type for MPIR_INT16 */
 #undef MPIR_INT16_CTYPE
@@ -896,11 +893,17 @@
 /* Internal type for MPI_INT16_T */
 #undef MPIR_INT16_T_INTERNAL
 
+/* The alignment for MPIR_INT32 */
+#undef MPIR_INT32_ALIGN
+
 /* The C type for MPIR_INT32 */
 #undef MPIR_INT32_CTYPE
 
 /* Internal type for MPI_INT32_T */
 #undef MPIR_INT32_T_INTERNAL
+
+/* The alignment for MPIR_INT64 */
+#undef MPIR_INT64_ALIGN
 
 /* The C type for MPIR_INT64 */
 #undef MPIR_INT64_CTYPE
@@ -908,50 +911,11 @@
 /* Internal type for MPI_INT64_T */
 #undef MPIR_INT64_T_INTERNAL
 
-/* The C type for MPIR_INT8 */
-#undef MPIR_INT8_CTYPE
-
-/* The alignment for MPIR_INT32 */
+/* The alignment for MPIR_INT8 */
 #undef MPIR_INT8_ALIGN
 
-/* The alignment for MPIR_INT32 */
-#undef MPIR_INT16_ALIGN
-
-/* The alignment for MPIR_INT32 */
-#undef MPIR_INT32_ALIGN
-
-/* The alignment for MPIR_INT32 */
-#undef MPIR_INT64_ALIGN
-
-/* The alignment for MPIR_INT32 */
-#undef MPIR_FLOAT16_ALIGN
-
-/* The alignment for MPIR_INT32 */
-#undef MPIR_FLOAT32_ALIGN
-
-/* The alignment for MPIR_INT32 */
-#undef MPIR_FLOAT64_ALIGN
-
-/* The alignment for MPIR_INT32 */
-#undef MPIR_ALT_FLOAT128_ALIGN
-
-/* Internal type for MPI_LOGICAL1 */
-#undef MPIR_LOGICAL1_INTERNAL
-
-/* Internal type for MPI_LOGICAL2 */
-#undef MPIR_LOGICAL2_INTERNAL
-
-/* Internal type for MPI_LOGICAL4 */
-#undef MPIR_LOGICAL4_INTERNAL
-
-/* Internal type for MPI_LOGICAL8 */
-#undef MPIR_LOGICAL8_INTERNAL
-
-/* Internal type for MPI_LOGICAL16 */
-#undef MPIR_LOGICAL16_INTERNAL
-
-/* Internal type for MPI_BFLOAT16 */
-#undef MPIR_BFLOAT16_INTERNAL
+/* The C type for MPIR_INT8 */
+#undef MPIR_INT8_CTYPE
 
 /* Internal type for MPI_INT8_T */
 #undef MPIR_INT8_T_INTERNAL
@@ -979,6 +943,21 @@
 
 /* Internal type for MPI_LB */
 #undef MPIR_LB_INTERNAL
+
+/* Internal type for MPI_LOGICAL16 */
+#undef MPIR_LOGICAL16_INTERNAL
+
+/* Internal type for MPI_LOGICAL1 */
+#undef MPIR_LOGICAL1_INTERNAL
+
+/* Internal type for MPI_LOGICAL2 */
+#undef MPIR_LOGICAL2_INTERNAL
+
+/* Internal type for MPI_LOGICAL4 */
+#undef MPIR_LOGICAL4_INTERNAL
+
+/* Internal type for MPI_LOGICAL8 */
+#undef MPIR_LOGICAL8_INTERNAL
 
 /* Internal type for MPI_LOGICAL */
 #undef MPIR_LOGICAL_INTERNAL
@@ -1108,9 +1087,6 @@
 
 /* Define if vsnprintf needs a declaration */
 #undef NEEDS_VSNPRINTF_DECL
-
-/* Define if PMIX_INFO_LOAD macro is needed */
-#undef NEED_PMIX_INFO_LOAD
 
 /* The PMI library does not have PMI_Spawn_multiple. */
 #undef NO_PMI_SPAWN_MULTIPLE
@@ -1274,6 +1250,12 @@
 
 /* The size of `__float128', as computed by sizeof. */
 #undef SIZEOF___FLOAT128
+
+/* The size of `__fp16', as computed by sizeof. */
+#undef SIZEOF___FP16
+
+/* The size of `__int128', as computed by sizeof. */
+#undef SIZEOF___INT128
 
 /* Define calling convention */
 #undef STDCALL
