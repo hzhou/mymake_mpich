@@ -501,6 +501,7 @@ if ($config eq "mpich") {
     my %temp;
     $temp{HAVE_MPICHCONF}=1;
     my $commit = `git rev-parse --short HEAD`;
+    chomp $commit;
     $temp{MPICH_COMMIT_HASH}="\"$commit\"";
 
     $temp{uc("ENABLE_PVAR_nem")} = 0;
