@@ -1712,8 +1712,7 @@ else {
             my $add = $a."_LIBADD";
             my $t = get_make_var($add);
             $t=~s/(\S+\/)?(mpl|pmi|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
-            $t=~s/\@ucxlib\@\s*//g;
-            $t=~s/\@ofilib\@\s*//g;
+            $t=~s/\@(ofilib|ucxlib|mpl_lib|hwloc_lib|yaksa_lib|pmi_lib|json_lib)\@\s*//g;
 
             if (($add=~/libmpi_la_/ && $opts{have_weak}) or ($add=~/libpmpi_la_/)) {
                 $t.= $L_list;
@@ -1731,8 +1730,7 @@ else {
             my $add = $a."_LDADD";
             my $t = get_make_var($add);
             $t=~s/(\S+\/)?(mpl|pmi|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
-            $t=~s/\@ucxlib\@\s*//g;
-            $t=~s/\@ofilib\@\s*//g;
+            $t=~s/\@(ofilib|ucxlib|mpl_lib|hwloc_lib|yaksa_lib|pmi_lib|json_lib)\@\s*//g;
 
             $objects{$add} = $t;
         }
