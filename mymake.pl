@@ -2056,6 +2056,7 @@ sub dump_makefile {
     elsif ($makefile =~/hydra/) {
         $t=~s/-I\S+\/(mpl)\/\S+\s*//g;
     }
+    $t=~s/\@(mpl|hwloc|pmi)_includedir\@//g;
     print Out "AM_CPPFLAGS = $t\n";
     my $t = get_make_var_unique("CPPFLAGS");
     $t=~s/\@HWLOC_\S+\@\s*//;
@@ -2218,6 +2219,9 @@ sub dump_makefile {
 
             my ($deps, $objs);
             my $t_cppflags = get_make_var("${a}_CPPFLAGS");
+            if ($t_cppflags) {
+                $t_cppflags=~s/\@(mpl|pmi|hwloc)_includedir\@//g;
+            }
             my $o= "${a}_OBJECTS";
             my $tlist = get_make_objects($p);
             if ($special_targets{$a}) {
@@ -2436,6 +2440,9 @@ sub dump_makefile {
 
             my ($deps, $objs);
             my $t_cppflags = get_make_var("${a}_CPPFLAGS");
+            if ($t_cppflags) {
+                $t_cppflags=~s/\@(mpl|pmi|hwloc)_includedir\@//g;
+            }
             my $o= "${a}_OBJECTS";
             my $tlist = get_make_objects($p, 1);
             if ($special_targets{$a}) {

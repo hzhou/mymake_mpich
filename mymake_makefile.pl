@@ -1275,6 +1275,7 @@ sub dump_makefile {
     $t .= " @extra_INCLUDES";
     print Out "INCLUDES = $t\n";
     my $t = get_make_var_unique("AM_CPPFLAGS");
+    $t=~s/\@(mpl|hwloc|pmi)_includedir\@//g;
     $t=~s/\@HWLOC_\S+\@\s*//;
     if ($makefile eq "Makefile" or $makefile eq "mymake/Makefile.custom") {
         $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
@@ -1446,6 +1447,9 @@ sub dump_makefile {
 
             my ($deps, $objs);
             my $t_cppflags = get_make_var("${a}_CPPFLAGS");
+            if ($t_cppflags) {
+                $t_cppflags=~s/\@(mpl|pmi|hwloc)_includedir\@//g;
+            }
             my $o= "${a}_OBJECTS";
             my $tlist = get_make_objects($p);
             if ($special_targets{$a}) {
@@ -1620,6 +1624,9 @@ sub dump_makefile {
 
             my ($deps, $objs);
             my $t_cppflags = get_make_var("${a}_CPPFLAGS");
+            if ($t_cppflags) {
+                $t_cppflags=~s/\@(mpl|pmi|hwloc)_includedir\@//g;
+            }
             my $o= "${a}_OBJECTS";
             my $tlist = get_make_objects($p, 1);
             if ($special_targets{$a}) {
