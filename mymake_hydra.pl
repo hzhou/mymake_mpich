@@ -532,6 +532,7 @@ foreach my $p (@ltlibs) {
     $t=~s/(\S+\/)?(mpl|pmi|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
     $t=~s/-lhydra/libhydra.la/g;
     $t=~s/-lpm/libpm.la/g;
+    $t=~s/\@(mpl_lib|hwloc_lib|pmi_lib)\@\s*//g;
 
     if ($add=~/libhydra.*_la/) {
         $t.= $L_list;
@@ -547,6 +548,7 @@ foreach my $p (@programs) {
     $t=~s/(\S+\/)?(mpl|pmi|openpa|izem|hwloc|yaksa|json-c|libfabric|ucx)\/\S+\.la\s*//g;
     $t=~s/-lhydra/libhydra.la/g;
     $t=~s/-lpm/libpm.la/g;
+    $t=~s/\@(mpl_lib|hwloc_lib|pmi_lib)\@\s*//g;
 
     $objects{$add} = $t;
 }
