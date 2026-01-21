@@ -329,7 +329,7 @@ if (!-f "mymake/Makefile.orig") {
     }
     close Out;
     system "cp -v $m[2] $m[0]";
-    system "autoreconf -ivf";
+    system "libtoolize && autoreconf -ivf";
     foreach my $m (@mod_list) {
         system "cp $m->[1] $m->[0]";
     }
@@ -438,7 +438,7 @@ if (-f "$opts{moddir}/hwloc/autogen.sh") {
     push @t, "sh autogen.sh";
 }
 else {
-    push @t, "autoreconf -ivf";
+    push @t, "libtoolize && autoreconf -ivf";
 }
 push @t, "$configure";
 push @t, "cp $pwd/libtool .";
