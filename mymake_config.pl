@@ -3580,10 +3580,10 @@ if ($config eq "mpich") {
     $make_conds{BUILD_MPID_COMMON_SCHED} = 1;
     $make_conds{BUILD_MPID_COMMON_THREAD} = 1;
     $make_conds{BUILD_MPID_COMMON_SELF} = 1;
+    $make_conds{BUILD_MPID_COMMON_GENQ} = 1;
     if ($opts{device}=~/ch4/) {
         $make_conds{BUILD_MPID_COMMON_SHM} = 1;
         $make_conds{BUILD_MPID_COMMON_BC} = 1;
-        $make_conds{BUILD_MPID_COMMON_GENQ} = 1;
         $make_conds{BUILD_MPID_COMMON_STREAM_WORKQ} = 1;
     }
     elsif ($opts{device}=~/ch3:sock/) {
