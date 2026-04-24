@@ -371,6 +371,9 @@ if ($mod_tarball =~/modules\.tar\.gz$/) {
     if ($opts{"with-cuda"} && $mod_tarball) {
         $mod_tarball=~s/modules.*\.tar\.gz/modules-gpu.tar.gz/;
     }
+    elsif ($opts{"with-hip"} && $mod_tarball) {
+        $mod_tarball=~s/modules.*\.tar\.gz/modules-hip.tar.gz/;
+    }
     if (!-e $mod_tarball) {
         print "$mod_tarball not found! Using module.tar.gz.\n";
         $mod_tarball = "modules.tar.gz";
@@ -2072,6 +2075,10 @@ sub dump_makefile {
         my $p = $opts{"with-cuda"};
         $I_list .= " -I$p/include";
     }
+    elsif ($opts{"with-hip"}) {
+        my $p = $opts{"with-hip"};
+        $I_list .= " -I$p/include";
+    }
     $t .= $I_list;
     print Out "CPPFLAGS = $t\n";
     my $t = get_make_var_unique("AM_CFLAGS");
@@ -2118,6 +2125,9 @@ sub dump_makefile {
     }
     if ($opts{"with-cuda"}) {
         $t .= " -L".$opts{"with-cuda"}."/lib64";
+    }
+    elsif ($opts{"with-hip"}) {
+        $t .= " -L".$opts{"with-hip"}."/lib64";
     }
     print Out "LDFLAGS = $t\n";
     my $t = get_make_var_unique("LIBS");

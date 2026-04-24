@@ -1038,6 +1038,13 @@ elsif ($what eq "test") {
             $make_vars{LDFLAGS} .= " -L$p/lib64";
             $make_vars{LIBS} .= " -lcudart -lcuda";
         }
+        elsif ($opts{"with-hip"}) {
+            my $p = $opts{"with-hip"};
+            $conds{HAVE_HIP} = 1;
+            $make_vars{CPPFLAGS} .= " -I$p/include";
+            $make_vars{LDFLAGS} .= " -L$p/lib64";
+            $make_vars{LIBS} .= " -lamdhip64";
+        }
 
         $make_vars{LIBTOOL} = "$top_srcdir/libtool";
         $make_vars{CC} = "$MPICC";
@@ -1291,6 +1298,10 @@ sub dump_makefile {
         my $p = $opts{"with-cuda"};
         $I_list .= " -I$p/include";
     }
+    elsif ($opts{"with-hip"}) {
+        my $p = $opts{"with-hip"};
+        $I_list .= " -I$p/include";
+    }
     $t=~s/\@HWLOC_\S+\@\s*//;
     if ($makefile eq "Makefile" or $makefile eq "mymake/Makefile.custom") {
         $t=~s/-I\S+\/(mpl|openpa|romio|izem|hwloc|yaksa|libfabric)\/\S+\s*//g;
@@ -1346,6 +1357,9 @@ sub dump_makefile {
     }
     if ($opts{"with-cuda"}) {
         $t .= " -L".$opts{"with-cuda"}."/lib64";
+    }
+    elsif ($opts{"with-hip"}) {
+        $t .= " -L".$opts{"with-hip"}."/lib64";
     }
     print Out "LDFLAGS = $t\n";
     my $t = get_make_var_unique("LIBS");

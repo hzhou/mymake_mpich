@@ -893,6 +893,10 @@ if ($config eq "mpich") {
         my $p = $opts{"with-cuda"};
         $confs{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
     }
+    elsif ($opts{"with-hip"}) {
+        my $p = $opts{"with-hip"};
+        $confs{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
+    }
     $confs{LIBS} = $ENV{LIBS};
     $confs{MPILIBNAME} = "mpi";
     $confs{PMPILIBNAME} = "pmpi";
@@ -3978,6 +3982,10 @@ elsif ($config eq "test") {
     if ($opts{"with-cuda"}) {
         $config_defines{HAVE_GPU} = 1;
         $config_defines{HAVE_CUDA} = 1;
+    }
+    elsif ($opts{"with-hip"}) {
+        $config_defines{HAVE_GPU} = 1;
+        $config_defines{HAVE_HIP} = 1;
     }
     if (-e "test/mpi/runtests.in") {
         my %confs;
