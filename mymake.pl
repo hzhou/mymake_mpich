@@ -658,7 +658,10 @@ else {
             $config_args .= " --with-argobots=$opts{argobots}";
         }
         if ($opts{"with-cuda"}) {
-            $config_args .= " --with-cuda=$opts{cuda}";
+            $config_args .= " --with-cuda=$opts{'with-cuda'}";
+        }
+        if ($opts{"with-hip"}) {
+            $config_args .= " --with-hip=$opts{'with-hip'}";
         }
         push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
         push @extra_make_rules, "";
