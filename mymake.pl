@@ -666,6 +666,24 @@ else {
         push @extra_make_rules, "\t\x24(DO_hydra) $config_args";
         push @extra_make_rules, "";
     }
+    if (-e "src/binding/fortran/Makefile.am") {
+        my $mkfile="src/binding/fortran/Makefile";
+        push @extra_make_rules, ".PHONY: fortran fortran-install";
+        push @extra_make_rules, "fortran: $mkfile";
+        push @extra_make_rules, "\t(cd src/binding/fortran && \x24(MAKE) )";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "fortran-install: $mkfile";
+        push @extra_make_rules, "\t(cd src/binding/fortran && \x24(MAKE) install )";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "fortran-clean:";
+        push @extra_make_rules, "\t(cd src/binding/fortran && make clean && rm -f Makefile )";
+        push @extra_make_rules, "";
+        push @extra_make_rules, "$mkfile:";
+        my $autogen_env = "MPICH_CONFDB=../../../confdb";
+        my $config_args = "--prefix=$opts{prefix} --with-mpi=$opts{prefix}";
+        push @extra_make_rules, "\t(cd src/binding/fortran &&  $autogen_env ./autogen.sh && ./configure $config_args )";
+        push @extra_make_rules, "";
+    }
     $opts{"embed_mpl"} = 1;
     if (!$opts{quick} && !-d "src/mpl/confdb") {
         my $cmd = "cp -r confdb src/mpl/";

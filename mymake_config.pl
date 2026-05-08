@@ -982,236 +982,239 @@ if ($config eq "mpich") {
             close Out;
         }
     }
-    my %confs;
-    $confs{MPICH_VERSION} = $version;
-    my %ext_hash=(a=>0, b=>1, rc=>2, p=>3);
-    if ($version=~/^(\d+)\.(\d+)\.(\d+)/) {
-        my ($major, $minor, $rev) = ($1, $2, $3);
-        $confs{MPICH_NUMVERSION} = sprintf("%d%02d%02d%d%02d", $major, $minor, $rev, 0, 0);
-    }
-    elsif ($version=~/^(\d+)\.(\d+)([a-z]+)(\d*)/) {
-        my ($major, $minor, $ext, $patch) = ($1, $2, $3, $4);
-        $confs{MPICH_NUMVERSION} = sprintf("%d%02d%02d%d%02d", $major, $minor, 0, $ext_hash{$ext}, $patch);
-    }
+    my $mpi_h_confs;
+    if (-e "src/include/mpi.h.in") {
+        my %confs;
+        $confs{MPICH_VERSION} = $version;
+        my %ext_hash=(a=>0, b=>1, rc=>2, p=>3);
+        if ($version=~/^(\d+)\.(\d+)\.(\d+)/) {
+            my ($major, $minor, $rev) = ($1, $2, $3);
+            $confs{MPICH_NUMVERSION} = sprintf("%d%02d%02d%d%02d", $major, $minor, $rev, 0, 0);
+        }
+        elsif ($version=~/^(\d+)\.(\d+)([a-z]+)(\d*)/) {
+            my ($major, $minor, $ext, $patch) = ($1, $2, $3, $4);
+            $confs{MPICH_NUMVERSION} = sprintf("%d%02d%02d%d%02d", $major, $minor, 0, $ext_hash{$ext}, $patch);
+        }
 
-    $confs{MPIU_DLL_SPEC_DEF}="#define MPIU_DLL_SPEC";
+        $confs{MPIU_DLL_SPEC_DEF}="#define MPIU_DLL_SPEC";
 
-    $confs{DISABLE_TAG_SUPPORT}="#define NO_TAGS_WITH_MODIFIERS 1";
-    if ($ENV{MPID_MAX_PROCESSOR_NAME}) {
-        $confs{MPI_MAX_PROCESSOR_NAME}=$ENV{MPID_MAX_PROCESSOR_NAME};
-    }
-    else {
-        $confs{MPI_MAX_PROCESSOR_NAME}=128;
-    }
-    if ($ENV{MPID_MAX_LIBRARY_VERSION_STRING}) {
-        $confs{MPI_MAX_LIBRARY_VERSION_STRING}=$ENV{MPID_MAX_LIBRARY_VERSION_STRING};
-    }
-    else {
-        $confs{MPI_MAX_LIBRARY_VERSION_STRING}=8192;
-    }
-    if ($ENV{MPID_MAX_ERROR_STRING}) {
-        $confs{MPI_MAX_ERROR_STRING}=$ENV{MPID_MAX_ERROR_STRING};
-    }
-    else {
-        $confs{MPI_MAX_ERROR_STRING}=512;
-    }
-    $sizeof_hash{AINT} = $sizeof_hash{VOID_P};
-    $sizeof_hash{OFFSET} = $sizeof_hash{VOID_P};
+        $confs{DISABLE_TAG_SUPPORT}="#define NO_TAGS_WITH_MODIFIERS 1";
+        if ($ENV{MPID_MAX_PROCESSOR_NAME}) {
+            $confs{MPI_MAX_PROCESSOR_NAME}=$ENV{MPID_MAX_PROCESSOR_NAME};
+        }
+        else {
+            $confs{MPI_MAX_PROCESSOR_NAME}=128;
+        }
+        if ($ENV{MPID_MAX_LIBRARY_VERSION_STRING}) {
+            $confs{MPI_MAX_LIBRARY_VERSION_STRING}=$ENV{MPID_MAX_LIBRARY_VERSION_STRING};
+        }
+        else {
+            $confs{MPI_MAX_LIBRARY_VERSION_STRING}=8192;
+        }
+        if ($ENV{MPID_MAX_ERROR_STRING}) {
+            $confs{MPI_MAX_ERROR_STRING}=$ENV{MPID_MAX_ERROR_STRING};
+        }
+        else {
+            $confs{MPI_MAX_ERROR_STRING}=512;
+        }
+        $sizeof_hash{AINT} = $sizeof_hash{VOID_P};
+        $sizeof_hash{OFFSET} = $sizeof_hash{VOID_P};
 
-    if ($sizeof_hash{VOID_P}==$sizeof_hash{INT}) {
-        $confs{MPI_AINT} = "int";
-        $confs{MPI_AINT_FMT_DEC_SPEC}='%d';
-        $confs{MPI_AINT_FMT_HEX_SPEC}='%x';
-    }
-    elsif ($sizeof_hash{VOID_P}==$sizeof_hash{LONG}) {
-        $confs{MPI_AINT} = "long";
-        $confs{MPI_AINT_FMT_DEC_SPEC}='%ld';
-        $confs{MPI_AINT_FMT_HEX_SPEC}='%lx';
-    }
-    elsif ($sizeof_hash{VOID_P}==$sizeof_hash{LONG_LONG}) {
-        $confs{MPI_AINT} = "long long";
-        $confs{MPI_AINT_FMT_DEC_SPEC}='%lld';
-        $confs{MPI_AINT_FMT_HEX_SPEC}='%llx';
-    }
+        if ($sizeof_hash{VOID_P}==$sizeof_hash{INT}) {
+            $confs{MPI_AINT} = "int";
+            $confs{MPI_AINT_FMT_DEC_SPEC}='%d';
+            $confs{MPI_AINT_FMT_HEX_SPEC}='%x';
+        }
+        elsif ($sizeof_hash{VOID_P}==$sizeof_hash{LONG}) {
+            $confs{MPI_AINT} = "long";
+            $confs{MPI_AINT_FMT_DEC_SPEC}='%ld';
+            $confs{MPI_AINT_FMT_HEX_SPEC}='%lx';
+        }
+        elsif ($sizeof_hash{VOID_P}==$sizeof_hash{LONG_LONG}) {
+            $confs{MPI_AINT} = "long long";
+            $confs{MPI_AINT_FMT_DEC_SPEC}='%lld';
+            $confs{MPI_AINT_FMT_HEX_SPEC}='%llx';
+        }
 
-    $confs{MPI_FINT} = "int";
+        $confs{MPI_FINT} = "int";
 
-    if ($sizeof_hash{LONG} == 8) {
-        $sizeof_hash{COUNT} = $sizeof_hash{LONG};
-        $confs{MPI_COUNT} = "long";
-    }
-    else {
-        $sizeof_hash{COUNT} = $sizeof_hash{LONG_LONG};
-        $confs{MPI_COUNT} = "long long";
-    }
+        if ($sizeof_hash{LONG} == 8) {
+            $sizeof_hash{COUNT} = $sizeof_hash{LONG};
+            $confs{MPI_COUNT} = "long";
+        }
+        else {
+            $sizeof_hash{COUNT} = $sizeof_hash{LONG_LONG};
+            $confs{MPI_COUNT} = "long long";
+        }
 
-    $confs{MPI_OFFSET_TYPEDEF} = "typedef $confs{MPI_AINT} MPI_Offset;";
-    if (!$opts{disable_cxx}) {
-        $confs{INCLUDE_MPICXX_H} = "#include \"mpicxx.h\"";
-    }
-    if (!$opts{disable_romio}) {
-        $confs{HAVE_ROMIO} = "#include \"mpio.h\"";
-    }
+        $confs{MPI_OFFSET_TYPEDEF} = "typedef $confs{MPI_AINT} MPI_Offset;";
+        if (!$opts{disable_cxx}) {
+            $confs{INCLUDE_MPICXX_H} = "#include \"mpicxx.h\"";
+        }
+        if (!$opts{disable_romio}) {
+            $confs{HAVE_ROMIO} = "#include \"mpio.h\"";
+        }
 
-    $confs{BSEND_OVERHEAD} = $sizeof_hash{MPII_BSEND_DATA_T};
+        $confs{BSEND_OVERHEAD} = $sizeof_hash{MPII_BSEND_DATA_T};
 
-    $sizeof_hash{SIGNED_CHAR} = $sizeof_hash{CHAR};
-    $sizeof_hash{BYTE} = $sizeof_hash{CHAR};
-    $sizeof_hash{PACKED} = $sizeof_hash{CHAR};
-    $sizeof_hash{WCHAR} = $sizeof_hash{WCHAR_T};
+        $sizeof_hash{SIGNED_CHAR} = $sizeof_hash{CHAR};
+        $sizeof_hash{BYTE} = $sizeof_hash{CHAR};
+        $sizeof_hash{PACKED} = $sizeof_hash{CHAR};
+        $sizeof_hash{WCHAR} = $sizeof_hash{WCHAR_T};
 
-    $sizeof_hash{UNSIGNED_CHAR} = $sizeof_hash{CHAR};
-    $sizeof_hash{UNSIGNED_SHORT} = $sizeof_hash{SHORT};
-    $sizeof_hash{UNSIGNED_INT} = $sizeof_hash{INT};
-    $sizeof_hash{UNSIGNED_LONG} = $sizeof_hash{LONG};
-    $sizeof_hash{UNSIGNED_LONG_LONG} = $sizeof_hash{LONG_LONG};
-    $sizeof_hash{"2INT"} = $sizeof_hash{INT} * 2;
+        $sizeof_hash{UNSIGNED_CHAR} = $sizeof_hash{CHAR};
+        $sizeof_hash{UNSIGNED_SHORT} = $sizeof_hash{SHORT};
+        $sizeof_hash{UNSIGNED_INT} = $sizeof_hash{INT};
+        $sizeof_hash{UNSIGNED_LONG} = $sizeof_hash{LONG};
+        $sizeof_hash{UNSIGNED_LONG_LONG} = $sizeof_hash{LONG_LONG};
+        $sizeof_hash{"2INT"} = $sizeof_hash{INT} * 2;
 
-    $sizeof_hash{"C_BOOL"} = $sizeof_hash{"BOOL"};
-    $sizeof_hash{"C_FLOAT16"} = 2;
-    $sizeof_hash{"C_FLOAT_COMPLEX"} = $sizeof_hash{"FLOAT__COMPLEX"};
-    $sizeof_hash{"C_DOUBLE_COMPLEX"} = $sizeof_hash{"DOUBLE__COMPLEX"};
-    $sizeof_hash{"C_LONG_DOUBLE_COMPLEX"} = $sizeof_hash{"LONG_DOUBLE__COMPLEX"};
-    $sizeof_hash{CHARACTER} = $sizeof_hash{CHAR};
-    $sizeof_hash{INTEGER} = $sizeof_hash{INT};
-    $sizeof_hash{REAL} = $sizeof_hash{FLOAT};
-    $sizeof_hash{DOUBLE_PRECISION} = $sizeof_hash{DOUBLE};
+        $sizeof_hash{"C_BOOL"} = $sizeof_hash{"BOOL"};
+        $sizeof_hash{"C_FLOAT16"} = 2;
+        $sizeof_hash{"C_FLOAT_COMPLEX"} = $sizeof_hash{"FLOAT__COMPLEX"};
+        $sizeof_hash{"C_DOUBLE_COMPLEX"} = $sizeof_hash{"DOUBLE__COMPLEX"};
+        $sizeof_hash{"C_LONG_DOUBLE_COMPLEX"} = $sizeof_hash{"LONG_DOUBLE__COMPLEX"};
+        $sizeof_hash{CHARACTER} = $sizeof_hash{CHAR};
+        $sizeof_hash{INTEGER} = $sizeof_hash{INT};
+        $sizeof_hash{REAL} = $sizeof_hash{FLOAT};
+        $sizeof_hash{DOUBLE_PRECISION} = $sizeof_hash{DOUBLE};
 
-    $confs{MPI_CHAR} = sprintf("0x4c00%02x01", $sizeof_hash{"CHAR"});
-    $confs{MPI_UNSIGNED_CHAR} = sprintf("0x4c00%02x02", $sizeof_hash{"UNSIGNED_CHAR"});
-    $confs{MPI_SHORT} = sprintf("0x4c00%02x03", $sizeof_hash{"SHORT"});
-    $confs{MPI_UNSIGNED_SHORT} = sprintf("0x4c00%02x04", $sizeof_hash{"UNSIGNED_SHORT"});
-    $confs{MPI_INT} = sprintf("0x4c00%02x05", $sizeof_hash{"INT"});
-    $confs{MPI_UNSIGNED_INT} = sprintf("0x4c00%02x06", $sizeof_hash{"UNSIGNED_INT"});
-    $confs{MPI_LONG} = sprintf("0x4c00%02x07", $sizeof_hash{"LONG"});
-    $confs{MPI_UNSIGNED_LONG} = sprintf("0x4c00%02x08", $sizeof_hash{"UNSIGNED_LONG"});
-    $confs{MPI_LONG_LONG} = sprintf("0x4c00%02x09", $sizeof_hash{"LONG_LONG"});
-    $confs{MPI_FLOAT} = sprintf("0x4c00%02x0a", $sizeof_hash{"FLOAT"});
-    $confs{MPI_DOUBLE} = sprintf("0x4c00%02x0b", $sizeof_hash{"DOUBLE"});
-    $confs{MPI_LONG_DOUBLE} = sprintf("0x4c00%02x0c", $sizeof_hash{"LONG_DOUBLE"});
-    $confs{MPI_BYTE} = sprintf("0x4c00%02x0d", $sizeof_hash{"BYTE"});
-    $confs{MPI_WCHAR} = sprintf("0x4c00%02x0e", $sizeof_hash{"WCHAR"});
-    $confs{MPI_PACKED} = sprintf("0x4c00%02x0f", $sizeof_hash{"PACKED"});
-    $confs{MPI_LB} = sprintf("0x4c00%02x10", $sizeof_hash{"LB"});
-    $confs{MPI_UB} = sprintf("0x4c00%02x11", $sizeof_hash{"UB"});
-    $confs{MPI_2INT} = sprintf("0x4c00%02x16", $sizeof_hash{"2INT"});
-    $confs{MPI_SIGNED_CHAR} = sprintf("0x4c00%02x18", $sizeof_hash{"SIGNED_CHAR"});
-    $confs{MPI_UNSIGNED_LONG_LONG} = sprintf("0x4c00%02x19", $sizeof_hash{"UNSIGNED_LONG_LONG"});
+        $confs{MPI_CHAR} = sprintf("0x4c00%02x01", $sizeof_hash{"CHAR"});
+        $confs{MPI_UNSIGNED_CHAR} = sprintf("0x4c00%02x02", $sizeof_hash{"UNSIGNED_CHAR"});
+        $confs{MPI_SHORT} = sprintf("0x4c00%02x03", $sizeof_hash{"SHORT"});
+        $confs{MPI_UNSIGNED_SHORT} = sprintf("0x4c00%02x04", $sizeof_hash{"UNSIGNED_SHORT"});
+        $confs{MPI_INT} = sprintf("0x4c00%02x05", $sizeof_hash{"INT"});
+        $confs{MPI_UNSIGNED_INT} = sprintf("0x4c00%02x06", $sizeof_hash{"UNSIGNED_INT"});
+        $confs{MPI_LONG} = sprintf("0x4c00%02x07", $sizeof_hash{"LONG"});
+        $confs{MPI_UNSIGNED_LONG} = sprintf("0x4c00%02x08", $sizeof_hash{"UNSIGNED_LONG"});
+        $confs{MPI_LONG_LONG} = sprintf("0x4c00%02x09", $sizeof_hash{"LONG_LONG"});
+        $confs{MPI_FLOAT} = sprintf("0x4c00%02x0a", $sizeof_hash{"FLOAT"});
+        $confs{MPI_DOUBLE} = sprintf("0x4c00%02x0b", $sizeof_hash{"DOUBLE"});
+        $confs{MPI_LONG_DOUBLE} = sprintf("0x4c00%02x0c", $sizeof_hash{"LONG_DOUBLE"});
+        $confs{MPI_BYTE} = sprintf("0x4c00%02x0d", $sizeof_hash{"BYTE"});
+        $confs{MPI_WCHAR} = sprintf("0x4c00%02x0e", $sizeof_hash{"WCHAR"});
+        $confs{MPI_PACKED} = sprintf("0x4c00%02x0f", $sizeof_hash{"PACKED"});
+        $confs{MPI_LB} = sprintf("0x4c00%02x10", $sizeof_hash{"LB"});
+        $confs{MPI_UB} = sprintf("0x4c00%02x11", $sizeof_hash{"UB"});
+        $confs{MPI_2INT} = sprintf("0x4c00%02x16", $sizeof_hash{"2INT"});
+        $confs{MPI_SIGNED_CHAR} = sprintf("0x4c00%02x18", $sizeof_hash{"SIGNED_CHAR"});
+        $confs{MPI_UNSIGNED_LONG_LONG} = sprintf("0x4c00%02x19", $sizeof_hash{"UNSIGNED_LONG_LONG"});
 
-    $confs{MPI_FLOAT_INT} = "0x8c000000";
-    $confs{MPI_DOUBLE_INT} = "0x8c000001";
-    $confs{MPI_LONG_INT} = "0x8c000002";
-    $confs{MPI_SHORT_INT} = "0x8c000003";
-    $confs{MPI_LONG_DOUBLE_INT} = "0x8c000004";
+        $confs{MPI_FLOAT_INT} = "0x8c000000";
+        $confs{MPI_DOUBLE_INT} = "0x8c000001";
+        $confs{MPI_LONG_INT} = "0x8c000002";
+        $confs{MPI_SHORT_INT} = "0x8c000003";
+        $confs{MPI_LONG_DOUBLE_INT} = "0x8c000004";
 
-    if (!$opts{disable_fortran}) {
-        $confs{MPI_CHARACTER} = sprintf("0x4c00%02x1a", $sizeof_hash{"CHARACTER"});
-        $confs{MPI_INTEGER} = sprintf("0x4c00%02x1b", $sizeof_hash{"INTEGER"});
-        $confs{MPI_REAL} = sprintf("0x4c00%02x1c", $sizeof_hash{"REAL"});
-        $confs{MPI_LOGICAL} = sprintf("0x4c00%02x1d", $sizeof_hash{"LOGICAL"});
-        $confs{MPI_COMPLEX} = sprintf("0x4c00%02x1e", $sizeof_hash{"COMPLEX"});
-        $confs{MPI_DOUBLE_PRECISION} = sprintf("0x4c00%02x1f", $sizeof_hash{"DOUBLE_PRECISION"});
-        $confs{MPI_2INTEGER} = sprintf("0x4c00%02x20", $sizeof_hash{"2INTEGER"});
-        $confs{MPI_2REAL} = sprintf("0x4c00%02x21", $sizeof_hash{"2REAL"});
-        $confs{MPI_DOUBLE_COMPLEX} = sprintf("0x4c00%02x22", $sizeof_hash{"DOUBLE_COMPLEX"});
-        $confs{MPI_2DOUBLE_PRECISION} = sprintf("0x4c00%02x23", $sizeof_hash{"2DOUBLE_PRECISION"});
-        $confs{MPI_2COMPLEX} = sprintf("0x4c00%02x24", $sizeof_hash{"2COMPLEX"});
-        $confs{MPI_2DOUBLE_COMPLEX} = sprintf("0x4c00%02x25", $sizeof_hash{"2DOUBLE_COMPLEX"});
-        $confs{MPI_REAL4} = sprintf("0x4c00%02x27", 4);
-        $confs{MPI_COMPLEX8} = sprintf("0x4c00%02x28", 8);
-        $confs{MPI_REAL8} = sprintf("0x4c00%02x29", 8);
-        $confs{MPI_COMPLEX16} = sprintf("0x4c00%02x2a", 16);
-        $confs{MPI_REAL16} = sprintf("0x4c00%02x2b", 16);
-        $confs{MPI_COMPLEX32} = sprintf("0x4c00%02x2c", 32);
-        $confs{MPI_INTEGER1} = sprintf("0x4c00%02x2d", 1);
-        $confs{MPI_INTEGER2} = sprintf("0x4c00%02x2f", 2);
-        $confs{MPI_INTEGER4} = sprintf("0x4c00%02x30", 4);
-        $confs{MPI_INTEGER8} = sprintf("0x4c00%02x31", 8);
-        $confs{MPI_INTEGER16} = sprintf("0x4c00%02x32", 16);
-        foreach my $n (1,2,4,8) {
-            foreach my $type ("char", "short", "int", "long", "long long") {
-                my $a = get_config_name($type);
-                if ($sizeof_hash{$a} == $n) {
-                    $config_defines{"MPIR_INTEGER${n}_CTYPE"} = $type;
-                    last;
+        if (!$opts{disable_fortran}) {
+            $confs{MPI_CHARACTER} = sprintf("0x4c00%02x1a", $sizeof_hash{"CHARACTER"});
+            $confs{MPI_INTEGER} = sprintf("0x4c00%02x1b", $sizeof_hash{"INTEGER"});
+            $confs{MPI_REAL} = sprintf("0x4c00%02x1c", $sizeof_hash{"REAL"});
+            $confs{MPI_LOGICAL} = sprintf("0x4c00%02x1d", $sizeof_hash{"LOGICAL"});
+            $confs{MPI_COMPLEX} = sprintf("0x4c00%02x1e", $sizeof_hash{"COMPLEX"});
+            $confs{MPI_DOUBLE_PRECISION} = sprintf("0x4c00%02x1f", $sizeof_hash{"DOUBLE_PRECISION"});
+            $confs{MPI_2INTEGER} = sprintf("0x4c00%02x20", $sizeof_hash{"2INTEGER"});
+            $confs{MPI_2REAL} = sprintf("0x4c00%02x21", $sizeof_hash{"2REAL"});
+            $confs{MPI_DOUBLE_COMPLEX} = sprintf("0x4c00%02x22", $sizeof_hash{"DOUBLE_COMPLEX"});
+            $confs{MPI_2DOUBLE_PRECISION} = sprintf("0x4c00%02x23", $sizeof_hash{"2DOUBLE_PRECISION"});
+            $confs{MPI_2COMPLEX} = sprintf("0x4c00%02x24", $sizeof_hash{"2COMPLEX"});
+            $confs{MPI_2DOUBLE_COMPLEX} = sprintf("0x4c00%02x25", $sizeof_hash{"2DOUBLE_COMPLEX"});
+            $confs{MPI_REAL4} = sprintf("0x4c00%02x27", 4);
+            $confs{MPI_COMPLEX8} = sprintf("0x4c00%02x28", 8);
+            $confs{MPI_REAL8} = sprintf("0x4c00%02x29", 8);
+            $confs{MPI_COMPLEX16} = sprintf("0x4c00%02x2a", 16);
+            $confs{MPI_REAL16} = sprintf("0x4c00%02x2b", 16);
+            $confs{MPI_COMPLEX32} = sprintf("0x4c00%02x2c", 32);
+            $confs{MPI_INTEGER1} = sprintf("0x4c00%02x2d", 1);
+            $confs{MPI_INTEGER2} = sprintf("0x4c00%02x2f", 2);
+            $confs{MPI_INTEGER4} = sprintf("0x4c00%02x30", 4);
+            $confs{MPI_INTEGER8} = sprintf("0x4c00%02x31", 8);
+            $confs{MPI_INTEGER16} = sprintf("0x4c00%02x32", 16);
+            foreach my $n (1,2,4,8) {
+                foreach my $type ("char", "short", "int", "long", "long long") {
+                    my $a = get_config_name($type);
+                    if ($sizeof_hash{$a} == $n) {
+                        $config_defines{"MPIR_INTEGER${n}_CTYPE"} = $type;
+                        last;
+                    }
+                }
+            }
+            foreach my $n (4,8,16) {
+                foreach my $type ("float", "double", "__float128") {
+                    my $a = get_config_name($type);
+                    if ($sizeof_hash{$a} == $n) {
+                        $config_defines{"MPIR_REAL${n}_CTYPE"} = $type;
+                        last;
+                    }
                 }
             }
         }
-        foreach my $n (4,8,16) {
-            foreach my $type ("float", "double", "__float128") {
-                my $a = get_config_name($type);
-                if ($sizeof_hash{$a} == $n) {
-                    $config_defines{"MPIR_REAL${n}_CTYPE"} = $type;
-                    last;
-                }
-            }
+        else {
+            $confs{MPI_CHARACTER} = "MPI_DATATYPE_NULL";
+            $confs{MPI_INTEGER} = "MPI_DATATYPE_NULL";
+            $confs{MPI_REAL} = "MPI_DATATYPE_NULL";
+            $confs{MPI_LOGICAL} = "MPI_DATATYPE_NULL";
+            $confs{MPI_COMPLEX} = "MPI_DATATYPE_NULL";
+            $confs{MPI_DOUBLE_PRECISION} = "MPI_DATATYPE_NULL";
+            $confs{MPI_2INTEGER} = "MPI_DATATYPE_NULL";
+            $confs{MPI_2REAL} = "MPI_DATATYPE_NULL";
+            $confs{MPI_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+            $confs{MPI_2DOUBLE_PRECISION} = "MPI_DATATYPE_NULL";
+            $confs{MPI_2COMPLEX} = "MPI_DATATYPE_NULL";
+            $confs{MPI_2DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+            $confs{MPI_REAL4} = "MPI_DATATYPE_NULL";
+            $confs{MPI_COMPLEX8} = "MPI_DATATYPE_NULL";
+            $confs{MPI_REAL8} = "MPI_DATATYPE_NULL";
+            $confs{MPI_COMPLEX16} = "MPI_DATATYPE_NULL";
+            $confs{MPI_REAL16} = "MPI_DATATYPE_NULL";
+            $confs{MPI_COMPLEX32} = "MPI_DATATYPE_NULL";
+            $confs{MPI_INTEGER1} = "MPI_DATATYPE_NULL";
+            $confs{MPI_INTEGER2} = "MPI_DATATYPE_NULL";
+            $confs{MPI_INTEGER4} = "MPI_DATATYPE_NULL";
+            $confs{MPI_INTEGER8} = "MPI_DATATYPE_NULL";
+            $confs{MPI_INTEGER16} = "MPI_DATATYPE_NULL";
         }
+        $confs{MPI_REAL2} = "MPI_DATATYPE_NULL";
+        $confs{MPI_COMPLEX4} = "MPI_DATATYPE_NULL";
+
+        if (!$opts{disable_cxx}) {
+            $confs{MPIR_CXX_BOOL} = sprintf("0x4c00%02x33", $sizeof_hash{"CXX_BOOL"});
+            $confs{MPIR_CXX_COMPLEX} = sprintf("0x4c00%02x34", $sizeof_hash{"CXX_COMPLEX"});
+            $confs{MPIR_CXX_DOUBLE_COMPLEX} = sprintf("0x4c00%02x35", $sizeof_hash{"CXX_DOUBLE_COMPLEX"});
+            $confs{MPIR_CXX_LONG_DOUBLE_COMPLEX} = sprintf("0x4c00%02x36", $sizeof_hash{"CXX_LONG_DOUBLE_COMPLEX"});
+        }
+        else {
+            $confs{MPIR_CXX_BOOL} = "MPI_DATATYPE_NULL";
+            $confs{MPIR_CXX_COMPLEX} = "MPI_DATATYPE_NULL";
+            $confs{MPIR_CXX_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+            $confs{MPIR_CXX_LONG_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
+        }
+
+        $confs{MPI_INT8_T} = sprintf("0x4c00%02x37", $sizeof_hash{"INT8_T"});
+        $confs{MPI_INT16_T} = sprintf("0x4c00%02x38", $sizeof_hash{"INT16_T"});
+        $confs{MPI_INT32_T} = sprintf("0x4c00%02x39", $sizeof_hash{"INT32_T"});
+        $confs{MPI_INT64_T} = sprintf("0x4c00%02x3a", $sizeof_hash{"INT64_T"});
+        $confs{MPI_UINT8_T} = sprintf("0x4c00%02x3b", $sizeof_hash{"UINT8_T"});
+        $confs{MPI_UINT16_T} = sprintf("0x4c00%02x3c", $sizeof_hash{"UINT16_T"});
+        $confs{MPI_UINT32_T} = sprintf("0x4c00%02x3d", $sizeof_hash{"UINT32_T"});
+        $confs{MPI_UINT64_T} = sprintf("0x4c00%02x3e", $sizeof_hash{"UINT64_T"});
+        $confs{MPI_C_BOOL} = sprintf("0x4c00%02x3f", $sizeof_hash{"C_BOOL"});
+        $confs{MPI_C_FLOAT_COMPLEX} = sprintf("0x4c00%02x40", $sizeof_hash{"C_FLOAT_COMPLEX"});
+        $confs{MPI_C_DOUBLE_COMPLEX} = sprintf("0x4c00%02x41", $sizeof_hash{"C_DOUBLE_COMPLEX"});
+        $confs{MPI_C_LONG_DOUBLE_COMPLEX} = sprintf("0x4c00%02x42", $sizeof_hash{"C_LONG_DOUBLE_COMPLEX"});
+
+        $confs{MPI_AINT_DATATYPE} = sprintf("0x4c00%02x43", $sizeof_hash{AINT});
+        $confs{MPI_OFFSET_DATATYPE} = sprintf("0x4c00%02x44", $sizeof_hash{OFFSET});
+        $confs{MPI_COUNT_DATATYPE} = sprintf("0x4c00%02x45", $sizeof_hash{COUNT});
+
+        $confs{MPIX_C_FLOAT16} = sprintf("0x4c00%02x46", $sizeof_hash{"C_FLOAT16"});
+
+        $confs{MPI_UNSIGNED} = $confs{MPI_UNSIGNED_INT};
+        $confs{MPI_LONG_LONG_INT} = $confs{MPI_LONG_LONG};
+        $confs{MPIR_CXX_FLOAT_COMPLEX} = $confs{MPIR_CXX_COMPLEX};
+        autoconf_file("src/include/mpi.h", \%confs);
+        $mpi_h_confs = \%confs;
     }
-    else {
-        $confs{MPI_CHARACTER} = "MPI_DATATYPE_NULL";
-        $confs{MPI_INTEGER} = "MPI_DATATYPE_NULL";
-        $confs{MPI_REAL} = "MPI_DATATYPE_NULL";
-        $confs{MPI_LOGICAL} = "MPI_DATATYPE_NULL";
-        $confs{MPI_COMPLEX} = "MPI_DATATYPE_NULL";
-        $confs{MPI_DOUBLE_PRECISION} = "MPI_DATATYPE_NULL";
-        $confs{MPI_2INTEGER} = "MPI_DATATYPE_NULL";
-        $confs{MPI_2REAL} = "MPI_DATATYPE_NULL";
-        $confs{MPI_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
-        $confs{MPI_2DOUBLE_PRECISION} = "MPI_DATATYPE_NULL";
-        $confs{MPI_2COMPLEX} = "MPI_DATATYPE_NULL";
-        $confs{MPI_2DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
-        $confs{MPI_REAL4} = "MPI_DATATYPE_NULL";
-        $confs{MPI_COMPLEX8} = "MPI_DATATYPE_NULL";
-        $confs{MPI_REAL8} = "MPI_DATATYPE_NULL";
-        $confs{MPI_COMPLEX16} = "MPI_DATATYPE_NULL";
-        $confs{MPI_REAL16} = "MPI_DATATYPE_NULL";
-        $confs{MPI_COMPLEX32} = "MPI_DATATYPE_NULL";
-        $confs{MPI_INTEGER1} = "MPI_DATATYPE_NULL";
-        $confs{MPI_INTEGER2} = "MPI_DATATYPE_NULL";
-        $confs{MPI_INTEGER4} = "MPI_DATATYPE_NULL";
-        $confs{MPI_INTEGER8} = "MPI_DATATYPE_NULL";
-        $confs{MPI_INTEGER16} = "MPI_DATATYPE_NULL";
-    }
-    $confs{MPI_REAL2} = "MPI_DATATYPE_NULL";
-    $confs{MPI_COMPLEX4} = "MPI_DATATYPE_NULL";
-
-    if (!$opts{disable_cxx}) {
-        $confs{MPIR_CXX_BOOL} = sprintf("0x4c00%02x33", $sizeof_hash{"CXX_BOOL"});
-        $confs{MPIR_CXX_COMPLEX} = sprintf("0x4c00%02x34", $sizeof_hash{"CXX_COMPLEX"});
-        $confs{MPIR_CXX_DOUBLE_COMPLEX} = sprintf("0x4c00%02x35", $sizeof_hash{"CXX_DOUBLE_COMPLEX"});
-        $confs{MPIR_CXX_LONG_DOUBLE_COMPLEX} = sprintf("0x4c00%02x36", $sizeof_hash{"CXX_LONG_DOUBLE_COMPLEX"});
-    }
-    else {
-        $confs{MPIR_CXX_BOOL} = "MPI_DATATYPE_NULL";
-        $confs{MPIR_CXX_COMPLEX} = "MPI_DATATYPE_NULL";
-        $confs{MPIR_CXX_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
-        $confs{MPIR_CXX_LONG_DOUBLE_COMPLEX} = "MPI_DATATYPE_NULL";
-    }
-
-    $confs{MPI_INT8_T} = sprintf("0x4c00%02x37", $sizeof_hash{"INT8_T"});
-    $confs{MPI_INT16_T} = sprintf("0x4c00%02x38", $sizeof_hash{"INT16_T"});
-    $confs{MPI_INT32_T} = sprintf("0x4c00%02x39", $sizeof_hash{"INT32_T"});
-    $confs{MPI_INT64_T} = sprintf("0x4c00%02x3a", $sizeof_hash{"INT64_T"});
-    $confs{MPI_UINT8_T} = sprintf("0x4c00%02x3b", $sizeof_hash{"UINT8_T"});
-    $confs{MPI_UINT16_T} = sprintf("0x4c00%02x3c", $sizeof_hash{"UINT16_T"});
-    $confs{MPI_UINT32_T} = sprintf("0x4c00%02x3d", $sizeof_hash{"UINT32_T"});
-    $confs{MPI_UINT64_T} = sprintf("0x4c00%02x3e", $sizeof_hash{"UINT64_T"});
-    $confs{MPI_C_BOOL} = sprintf("0x4c00%02x3f", $sizeof_hash{"C_BOOL"});
-    $confs{MPI_C_FLOAT_COMPLEX} = sprintf("0x4c00%02x40", $sizeof_hash{"C_FLOAT_COMPLEX"});
-    $confs{MPI_C_DOUBLE_COMPLEX} = sprintf("0x4c00%02x41", $sizeof_hash{"C_DOUBLE_COMPLEX"});
-    $confs{MPI_C_LONG_DOUBLE_COMPLEX} = sprintf("0x4c00%02x42", $sizeof_hash{"C_LONG_DOUBLE_COMPLEX"});
-
-    $confs{MPI_AINT_DATATYPE} = sprintf("0x4c00%02x43", $sizeof_hash{AINT});
-    $confs{MPI_OFFSET_DATATYPE} = sprintf("0x4c00%02x44", $sizeof_hash{OFFSET});
-    $confs{MPI_COUNT_DATATYPE} = sprintf("0x4c00%02x45", $sizeof_hash{COUNT});
-
-    $confs{MPIX_C_FLOAT16} = sprintf("0x4c00%02x46", $sizeof_hash{"C_FLOAT16"});
-
-    $confs{MPI_UNSIGNED} = $confs{MPI_UNSIGNED_INT};
-    $confs{MPI_LONG_LONG_INT} = $confs{MPI_LONG_LONG};
-    $confs{MPIR_CXX_FLOAT_COMPLEX} = $confs{MPIR_CXX_COMPLEX};
-    autoconf_file("src/include/mpi.h", \%confs);
-    my $mpi_h_confs = \%confs;
     my %confs;
     $confs{HAVE_ERROR_CHECKING} = 1;
     autoconf_file("src/include/mpir_ext.h", \%confs);
@@ -1261,7 +1264,7 @@ if ($config eq "mpich") {
 
         autoconf_file("src/binding/cxx/mpicxx.h", \%confs);
     }
-    if (!$opts{disable_fortran}) {
+    if (!$opts{disable_fortran} and $mpi_h_confs) {
         my %mpidef;
         my (@mpidef_list, %mpidef_type);
         push @mpidef_list, "MPI_SUCCESS";

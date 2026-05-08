@@ -253,6 +253,12 @@ if test "$?" != "0"; then
     exit $?
 fi
 make hydra-install
+if test -e src/binding/fortran/Makefile
+    make -j$N_MAKE_JOBS mpifort 2>&1 | tee -a make.log
+    if test "$?" != "0"; then
+        exit $?
+    fi
+    make mpifort-install
 
 export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include:$CPATH
