@@ -259,6 +259,7 @@ if test -e src/binding/fortran/Makefile
         exit $?
     fi
     make mpifort-install
+fi
 
 export PATH=$PREFIX/bin:$PATH
 export CPATH=$PREFIX/include:$CPATH
