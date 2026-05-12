@@ -1776,10 +1776,17 @@ else {
             }
         }
         close In;
+        my $file;
         if (-f "src/env/mpicc.bash") {
+            $a = "src/env/mpicc.bash";
+        }
+        elsif (-f "src/binding/fortran/env/mpicc.bash") {
+            $a = "src/binding/fortran/env/mpicc.bash";
+        }
+        if ($file) {
             my @lines;
             {
-                open In, "src/env/mpicc.bash" or die "Can't open src/env/mpicc.bash.\n";
+                open In, "$file" or die "Can't open $file.\n";
                 @lines=<In>;
                 close In;
             }
@@ -1804,10 +1811,17 @@ else {
             }
             close Out;
         }
+        my $file;
         if (-f "src/env/mpicxx.bash") {
+            $a = "src/env/mpicxx.bash";
+        }
+        elsif (-f "src/binding/fortran/env/mpicxx.bash") {
+            $a = "src/binding/fortran/env/mpicxx.bash";
+        }
+        if ($file) {
             my @lines;
             {
-                open In, "src/env/mpicxx.bash" or die "Can't open src/env/mpicxx.bash.\n";
+                open In, "$file" or die "Can't open $file.\n";
                 @lines=<In>;
                 close In;
             }
@@ -1832,10 +1846,17 @@ else {
             }
             close Out;
         }
+        my $file;
         if (-f "src/env/mpifort.bash") {
+            $a = "src/env/mpifort.bash";
+        }
+        elsif (-f "src/binding/fortran/env/mpifort.bash") {
+            $a = "src/binding/fortran/env/mpifort.bash";
+        }
+        if ($file) {
             my @lines;
             {
-                open In, "src/env/mpifort.bash" or die "Can't open src/env/mpifort.bash.\n";
+                open In, "$file" or die "Can't open $file.\n";
                 @lines=<In>;
                 close In;
             }
