@@ -668,14 +668,14 @@ else {
     }
     if (-e "src/binding/fortran/Makefile.am") {
         my $mkfile="src/binding/fortran/Makefile";
-        push @extra_make_rules, ".PHONY: fortran fortran-install";
-        push @extra_make_rules, "fortran: $mkfile";
+        push @extra_make_rules, ".PHONY: mpifort mpifort-install";
+        push @extra_make_rules, "mpifort: $mkfile";
         push @extra_make_rules, "\t(cd src/binding/fortran && \x24(MAKE) )";
         push @extra_make_rules, "";
-        push @extra_make_rules, "fortran-install: $mkfile";
+        push @extra_make_rules, "mpifort-install: $mkfile";
         push @extra_make_rules, "\t(cd src/binding/fortran && \x24(MAKE) install )";
         push @extra_make_rules, "";
-        push @extra_make_rules, "fortran-clean:";
+        push @extra_make_rules, "mpifort-clean:";
         push @extra_make_rules, "\t(cd src/binding/fortran && make clean && rm -f Makefile )";
         push @extra_make_rules, "";
         push @extra_make_rules, "$mkfile:";
