@@ -1358,8 +1358,10 @@ else {
 
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
-    $dst_hash{"mymake/mpifort"}=$bin;
     $dst_hash{"mymake/mpicxx"}=$bin;
+    if (-e "src/env/mpifort.bash.in") {
+        $dst_hash{"mymake/mpifort"}=$bin;
+    }
     if ($opts{"enable-mpi-abi"}) {
         $dst_hash{"LN_S-$bin/mpicc_abi"}="$bin/mpicc";
     }
@@ -1776,17 +1778,17 @@ else {
             }
         }
         close In;
-        my $file;
+        my $script;
         if (-f "src/env/mpicc.bash") {
-            $a = "src/env/mpicc.bash";
+            $script = "src/env/mpicc.bash";
         }
         elsif (-f "src/binding/fortran/env/mpicc.bash") {
-            $a = "src/binding/fortran/env/mpicc.bash";
+            $script = "src/binding/fortran/env/mpicc.bash";
         }
-        if ($file) {
+        if ($script) {
             my @lines;
             {
-                open In, "$file" or die "Can't open $file.\n";
+                open In, "$script" or die "Can't open $script.\n";
                 @lines=<In>;
                 close In;
             }
@@ -1811,17 +1813,17 @@ else {
             }
             close Out;
         }
-        my $file;
+        my $script;
         if (-f "src/env/mpicxx.bash") {
-            $a = "src/env/mpicxx.bash";
+            $script = "src/env/mpicxx.bash";
         }
         elsif (-f "src/binding/fortran/env/mpicxx.bash") {
-            $a = "src/binding/fortran/env/mpicxx.bash";
+            $script = "src/binding/fortran/env/mpicxx.bash";
         }
-        if ($file) {
+        if ($script) {
             my @lines;
             {
-                open In, "$file" or die "Can't open $file.\n";
+                open In, "$script" or die "Can't open $script.\n";
                 @lines=<In>;
                 close In;
             }
@@ -1846,17 +1848,17 @@ else {
             }
             close Out;
         }
-        my $file;
+        my $script;
         if (-f "src/env/mpifort.bash") {
-            $a = "src/env/mpifort.bash";
+            $script = "src/env/mpifort.bash";
         }
         elsif (-f "src/binding/fortran/env/mpifort.bash") {
-            $a = "src/binding/fortran/env/mpifort.bash";
+            $script = "src/binding/fortran/env/mpifort.bash";
         }
-        if ($file) {
+        if ($script) {
             my @lines;
             {
-                open In, "$file" or die "Can't open $file.\n";
+                open In, "$script" or die "Can't open $script.\n";
                 @lines=<In>;
                 close In;
             }

@@ -689,8 +689,10 @@ if ($what eq "mpich") {
 
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
-    $dst_hash{"mymake/mpifort"}=$bin;
     $dst_hash{"mymake/mpicxx"}=$bin;
+    if (-e "src/env/mpifort.bash.in") {
+        $dst_hash{"mymake/mpifort"}=$bin;
+    }
     if ($opts{"enable-mpi-abi"}) {
         $dst_hash{"LN_S-$bin/mpicc_abi"}="$bin/mpicc";
     }
