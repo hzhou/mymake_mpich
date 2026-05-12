@@ -667,6 +667,7 @@ else {
         push @extra_make_rules, "";
     }
     if (-e "src/binding/fortran/Makefile.am") {
+        system "cp maint/version.m4 src/binding/fortran/";
         my $mkfile="src/binding/fortran/Makefile";
         push @extra_make_rules, ".PHONY: mpifort mpifort-install";
         push @extra_make_rules, "mpifort: $mkfile";
