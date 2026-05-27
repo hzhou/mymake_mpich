@@ -1134,6 +1134,7 @@ elsif ($what eq "dtpools") {
     $autoconf_vars{DTP_DATATYPES} = "MPI_INT,MPI_INT:4+MPI_DOUBLE:8";
     load_automake("test/mpi/dtpools/src/Makefile.am", \%conds);
 
+    $make_vars{CC} = "mpicc";
     $make_vars{INCLUDES} = "-I../include";
     $make_vars{LIBTOOL} = "/bin/sh ../libtool";
 
