@@ -1111,7 +1111,7 @@ else {
                 $L_list .= " -L$L/lib64 -lucp -luct -lucm -lucs";
             }
             else {
-                print "libfabric.so NOT FOUND in $L\n";
+                print "libucp.so NOT FOUND in $L\n";
             }
         }
     }
@@ -1158,6 +1158,9 @@ else {
             $I_list .= " -I$L/include";
             if (-e "$L/lib64/libfabric.so") {
                 $L_list .= " -L$L/lib64 -lfabric";
+            }
+            elsif (-e "$L/lib/libfabric.so") {
+                $L_list .= " -L$L/lib -lfabric";
             }
             else {
                 print "libfabric.so NOT FOUND in $L\n";
@@ -1207,6 +1210,9 @@ else {
             $I_list .= " -I$L/include";
             if (-e "$L/lib64/libfabric.so") {
                 $L_list .= " -L$L/lib64 -lfabric";
+            }
+            elsif (-e "$L/lib/libfabric.so") {
+                $L_list .= " -L$L/lib -lfabric";
             }
             else {
                 print "libfabric.so NOT FOUND in $L\n";
@@ -1347,7 +1353,7 @@ else {
         $special_targets{lib_libmpi_la}="\x24(LTCC) -DMPICH_MPI_FROM_PMPI";
     }
     if ($opts{"enable-mpi-abi"}) {
-        my $CC = "\x24(LTCC) -DBUILD_MPI_ABI -Isrc/binding/abi";
+        my $CC = "\x24(LTCC) -DMPICH_BUILD_MPI_ABI -DBUILD_MPI_ABI -Isrc/binding/abi";
         if (!$opts{do_pmpi}) {
             $special_targets{lib_libmpi_abi_la}=$CC;
         }
