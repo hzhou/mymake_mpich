@@ -418,8 +418,8 @@ $config_defines{LT_OBJDIR} = '".libs/"';
 
 $config_defines{HAVE__FUNC__}="\x2f**/";
 $config_defines{HAVE__FUNCTION__}="\x2f**/";
-$config_defines{HAVE_WEAK_ATTRIBUTE}=1;
 $config_defines{HAVE_PRAGMA_WEAK}=1;
+$config_defines{HAVE_PRAGMA_WEAK_ALIAS}=1;
 $config_defines{HAVE_MULTIPLE_PRAGMA_WEAK}=1;
 $config_defines{HAVE_GCC_ATTRIBUTE}=1;
 $config_defines{HAVE_MACRO_VA_ARGS}=1;
@@ -474,8 +474,8 @@ if ($opts{uname}=~/Linux/i) {
     }
 }
 if ($opts{uname}=~/Darwin/i) {
-    $config_defines{HAVE_WEAK_ATTRIBUTE} = undef;
     $config_defines{HAVE_PRAGMA_WEAK} = undef;
+    $config_defines{HAVE_PRAGMA_WEAK_ALIAS} = undef;
     $config_defines{HAVE_MULTIPLE_PRAGMA_WEAK} = undef;
     $config_defines{USE_WEAK_SYMBOLS} = undef;
     $opts{cc_weak} = "no";
