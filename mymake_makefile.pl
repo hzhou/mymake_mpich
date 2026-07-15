@@ -1856,12 +1856,16 @@ sub dump_makefile {
         }
         print Out "\n";
         if ($opts{"with-cuda"}) {
+            my $cudalt = "confdb/cudalt.sh";
+            if ($makefile=~/src.mpl.Makefile/ and -e "src/mpl/src/gpu/cudalt.sh") {
+                $cudalt = "src/gpu/cudalt.sh";
+            }
             print Out "%.lo: %.cu\n";
             if ($opts{V}==0) {
-                print Out "\t\@echo NVCC \$\@ && confdb/cudalt.sh \$\@ nvcc -c \x24(AM_CPPFLAGS) \$<\n";
+                print Out "\t\@echo NVCC \$\@ && $cudalt \$\@ nvcc -c \x24(AM_CPPFLAGS) \$<\n";
             }
             else {
-                print Out "\tconfdb/cudalt.sh \$\@ nvcc -c \x24(AM_CPPFLAGS) \$<\n";
+                print Out "\t$cudalt \$\@ nvcc -c \x24(AM_CPPFLAGS) \$<\n";
             }
             print Out "\n";
         }
