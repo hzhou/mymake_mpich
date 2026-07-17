@@ -418,7 +418,6 @@ $config_defines{LT_OBJDIR} = '".libs/"';
 
 $config_defines{HAVE__FUNC__}="\x2f**/";
 $config_defines{HAVE__FUNCTION__}="\x2f**/";
-$config_defines{HAVE_PRAGMA_WEAK}=1;
 $config_defines{HAVE_PRAGMA_WEAK_ALIAS}=1;
 $config_defines{HAVE_MULTIPLE_PRAGMA_WEAK}=1;
 $config_defines{HAVE_GCC_ATTRIBUTE}=1;
@@ -585,7 +584,6 @@ if ($config eq "mpich") {
         elsif ($opts{device}=~/ch4:ofi/) {
             $temp{HAVE_CH4_NETMOD_OFI}=1;
             $temp{MPIDI_OFI_VNI_USE_DOMAIN}=1;
-            $temp{HAVE_LIBFABRIC_NIC}=1;
             if ($opts{device}=~/ch4:ofi:(\w+)/) {
                 my ($set) = ($1);
                 $set = uc($set);

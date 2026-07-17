@@ -413,6 +413,9 @@
 /* HP style weak pragma */
 #undef HAVE_PRAGMA_HP_SEC_DEF
 
+/* Supports weak alias pragma */
+#undef HAVE_PRAGMA_WEAK_ALIAS
+
 /* Supports weak pragma */
 #undef HAVE_PRAGMA_WEAK
 
