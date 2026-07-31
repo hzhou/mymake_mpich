@@ -206,7 +206,10 @@ else {
 
 my $uname = `uname`;
 $opts{uname} = $uname;
-if ($uname=~/CYGWIN/ or $opts{"disable-weak-symbols"}) {
+if ($uname=~/CYGWIN/) {
+    $opts{do_pmpi} = 1;
+}
+elsif ($opts{"disable-weak-symbols"}) {
     $opts{do_pmpi} = 1;
 }
 if (-f "mymake/CFLAGS") {
