@@ -8,54 +8,26 @@
 #define MPITESTCONF_H_INCLUDED
 
 
-/* Fortran names are lowercase with no trailing underscore */
-#undef F77_NAME_LOWER
+/* define if have libnccl */
+#undef ENABLE_NCCL
 
-/* Fortran names are lowercase with two trailing underscores */
-#undef F77_NAME_LOWER_2USCORE
+/* define if have librccl */
+#undef ENABLE_RCCL
 
-/* Fortran names are lowercase with two trailing underscores in stdcall */
-#undef F77_NAME_LOWER_2USCORE_STDCALL
+/* Define if configured with --enable-strictmpi */
+#undef ENABLE_STRICTMPI
 
-/* Fortran names are lowercase with no trailing underscore in stdcall */
-#undef F77_NAME_LOWER_STDCALL
-
-/* Fortran names are lowercase with one trailing underscore */
-#undef F77_NAME_LOWER_USCORE
-
-/* Fortran names are lowercase with one trailing underscore in stdcall */
-#undef F77_NAME_LOWER_USCORE_STDCALL
-
-/* Fortran names preserve the original case */
-#undef F77_NAME_MIXED
-
-/* Fortran names preserve the original case in stdcall */
-#undef F77_NAME_MIXED_STDCALL
-
-/* Fortran names preserve the original case with one trailing underscore */
-#undef F77_NAME_MIXED_USCORE
-
-/* Fortran names preserve the original case with one trailing underscore in
-   stdcall */
-#undef F77_NAME_MIXED_USCORE_STDCALL
-
-/* Fortran names are uppercase */
-#undef F77_NAME_UPPER
-
-/* Fortran names are uppercase in stdcall */
-#undef F77_NAME_UPPER_STDCALL
-
-/* Define if GPU is supported */
-#undef HAVE_GPU
+/* Define if _Atomic is supported */
+#undef HAVE_ATOMIC
 
 /* Define if CUDA is available */
 #undef HAVE_CUDA
 
-/* Define to 1 if you have the <dlfcn.h> header file. */
-#undef HAVE_DLFCN_H
-
 /* Define to 1 if the system has the type `double _Complex'. */
 #undef HAVE_DOUBLE__COMPLEX
+
+/* Define if _Float16 is supported */
+#undef HAVE_FLOAT16
 
 /* Define to 1 if the system has the type `float _Complex'. */
 #undef HAVE_FLOAT__COMPLEX
@@ -65,6 +37,9 @@
 
 /* Define to 1 if you have the `getrusage' function. */
 #undef HAVE_GETRUSAGE
+
+/* Define if HIP is available */
+#undef HAVE_HIP
 
 /* Define if struct hostent contains h_addr_list */
 #undef HAVE_H_ADDR_LIST
@@ -78,12 +53,6 @@
 /* Define to 1 if you have the <iostream.h> header file. */
 #undef HAVE_IOSTREAM_H
 
-/* Define to 1 if you have the `abt' library (-labt). */
-#undef HAVE_LIBABT
-
-/* Define to 1 if you have the `cudart' library (-lcudart). */
-#undef HAVE_LIBCUDART
-
 /* Define if long double is supported */
 #undef HAVE_LONG_DOUBLE
 
@@ -93,8 +62,11 @@
 /* Define if compiler supports long long */
 #undef HAVE_LONG_LONG
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
+/* Define to 1 if you have the <minix/config.h> header file. */
+#undef HAVE_MINIX_CONFIG_H
+
+/* Define if MPI_COMPLEX32 is available */
+#undef HAVE_MPI_COMPLEX32
 
 /* Define if MPI_INTEGER16 is available */
 #undef HAVE_MPI_INTEGER16
@@ -102,17 +74,14 @@
 /* Define if MPI-IO (really ROMIO) is included */
 #undef HAVE_MPI_IO
 
+/* Define if MPI_REAL16 is available */
+#undef HAVE_MPI_REAL16
+
 /* Define if Dynamic Process functionality is available */
 #undef HAVE_MPI_SPAWN
 
 /* Define if MPI_Win_create is available */
 #undef HAVE_MPI_WIN_CREATE
-
-/* define if the compiler implements namespaces */
-#undef HAVE_NAMESPACES
-
-/* define if the compiler implements namespace std */
-#undef HAVE_NAMESPACE_STD
 
 /* Define to 1 if you have the <pthread.h> header file. */
 #undef HAVE_PTHREAD_H
@@ -123,8 +92,14 @@
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
+
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
@@ -144,20 +119,35 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* Define if MPIX_Threadcomm is available */
+#undef HAVE_THREADCOMM
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `usleep' function. */
+#undef HAVE_USLEEP
+
+/* Define to 1 if you have the <wchar.h> header file. */
+#undef HAVE_WCHAR_H
+
+/* Define if ZE is available */
+#undef HAVE_ZE
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
-/* Define to the sub-directory where libtool stores uninstalled libraries. */
-#undef LT_OBJDIR
+/* define if it is mpich with ch4:ofi */
+#undef MPICH_CH4_OFI
+
+/* define if it is mpich with ch4:ucx */
+#undef MPICH_CH4_UCX
 
 /* Define if MPI IO uses MPI_Request */
 #undef MPIO_USES_MPI_REQUEST
 
-/* Name of package */
-#undef PACKAGE
+/* define to use larger port name size in MPI_Open_port via info hints */
+#undef MTEST_LARGE_PORT_NAME
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -198,10 +188,9 @@
 /* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
-/* Define calling convention */
-#undef STDCALL
-
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* set to the name of the thread package */
@@ -213,8 +202,93 @@
 /* Define if only operations defined in MPI should be tested */
 #undef USE_STRICT_MPI
 
-/* Version number of package */
-#undef VERSION
+/* Enable extensions on AIX 3, Interix.  */
+#ifndef _ALL_SOURCE
+# undef _ALL_SOURCE
+#endif
+/* Enable general extensions on macOS.  */
+#ifndef _DARWIN_C_SOURCE
+# undef _DARWIN_C_SOURCE
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# undef __EXTENSIONS__
+#endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+/* Enable X/Open compliant socket functions that do not require linking
+   with -lxnet on HP-UX 11.11.  */
+#ifndef _HPUX_ALT_XOPEN_SOCKET_API
+# undef _HPUX_ALT_XOPEN_SOCKET_API
+#endif
+/* Identify the host operating system as Minix.
+   This macro does not affect the system headers' behavior.
+   A future release of Autoconf may stop defining this macro.  */
+#ifndef _MINIX
+# undef _MINIX
+#endif
+/* Enable general extensions on NetBSD.
+   Enable NetBSD compatibility extensions on Minix.  */
+#ifndef _NETBSD_SOURCE
+# undef _NETBSD_SOURCE
+#endif
+/* Enable OpenBSD compatibility extensions on NetBSD.
+   Oddly enough, this does nothing on OpenBSD.  */
+#ifndef _OPENBSD_SOURCE
+# undef _OPENBSD_SOURCE
+#endif
+/* Define to 1 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_SOURCE
+# undef _POSIX_SOURCE
+#endif
+/* Define to 2 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_1_SOURCE
+# undef _POSIX_1_SOURCE
+#endif
+/* Enable POSIX-compatible threading on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# undef _POSIX_PTHREAD_SEMANTICS
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-5:2014.  */
+#ifndef __STDC_WANT_IEC_60559_ATTRIBS_EXT__
+# undef __STDC_WANT_IEC_60559_ATTRIBS_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-1:2014.  */
+#ifndef __STDC_WANT_IEC_60559_BFP_EXT__
+# undef __STDC_WANT_IEC_60559_BFP_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-2:2015.  */
+#ifndef __STDC_WANT_IEC_60559_DFP_EXT__
+# undef __STDC_WANT_IEC_60559_DFP_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-4:2015.  */
+#ifndef __STDC_WANT_IEC_60559_FUNCS_EXT__
+# undef __STDC_WANT_IEC_60559_FUNCS_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-3:2015.  */
+#ifndef __STDC_WANT_IEC_60559_TYPES_EXT__
+# undef __STDC_WANT_IEC_60559_TYPES_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TR 24731-2:2010.  */
+#ifndef __STDC_WANT_LIB_EXT2__
+# undef __STDC_WANT_LIB_EXT2__
+#endif
+/* Enable extensions specified by ISO/IEC 24747:2009.  */
+#ifndef __STDC_WANT_MATH_SPEC_FUNCS__
+# undef __STDC_WANT_MATH_SPEC_FUNCS__
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# undef _TANDEM_SOURCE
+#endif
+/* Enable X/Open extensions.  Define to 500 only if necessary
+   to make mbstate_t available.  */
+#ifndef _XOPEN_SOURCE
+# undef _XOPEN_SOURCE
+#endif
+
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
@@ -230,6 +304,9 @@
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
    #define below would cause a syntax error. */
 #undef _UINT8_T
+
+/* AMD GPU HIP available */
+#undef __HIP_PLATFORM_AMD__
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
@@ -252,14 +329,15 @@
 
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
-   supported directly.  */
+   supported only directly.  */
 #undef restrict
-/* Work around a bug in Sun C++: it does not support _Restrict or
-   __restrict__, even though the corresponding Sun C compiler ends up with
-   "#define restrict _Restrict" or "#define restrict __restrict__" in the
-   previous line.  Perhaps some future version of Sun C++ will work with
-   restrict; if so, hopefully it defines __RESTRICT like Sun C does.  */
-#if defined __SUNPRO_CC && !defined __RESTRICT
+/* Work around a bug in older versions of Sun C++, which did not
+   #define __restrict__ or support _Restrict or __restrict__
+   even though the corresponding Sun C compiler ended up with
+   "#define restrict _Restrict" or "#define restrict __restrict__"
+   in the previous line.  This workaround can be removed once
+   we assume Oracle Developer Studio 12.5 (2016) or later.  */
+#if defined __SUNPRO_CC && !defined __RESTRICT && !defined __restrict__
 # define _Restrict
 # define __restrict__
 #endif

@@ -9,9 +9,6 @@
 #include <mplconfig.h>
 
 
-/* BGQ platform */
-#undef BGQPLATFORM
-
 /* Define to 1 if you have the <aio.h> header file. */
 #undef HAVE_AIO_H
 
@@ -32,9 +29,6 @@
 /* Define to 1 if you have the <dirent.h> header file. */
 #undef HAVE_DIRENT_H
 
-/* Define to 1 if you have the <dlfcn.h> header file. */
-#undef HAVE_DLFCN_H
-
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
@@ -43,9 +37,6 @@
 
 /* Define to 1 if you have the `ftruncate' function. */
 #undef HAVE_FTRUNCATE
-
-/* Define if GNU __attribute__ is supported */
-#undef HAVE_GCC_ATTRIBUTE
 
 /* Define to 1 if you have the <gpfs_fcntl.h> header file. */
 #undef HAVE_GPFS_FCNTL_H
@@ -61,9 +52,6 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
-
-/* Define if int smaller than pointer */
-#undef HAVE_INT_LT_POINTER
 
 /* Define to 1 if you have the `aio-lite' library (-laio-lite). */
 #undef HAVE_LIBAIO_LITE
@@ -110,8 +98,8 @@
 /* Define to 1 if you have the `memalign' function. */
 #undef HAVE_MEMALIGN
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
+/* Define to 1 if you have the <minix/config.h> header file. */
+#undef HAVE_MINIX_CONFIG_H
 
 /* Set if MPI-IO prototypes use const qualifier */
 #undef HAVE_MPIIO_CONST
@@ -119,14 +107,11 @@
 /* Define to 1 if you have the <mpix.h> header file. */
 #undef HAVE_MPIX_H
 
-/* Define if MPI combiners available */
-#undef HAVE_MPI_COMBINERS
+/* Define if MPI library provides MPIX_Type_iov and MPIX_Type_iov_len */
+#undef HAVE_MPIX_TYPE_IOV
 
 /* Define if Darray is available */
 #undef HAVE_MPI_DARRAY_SUBARRAY
-
-/* Define if generalized requests available */
-#undef HAVE_MPI_GREQUEST
 
 /* Define if MPI Info is available */
 #undef HAVE_MPI_INFO
@@ -140,23 +125,8 @@
 /* Define to 1 if you have the `MPI_Type_size_x' function. */
 #undef HAVE_MPI_TYPE_SIZE_X
 
-/* Define to 1 if you have the `MPIX_Type_iov' function. */
-#undef HAVE_MPIX_TYPE_IOV
-
-/* Define if multiple weak symbols may be defined */
-#undef HAVE_MULTIPLE_PRAGMA_WEAK
-
 /* Define to 1 if the system has the type `pan_fs_client_raidn_encoding_t'. */
 #undef HAVE_PAN_FS_CLIENT_RAIDN_ENCODING_T
-
-/* Cray style weak pragma */
-#undef HAVE_PRAGMA_CRI_DUP
-
-/* HP style weak pragma */
-#undef HAVE_PRAGMA_HP_SEC_DEF
-
-/* Supports weak pragma */
-#undef HAVE_PRAGMA_WEAK
 
 /* Define if PVFS_sys_create does not have layout parameter */
 #undef HAVE_PVFS2_CREATE_WITHOUT_LAYOUT
@@ -179,7 +149,7 @@
 /* Define to 1 if you have the `statfs' function. */
 #undef HAVE_STATFS
 
-/* Define if status set bytes available */
+/* Define if status_set_bytes available */
 #undef HAVE_STATUS_SET_BYTES
 
 /* Define to 1 if you have the `statvfs' function. */
@@ -190,6 +160,9 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -221,8 +194,17 @@
 /* Define to 1 if `aio_whence' is a member of `struct aiocb'. */
 #undef HAVE_STRUCT_AIOCB_AIO_WHENCE
 
-/* Define if struct statfs can be compiled */
-#undef HAVE_STRUCT_STATFS
+/* Define to 1 if `f_fstypename' is a member of `struct statfs'. */
+#undef HAVE_STRUCT_STATFS_F_FSTYPENAME
+
+/* Define to 1 if `f_type' is a member of `struct statfs'. */
+#undef HAVE_STRUCT_STATFS_F_TYPE
+
+/* Define to 1 if `f_basetype' is a member of `struct statvfs'. */
+#undef HAVE_STRUCT_STATVFS_F_BASETYPE
+
+/* Define to 1 if `st_fstype' is a member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_FSTYPE
 
 /* Define to 1 if you have the <sys/aio.h> header file. */
 #undef HAVE_SYS_AIO_H
@@ -245,6 +227,9 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* Define to 1 if you have the <sys/type.h> header file. */
+#undef HAVE_SYS_TYPE_H
+
 /* Define to 1 if you have the <sys/vfs.h> header file. */
 #undef HAVE_SYS_VFS_H
 
@@ -257,20 +242,14 @@
 /* Define to 1 if you have the `usleep' function. */
 #undef HAVE_USLEEP
 
-/* Whether C compiler supports symbol visibility or not */
-#undef HAVE_VISIBILITY
-
-/* Attribute style weak pragma */
-#undef HAVE_WEAK_ATTRIBUTE
+/* Define to 1 if you have the <wchar.h> header file. */
+#undef HAVE_WCHAR_H
 
 /* Define if weak symbols available */
 #undef HAVE_WEAK_SYMBOLS
 
 /* Define if int smaller than pointer */
 #undef INT_LT_POINTER
-
-/* Define to the sub-directory where libtool stores uninstalled libraries. */
-#undef LT_OBJDIR
 
 /* Define if using MPICH */
 #undef MPICH
@@ -290,38 +269,11 @@
 /* Define if MPI_Offset is int */
 #undef MPI_OFFSET_IS_INT
 
-/* Define if fsync needs a declaration */
-#undef NEEDS_FSYNC_DECL
-
-/* Define if ftruncate needs a declaration */
-#undef NEEDS_FTRUNCATE_DECL
-
 /* Define if l_start and l_len data should be cast as int */
 #undef NEEDS_INT_CAST_WITH_FLOCK
 
-/* Define if lseek64 needs a declaration */
-#undef NEEDS_LSEEK64_DECL
-
-/* Define if lstat needs a declaration */
-#undef NEEDS_LSTAT_DECL
-
 /* Define if mpi_test needed */
 #undef NEEDS_MPI_TEST
-
-/* Define if readlink needs a declaration */
-#undef NEEDS_READLINK_DECL
-
-/* Define if strdup needs a declaration */
-#undef NEEDS_STRDUP_DECL
-
-/* Define if usleep needs a declaration */
-#undef NEEDS_USLEEP_DECL
-
-/* Define if no MPI type is contig */
-#undef NO_MPI_SGI_type_is_contig
-
-/* Name of package */
-#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -341,9 +293,6 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* PE platform */
-#undef PEPLATFORM
-
 /* Define for printing error messages */
 #undef PRINT_ERR_MSG
 
@@ -358,18 +307,6 @@
 
 /* Define if aio_suspend needs two arguments */
 #undef ROMIO_HAVE_AIO_SUSPEND_TWO_ARGS
-
-/* Define if statfs has f_fstypename */
-#undef ROMIO_HAVE_STRUCT_STATFS_WITH_F_FSTYPENAME
-
-/* Define if statfs has f_type */
-#undef ROMIO_HAVE_STRUCT_STATFS_WITH_F_TYPE
-
-/* defined if struct statvfs has a f_basetype member */
-#undef ROMIO_HAVE_STRUCT_STATVFS_WITH_F_BASETYPE
-
-/* Define if struct stat has a st_fstype member */
-#undef ROMIO_HAVE_STRUCT_STAT_WITH_ST_FSTYPE
 
 /* Define if AIO calls seem to work */
 #undef ROMIO_HAVE_WORKING_AIO
@@ -416,60 +353,104 @@
 /* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
-
-/* Define if performing coverage tests */
-#undef USE_COVERAGE
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
 #endif
-/* Enable GNU extensions on systems that have them.  */
-#ifndef _GNU_SOURCE
-# undef _GNU_SOURCE
-#endif
-/* Enable threading extensions on Solaris.  */
-#ifndef _POSIX_PTHREAD_SEMANTICS
-# undef _POSIX_PTHREAD_SEMANTICS
-#endif
-/* Enable extensions on HP NonStop.  */
-#ifndef _TANDEM_SOURCE
-# undef _TANDEM_SOURCE
+/* Enable general extensions on macOS.  */
+#ifndef _DARWIN_C_SOURCE
+# undef _DARWIN_C_SOURCE
 #endif
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
 # undef __EXTENSIONS__
 #endif
-
-
-/* Define if weak symbols should be used */
-#undef USE_WEAK_SYMBOLS
-
-/* Version number of package */
-#undef VERSION
-
-/* Enable large inode numbers on Mac OS X 10.5.  */
-#ifndef _DARWIN_USE_64_BIT_INODE
-# define _DARWIN_USE_64_BIT_INODE 1
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
 #endif
+/* Enable X/Open compliant socket functions that do not require linking
+   with -lxnet on HP-UX 11.11.  */
+#ifndef _HPUX_ALT_XOPEN_SOCKET_API
+# undef _HPUX_ALT_XOPEN_SOCKET_API
+#endif
+/* Identify the host operating system as Minix.
+   This macro does not affect the system headers' behavior.
+   A future release of Autoconf may stop defining this macro.  */
+#ifndef _MINIX
+# undef _MINIX
+#endif
+/* Enable general extensions on NetBSD.
+   Enable NetBSD compatibility extensions on Minix.  */
+#ifndef _NETBSD_SOURCE
+# undef _NETBSD_SOURCE
+#endif
+/* Enable OpenBSD compatibility extensions on NetBSD.
+   Oddly enough, this does nothing on OpenBSD.  */
+#ifndef _OPENBSD_SOURCE
+# undef _OPENBSD_SOURCE
+#endif
+/* Define to 1 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_SOURCE
+# undef _POSIX_SOURCE
+#endif
+/* Define to 2 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_1_SOURCE
+# undef _POSIX_1_SOURCE
+#endif
+/* Enable POSIX-compatible threading on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# undef _POSIX_PTHREAD_SEMANTICS
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-5:2014.  */
+#ifndef __STDC_WANT_IEC_60559_ATTRIBS_EXT__
+# undef __STDC_WANT_IEC_60559_ATTRIBS_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-1:2014.  */
+#ifndef __STDC_WANT_IEC_60559_BFP_EXT__
+# undef __STDC_WANT_IEC_60559_BFP_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-2:2015.  */
+#ifndef __STDC_WANT_IEC_60559_DFP_EXT__
+# undef __STDC_WANT_IEC_60559_DFP_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-4:2015.  */
+#ifndef __STDC_WANT_IEC_60559_FUNCS_EXT__
+# undef __STDC_WANT_IEC_60559_FUNCS_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-3:2015.  */
+#ifndef __STDC_WANT_IEC_60559_TYPES_EXT__
+# undef __STDC_WANT_IEC_60559_TYPES_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TR 24731-2:2010.  */
+#ifndef __STDC_WANT_LIB_EXT2__
+# undef __STDC_WANT_LIB_EXT2__
+#endif
+/* Enable extensions specified by ISO/IEC 24747:2009.  */
+#ifndef __STDC_WANT_MATH_SPEC_FUNCS__
+# undef __STDC_WANT_MATH_SPEC_FUNCS__
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# undef _TANDEM_SOURCE
+#endif
+/* Enable X/Open extensions.  Define to 500 only if necessary
+   to make mbstate_t available.  */
+#ifndef _XOPEN_SOURCE
+# undef _XOPEN_SOURCE
+#endif
+
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
 
 /* Define for large files, on AIX-style hosts. */
 #undef _LARGE_FILES
-
-/* Define to 1 if on MINIX. */
-#undef _MINIX
-
-/* Define to 2 if the system does not provide POSIX.1 features except with
-   this defined. */
-#undef _POSIX_1_SOURCE
-
-/* Define to 1 if you need to in order for `stat' and other things to work. */
-#undef _POSIX_SOURCE
 
 /* Provide blksize_t if not available */
 #undef blksize_t
@@ -485,14 +466,15 @@
 
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
-   supported directly.  */
+   supported only directly.  */
 #undef restrict
-/* Work around a bug in Sun C++: it does not support _Restrict or
-   __restrict__, even though the corresponding Sun C compiler ends up with
-   "#define restrict _Restrict" or "#define restrict __restrict__" in the
-   previous line.  Perhaps some future version of Sun C++ will work with
-   restrict; if so, hopefully it defines __RESTRICT like Sun C does.  */
-#if defined __SUNPRO_CC && !defined __RESTRICT
+/* Work around a bug in older versions of Sun C++, which did not
+   #define __restrict__ or support _Restrict or __restrict__
+   even though the corresponding Sun C compiler ended up with
+   "#define restrict _Restrict" or "#define restrict __restrict__"
+   in the previous line.  This workaround can be removed once
+   we assume Oracle Developer Studio 12.5 (2016) or later.  */
+#if defined __SUNPRO_CC && !defined __RESTRICT && !defined __restrict__
 # define _Restrict
 # define __restrict__
 #endif

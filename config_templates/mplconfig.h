@@ -1,16 +1,20 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Defined the keyword for thread-local storage. */
-#undef COMPILER_TLS
-
 /* Define cache-line size. */
 #undef CACHELINE_SIZE
 
 /* Define to 1 if MPL enables MPL_aligned_alloc. */
 #undef DEFINE_ALIGNED_ALLOC
 
-/* Define if force compiler to always inline functions with MPL_STATIC_INLINE_PREFIX|SUFFIX] */
+/* Define if force compiler to always inline functions with
+   MPL_STATIC_INLINE_PREFIX|SUFFIX */
 #undef ENABLE_ALWAYS_INLINE
+
+/* Force enable AVX support */
+#undef FORCE_AVX
+
+/* Force enable AVX512F support */
+#undef FORCE_AVX512F
 
 /* Define to 1 if you have the `aligned_alloc' function. */
 #undef HAVE_ALIGNED_ALLOC
@@ -18,21 +22,24 @@
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
-/* Defined if backtrace() could be fully identified. */
-#undef HAVE_BACKTRACE
+/* Have AVX support */
+#undef HAVE_AVX
+
+/* Have AVX512F support */
+#undef HAVE_AVX512F
 
 /* define if valgrind is old and/or broken compared to what we are expecting
    */
 #undef HAVE_BROKEN_VALGRIND
 
-/* Define to 1 if the compiler supports __builtin_expect. */
-#undef HAVE_BUILTIN_EXPECT
+/* Define if __builtin_cpu_init and __builtin_cpu_supports are available */
+#undef HAVE_BUILTIN_CPU_SUPPORTS
+
+/* Define if __builtin_cpu_supports("avx512f") is available */
+#undef HAVE_BUILTIN_CPU_SUPPORTS_AVX512F
 
 /* Define to 1 if we have support for C11 atomic intrinsics */
 #undef HAVE_C11_ATOMICS
-
-/* Define if C11 _Static_assert is supported. */
-#undef HAVE_C11__STATIC_ASSERT
 
 /* Define to 1 if you have the `clock_getres' function. */
 #undef HAVE_CLOCK_GETRES
@@ -40,20 +47,27 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
+/* Define if CPU_SET and CPU_ZERO defined */
+#undef HAVE_CPU_SET_MACROS
+
+/* Define if cpu_set_t is defined in sched.h */
+#undef HAVE_CPU_SET_T
+
 /* Define to 1 if you have the <ctype.h> header file. */
 #undef HAVE_CTYPE_H
 
-/* Define to 1 if you have the <dlfcn.h> header file. */
-#undef HAVE_DLFCN_H
+/* Define if CUDA is available */
+#undef HAVE_CUDA
+
+/* Define to 1 if you have the declaration of `_SC_NPROCESSORS_ONLN', and to 0
+   if you don't. */
+#undef HAVE_DECL__SC_NPROCESSORS_ONLN
 
 /* Define to 1 if you have the <drd.h> header file. */
 #undef HAVE_DRD_H
 
 /* Define to 1 if you have the <drm/i915_drm.h> header file. */
 #undef HAVE_DRM_I915_DRM_H
-
-/* Define to 1 if you have the <libdrm/i915_drm.h> header file. */
-#undef HAVE_LIBDRM_I915_DRM_H
 
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
@@ -63,12 +77,6 @@
 
 /* Define to 1 if you have the `fdopen' function. */
 #undef HAVE_FDOPEN
-
-/* Define to 1 if the system has the `fallthrough' function attribute */
-#undef HAVE_FUNC_ATTRIBUTE_FALLTHROUGH
-
-/* Define if GNU __attribute__ is supported */
-#undef HAVE_GCC_ATTRIBUTE
 
 /* Define to 1 if we have support for gcc __atomic intrinsics */
 #undef HAVE_GCC_INTRINSIC_ATOMIC
@@ -88,8 +96,14 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
+/* Define to 1 if you have the `get_nprocs' function. */
+#undef HAVE_GET_NPROCS
+
 /* Define to 1 if you have the <helgrind.h> header file. */
 #undef HAVE_HELGRIND_H
+
+/* Define if HIP is available */
+#undef HAVE_HIP
 
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #undef HAVE_IFADDRS_H
@@ -97,47 +111,32 @@
 /* Define to 1 if you have the `inet_ntop' function. */
 #undef HAVE_INET_NTOP
 
+/* Define if we have mpl_initshm_ facility */
+#undef HAVE_INITSHM
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `abt' library (-labt). */
-#undef HAVE_LIBABT
+/* Define to 1 if you have the `dl' library (-ldl). */
+#undef HAVE_LIBDL
 
-/* Define to 1 if you have the `cuda' library (-lcuda). */
-#undef HAVE_LIBCUDA
-
-/* Define to 1 if you have the `cudart' library (-lcudart). */
-#undef HAVE_LIBCUDART
-
-/* Define to 1 if you have the `OpenCL' library (-lOpenCL). */
-#undef HAVE_LIBOPENCL
-
-/* Define to 1 if you have the `uti' library (-luti). */
-#undef HAVE_LIBUTI
-
-/* Define to 1 if you have the `ze_loader' library (-lze_loader). */
-#undef HAVE_LIBZE_LOADER
+/* Define to 1 if you have the <libdrm/i915_drm.h> header file. */
+#undef HAVE_LIBDRM_I915_DRM_H
 
 /* Define to 1 if you have the `mach_absolute_time' function. */
 #undef HAVE_MACH_ABSOLUTE_TIME
 
-/* Define if C99-style variable argument list macro functionality */
-#undef HAVE_MACRO_VA_ARGS
-
 /* Define to 1 if you have the <memcheck.h> header file. */
 #undef HAVE_MEMCHECK_H
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
+/* Define to 1 if you have the <minix/config.h> header file. */
+#undef HAVE_MINIX_CONFIG_H
+
+/* Define if get_nprocs or _SC_NPROCESSORS_ONLN is Vilable. */
+#undef HAVE_MISC_GETNPROCS
 
 /* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
-
-/* Define to 1 if you have the `mmap' function. */
-#undef HAVE_MMAP
-
-/* Define to 1 if you have the `munmap' function. */
-#undef HAVE_MUNMAP
 
 /* Define to 1 if we have support for Windows NT atomic intrinsics */
 #undef HAVE_NT_INTRINSICS
@@ -145,17 +144,17 @@
 /* Define to 1 if you have the `posix_memalign' function. */
 #undef HAVE_POSIX_MEMALIGN
 
-/* Define to 1 if you have the `shm_open' function */
+/* Define if we have POSIX shared memory */
 #undef HAVE_POSIX_SHM
-
-/* Define to 1 if you have the `shm_open' function */
-#undef HAVE_INITSHM
 
 /* Define to 1 if you have the <pthread.h> header file. */
 #undef HAVE_PTHREAD_H
 
 /* Define to 1 if you have the `pthread_mutexattr_setpshared' function. */
 #undef HAVE_PTHREAD_MUTEXATTR_SETPSHARED
+
+/* Define to 1 if you have the `pthread_setaffinity_np' function. */
+#undef HAVE_PTHREAD_SETAFFINITY_NP
 
 /* Define to 1 if you have the `pthread_yield' function. */
 #undef HAVE_PTHREAD_YIELD
@@ -172,23 +171,8 @@
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
 
-/* Define to 1 if you have the `shmat' function. */
-#undef HAVE_SHMAT
-
-/* Define to 1 if you have the `shmctl' function. */
-#undef HAVE_SHMCTL
-
-/* Define to 1 if you have the `shmdt' function. */
-#undef HAVE_SHMDT
-
-/* Define to 1 if you have the `shmget' function. */
-#undef HAVE_SHMGET
-
 /* Define to 1 if you have the `sleep' function. */
 #undef HAVE_SLEEP
-
-/* Define to 1 if you have the `snprintf' function. */
-#undef HAVE_SNPRINTF
 
 /* Define to 1 if you have the <stdarg.h> header file. */
 #undef HAVE_STDARG_H
@@ -217,9 +201,6 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* legacy */
-#undef HAVE_STRNCMP
-
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
 
@@ -228,6 +209,9 @@
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/sysinfo.h> header file. */
+#undef HAVE_SYS_SYSINFO_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
@@ -262,26 +246,29 @@
 /* Define to 1 if you have the <valgrind/valgrind.h> header file. */
 #undef HAVE_VALGRIND_VALGRIND_H
 
-/* Define to 1 if the system has the `aligned' variable attribute */
-#undef HAVE_VAR_ATTRIBUTE_ALIGNED
-
-/* Define to 1 if the system has the `used' variable attribute */
-#undef HAVE_VAR_ATTRIBUTE_USED
+/* Define to 1 if you have the <wchar.h> header file. */
+#undef HAVE_WCHAR_H
 
 /* Define to 1 if you have the <windows.h> header file. */
 #undef HAVE_WINDOWS_H
 
+/* Define to 1 if you have the <x86intrin.h> header file. */
+#undef HAVE_X86INTRIN_H
+
 /* Define to 1 if you have the `yield' function. */
 #undef HAVE_YIELD
 
-/* Define to 1 if you have the <x86intrin.h> header file. */
-#undef HAVE_X86INTRIN_H
+/* Define if ZE is available */
+#undef HAVE_ZE
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
 /* defined if the C compiler supports __typeof(variable) */
 #undef HAVE___TYPEOF
+
+/* Define if struct hipPointerAttribute_t use memoryType (pre-v6.1) */
+#undef HIP_USE_MEMORYTYPE
 
 /* Define which x86 cycle counter to use */
 #undef LINUX86_CYCLE_CPUID_RDTSC32
@@ -295,56 +282,8 @@
 /* Define which x86 cycle counter to use */
 #undef LINUX86_CYCLE_RDTSCP
 
-/* Define to the sub-directory where libtool stores uninstalled libraries. */
-#undef LT_OBJDIR
-
-/* Define if GPU is supported */
-#undef HAVE_GPU
-
-/* Define if CUDA is available */
-#undef HAVE_CUDA
-
-/* Define if ZE is available */
-#undef HAVE_ZE
-
-/* Define if use Windows shared memory */
-#undef USE_NT_SHM
-
-/* Define if use SYSV shared memory */
-#undef USE_SYSV_SHM
-
-/* Define if aligned_alloc needs a declaration */
-#undef NEEDS_ALIGNED_ALLOC_DECL
-
-/* Define if fdopen needs a declaration */
-#undef NEEDS_FDOPEN_DECL
-
-/* Define if mkstemp needs a declaration */
-#undef NEEDS_MKSTEMP_DECL
-
-/* Define if pthread_mutexattr_settype needs a declaration */
-#undef NEEDS_PTHREAD_MUTEXATTR_SETTYPE_DECL
-
-/* Define if putenv needs a declaration */
-#undef NEEDS_PUTENV_DECL
-
-/* Define if snprintf needs a declaration */
-#undef NEEDS_SNPRINTF_DECL
-
-/* Define if strdup needs a declaration */
-#undef NEEDS_STRDUP_DECL
-
-/* Define if strerror needs a declaration */
-#undef NEEDS_STRERROR_DECL
-
 /* Define if sys/time.h is required to get timer definitions */
 #undef NEEDS_SYS_TIME_H
-
-/* Define if usleep needs a declaration */
-#undef NEEDS_USLEEP_DECL
-
-/* Name of package */
-#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -377,14 +316,13 @@
 /* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* set to the name of the thread package */
 #undef THREAD_PACKAGE_NAME
-
-/* Define if performing coverage tests */
-#undef USE_COVERAGE
 
 /* Define to enable logging macros */
 #undef USE_DBG_LOGGING
@@ -394,9 +332,6 @@
 
 /* Define to enable memory tracing */
 #undef USE_MEMORY_TRACING
-
-/* Define if we have sysv shared memory */
-#undef USE_MMAP_SHM
 
 /* Define to use nothing to yield processor */
 #undef USE_NOTHING_FOR_YIELD
@@ -417,48 +352,95 @@
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
 #endif
-/* Enable GNU extensions on systems that have them.  */
-#ifndef _GNU_SOURCE
-# undef _GNU_SOURCE
-#endif
-/* Enable threading extensions on Solaris.  */
-#ifndef _POSIX_PTHREAD_SEMANTICS
-# undef _POSIX_PTHREAD_SEMANTICS
-#endif
-/* Enable extensions on HP NonStop.  */
-#ifndef _TANDEM_SOURCE
-# undef _TANDEM_SOURCE
+/* Enable general extensions on macOS.  */
+#ifndef _DARWIN_C_SOURCE
+# undef _DARWIN_C_SOURCE
 #endif
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
 # undef __EXTENSIONS__
 #endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+/* Enable X/Open compliant socket functions that do not require linking
+   with -lxnet on HP-UX 11.11.  */
+#ifndef _HPUX_ALT_XOPEN_SOCKET_API
+# undef _HPUX_ALT_XOPEN_SOCKET_API
+#endif
+/* Identify the host operating system as Minix.
+   This macro does not affect the system headers' behavior.
+   A future release of Autoconf may stop defining this macro.  */
+#ifndef _MINIX
+# undef _MINIX
+#endif
+/* Enable general extensions on NetBSD.
+   Enable NetBSD compatibility extensions on Minix.  */
+#ifndef _NETBSD_SOURCE
+# undef _NETBSD_SOURCE
+#endif
+/* Enable OpenBSD compatibility extensions on NetBSD.
+   Oddly enough, this does nothing on OpenBSD.  */
+#ifndef _OPENBSD_SOURCE
+# undef _OPENBSD_SOURCE
+#endif
+/* Define to 1 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_SOURCE
+# undef _POSIX_SOURCE
+#endif
+/* Define to 2 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_1_SOURCE
+# undef _POSIX_1_SOURCE
+#endif
+/* Enable POSIX-compatible threading on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# undef _POSIX_PTHREAD_SEMANTICS
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-5:2014.  */
+#ifndef __STDC_WANT_IEC_60559_ATTRIBS_EXT__
+# undef __STDC_WANT_IEC_60559_ATTRIBS_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-1:2014.  */
+#ifndef __STDC_WANT_IEC_60559_BFP_EXT__
+# undef __STDC_WANT_IEC_60559_BFP_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-2:2015.  */
+#ifndef __STDC_WANT_IEC_60559_DFP_EXT__
+# undef __STDC_WANT_IEC_60559_DFP_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-4:2015.  */
+#ifndef __STDC_WANT_IEC_60559_FUNCS_EXT__
+# undef __STDC_WANT_IEC_60559_FUNCS_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TS 18661-3:2015.  */
+#ifndef __STDC_WANT_IEC_60559_TYPES_EXT__
+# undef __STDC_WANT_IEC_60559_TYPES_EXT__
+#endif
+/* Enable extensions specified by ISO/IEC TR 24731-2:2010.  */
+#ifndef __STDC_WANT_LIB_EXT2__
+# undef __STDC_WANT_LIB_EXT2__
+#endif
+/* Enable extensions specified by ISO/IEC 24747:2009.  */
+#ifndef __STDC_WANT_MATH_SPEC_FUNCS__
+# undef __STDC_WANT_MATH_SPEC_FUNCS__
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# undef _TANDEM_SOURCE
+#endif
+/* Enable X/Open extensions.  Define to 500 only if necessary
+   to make mbstate_t available.  */
+#ifndef _XOPEN_SOURCE
+# undef _XOPEN_SOURCE
+#endif
 
-
-/* Define if we have sysv shared memory */
-#undef USE_SYSV_SHM
 
 /* Define to use usleep to yield processor */
 #undef USE_USLEEP_FOR_YIELD
 
 /* Define to use yield to yield processor */
 #undef USE_YIELD_FOR_YIELD
-
-/* Version number of package */
-#undef VERSION
-
-/* Define to 1 if on MINIX. */
-#undef _MINIX
-
-/* Define to 2 if the system does not provide POSIX.1 features except with
-   this defined. */
-#undef _POSIX_1_SOURCE
-
-/* Define to 1 if you need to in order for `stat' and other things to work. */
-#undef _POSIX_SOURCE
-
-/* Defined to return type of backtrace(). */
-#undef backtrace_size_t
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
@@ -471,14 +453,15 @@
 
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
-   supported directly.  */
+   supported only directly.  */
 #undef restrict
-/* Work around a bug in Sun C++: it does not support _Restrict or
-   __restrict__, even though the corresponding Sun C compiler ends up with
-   "#define restrict _Restrict" or "#define restrict __restrict__" in the
-   previous line.  Perhaps some future version of Sun C++ will work with
-   restrict; if so, hopefully it defines __RESTRICT like Sun C does.  */
-#if defined __SUNPRO_CC && !defined __RESTRICT
+/* Work around a bug in older versions of Sun C++, which did not
+   #define __restrict__ or support _Restrict or __restrict__
+   even though the corresponding Sun C compiler ended up with
+   "#define restrict _Restrict" or "#define restrict __restrict__"
+   in the previous line.  This workaround can be removed once
+   we assume Oracle Developer Studio 12.5 (2016) or later.  */
+#if defined __SUNPRO_CC && !defined __RESTRICT && !defined __restrict__
 # define _Restrict
 # define __restrict__
 #endif
