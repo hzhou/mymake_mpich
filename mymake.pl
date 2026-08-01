@@ -899,7 +899,13 @@ else {
     }
 
     if (-f "src/pmi/configure.ac" && !$opts{"3rd-party-pmi"}) {
-        if (!$opts{"with-pmi"} and !$opts{"with-pmix"} and !$opts{"with-pmi1"} and !$opts{"with-pmi2"}) {
+        if ($opts{"with-pmix"}) {
+            my $L=$opts{"with-pmix"};
+            $I_list .= " -I$L/include";
+            $L_list .= " -L$L/lib -lpmix";
+        }
+
+        if (!$opts{"with-pmi"} and !$opts{"with-pmi1"} and !$opts{"with-pmi2"}) {
             $opts{"embed_pmi"} = 1;
             system "rsync -r confdb/ src/pmi/confdb/";
             system "cp maint/version.m4 src/pmi/";
@@ -954,11 +960,6 @@ else {
             push @extra_make_rules, "$lib_la: $lib_dep";
             push @extra_make_rules, "\t(".join(' && ', @t).")";
             push @extra_make_rules, "";
-        }
-        elsif ($opts{"with-pmix"}) {
-            my $L=$opts{"with-pmix"};
-            $I_list .= " -I$L/include";
-            $L_list .= " -L$L/lib -lpmix";
         }
         elsif ($opts{"with-pmi1"}) {
             my $L=$opts{"with-pmi"};
