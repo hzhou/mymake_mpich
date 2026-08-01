@@ -15,6 +15,12 @@
 /* Define to 1 if you have the <aio-lite.h> header file. */
 #undef HAVE_AIO_LITE_H
 
+/* Supports weak attribute */
+#undef HAVE_ATTR_WEAK
+
+/* Supports weak alias attribute */
+#undef HAVE_ATTR_WEAK_ALIAS
+
 /* Define to 1 if you have the <daos_types.h> header file. */
 #undef HAVE_DAOS_TYPES_H
 
@@ -29,6 +35,9 @@
 /* Define to 1 if you have the <dirent.h> header file. */
 #undef HAVE_DIRENT_H
 
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
@@ -37,6 +46,9 @@
 
 /* Define to 1 if you have the `ftruncate' function. */
 #undef HAVE_FTRUNCATE
+
+/* Define if GNU __attribute__ is supported */
+#undef HAVE_GCC_ATTRIBUTE
 
 /* Define to 1 if you have the <gpfs_fcntl.h> header file. */
 #undef HAVE_GPFS_FCNTL_H
@@ -125,8 +137,23 @@
 /* Define to 1 if you have the `MPI_Type_size_x' function. */
 #undef HAVE_MPI_TYPE_SIZE_X
 
+/* Define if multiple weak symbols may be defined */
+#undef HAVE_MULTIPLE_PRAGMA_WEAK
+
 /* Define to 1 if the system has the type `pan_fs_client_raidn_encoding_t'. */
 #undef HAVE_PAN_FS_CLIENT_RAIDN_ENCODING_T
+
+/* Cray style weak pragma */
+#undef HAVE_PRAGMA_CRI_DUP
+
+/* HP style weak pragma */
+#undef HAVE_PRAGMA_HP_SEC_DEF
+
+/* Supports weak pragma */
+#undef HAVE_PRAGMA_WEAK
+
+/* Supports weak alias pragma */
+#undef HAVE_PRAGMA_WEAK_ALIAS
 
 /* Define if PVFS_sys_create does not have layout parameter */
 #undef HAVE_PVFS2_CREATE_WITHOUT_LAYOUT
@@ -242,6 +269,9 @@
 /* Define to 1 if you have the `usleep' function. */
 #undef HAVE_USLEEP
 
+/* Whether C compiler supports symbol visibility or not */
+#undef HAVE_VISIBILITY
+
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
@@ -250,6 +280,9 @@
 
 /* Define if int smaller than pointer */
 #undef INT_LT_POINTER
+
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
 
 /* Define if using MPICH */
 #undef MPICH
@@ -269,11 +302,35 @@
 /* Define if MPI_Offset is int */
 #undef MPI_OFFSET_IS_INT
 
+/* Define if fsync needs a declaration */
+#undef NEEDS_FSYNC_DECL
+
+/* Define if ftruncate needs a declaration */
+#undef NEEDS_FTRUNCATE_DECL
+
 /* Define if l_start and l_len data should be cast as int */
 #undef NEEDS_INT_CAST_WITH_FLOCK
 
+/* Define if lseek64 needs a declaration */
+#undef NEEDS_LSEEK64_DECL
+
+/* Define if lstat needs a declaration */
+#undef NEEDS_LSTAT_DECL
+
 /* Define if mpi_test needed */
 #undef NEEDS_MPI_TEST
+
+/* Define if readlink needs a declaration */
+#undef NEEDS_READLINK_DECL
+
+/* Define if strdup needs a declaration */
+#undef NEEDS_STRDUP_DECL
+
+/* Define if usleep needs a declaration */
+#undef NEEDS_USLEEP_DECL
+
+/* Name of package */
+#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -357,6 +414,9 @@
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
+
+/* Define if performing coverage tests */
+#undef USE_COVERAGE
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
@@ -445,6 +505,9 @@
 # undef _XOPEN_SOURCE
 #endif
 
+
+/* Version number of package */
+#undef VERSION
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS

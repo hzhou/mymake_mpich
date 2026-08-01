@@ -49,10 +49,21 @@ foreach my $h (@headers) {
 
     print "Processing $subdir ...\n";
 
+    my $local_confdb = "$acdir/confdb";
+    my $need_confdb = (!-e $local_confdb && $subdir ne ".");
+    if ($need_confdb) {
+        mkdir $local_confdb or warn "mkdir: $!\n";
+    }
+
     my $old_dir = getcwd();
     chdir $acdir or die "Can't chdir $acdir: $!\n";
-    my $rc = system("autoheader -I $mpich_dir/confdb 2>&1");
+    system("aclocal -I $mpich_dir/confdb 2>&1");
+    my $rc = system("autoheader 2>&1");
     chdir $old_dir;
+
+    if ($need_confdb) {
+        rmdir $local_confdb;
+    }
 
     if ($rc != 0) {
         warn "  autoheader failed for $subdir, skipping\n";

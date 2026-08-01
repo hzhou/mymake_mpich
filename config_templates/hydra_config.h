@@ -21,6 +21,9 @@
 /* Define if persist bss is enabled */
 #undef HAVE_BSS_PERSIST
 
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
 /* Define if error checking is enabled */
 #undef HAVE_ERROR_CHECKING
 
@@ -32,6 +35,9 @@
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
+
+/* Define if GNU __attribute__ is supported */
+#undef HAVE_GCC_ATTRIBUTE
 
 /* Define to 1 if you have the `gethostname' function. */
 #undef HAVE_GETHOSTNAME
@@ -66,6 +72,9 @@
 /* Define to 1 if you have the `killpg' function. */
 #undef HAVE_KILLPG
 
+/* Define if C99-style variable argument list macro functionality */
+#undef HAVE_MACRO_VA_ARGS
+
 /* Define to 1 if you have the <minix/config.h> header file. */
 #undef HAVE_MINIX_CONFIG_H
 
@@ -83,6 +92,9 @@
 
 /* Define to 1 if you have the <poll.h> header file. */
 #undef HAVE_POLL_H
+
+/* Define this if POSIX compliant regcomp()/regexec() */
+#undef HAVE_POSIX_REGCOMP
 
 /* Define to 1 if you have the <sched.h> header file. */
 #undef HAVE_SCHED_H
@@ -207,11 +219,35 @@
 /* Hydra version information */
 #undef HYDRA_VERSION
 
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
+
 /* Define if environ decl needed */
 #undef MANUAL_EXTERN_ENVIRON
 
+/* Define if gethostname needs a declaration */
+#undef NEEDS_GETHOSTNAME_DECL
+
+/* Define if getpgid needs a declaration */
+#undef NEEDS_GETPGID_DECL
+
+/* Define if gettimeofday needs a declaration */
+#undef NEEDS_GETTIMEOFDAY_DECL
+
+/* Define if hstrerror needs a declaration */
+#undef NEEDS_HSTRERROR_DECL
+
+/* Define if killpg needs a declaration */
+#undef NEEDS_KILLPG_DECL
+
 /* Define if _POSIX_SOURCE needed to get sigaction */
 #undef NEEDS_POSIX_FOR_SIGACTION
+
+/* Define if strsignal needs a declaration */
+#undef NEEDS_STRSIGNAL_DECL
+
+/* Name of package */
+#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -238,6 +274,9 @@
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
+
+/* Define if performing coverage tests */
+#undef USE_COVERAGE
 
 /* Define if memory tracing is enabled */
 #undef USE_MEMORY_TRACING
@@ -335,6 +374,9 @@
 # undef _XOPEN_SOURCE
 #endif
 
+
+/* Version number of package */
+#undef VERSION
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

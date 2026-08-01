@@ -15,8 +15,14 @@
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
 /* Define to enable error checking */
 #undef HAVE_ERROR_CHECKING
+
+/* Define if GNU __attribute__ is supported */
+#undef HAVE_GCC_ATTRIBUTE
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -54,8 +60,17 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Whether C compiler supports symbol visibility or not */
+#undef HAVE_VISIBILITY
+
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
+
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
+
+/* Name of package */
+#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -171,6 +186,9 @@
 # undef _XOPEN_SOURCE
 #endif
 
+
+/* Version number of package */
+#undef VERSION
 
 
 #if defined(HAVE_VISIBILITY) && !defined(EMBEDDED_MODE)

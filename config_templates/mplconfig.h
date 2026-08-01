@@ -3,6 +3,9 @@
 /* Define cache-line size. */
 #undef CACHELINE_SIZE
 
+/* Defined the keyword for thread-local storage. */
+#undef COMPILER_TLS
+
 /* Define to 1 if MPL enables MPL_aligned_alloc. */
 #undef DEFINE_ALIGNED_ALLOC
 
@@ -28,9 +31,15 @@
 /* Have AVX512F support */
 #undef HAVE_AVX512F
 
+/* Defined if backtrace() could be fully identified. */
+#undef HAVE_BACKTRACE
+
 /* define if valgrind is old and/or broken compared to what we are expecting
    */
 #undef HAVE_BROKEN_VALGRIND
+
+/* Define to 1 if the compiler supports __builtin_clz. */
+#undef HAVE_BUILTIN_CLZ
 
 /* Define if __builtin_cpu_init and __builtin_cpu_supports are available */
 #undef HAVE_BUILTIN_CPU_SUPPORTS
@@ -38,8 +47,17 @@
 /* Define if __builtin_cpu_supports("avx512f") is available */
 #undef HAVE_BUILTIN_CPU_SUPPORTS_AVX512F
 
+/* Define to 1 if the compiler supports __builtin_expect. */
+#undef HAVE_BUILTIN_EXPECT
+
+/* Define to 1 if the compiler supports __builtin_popcount. */
+#undef HAVE_BUILTIN_POPCOUNT
+
 /* Define to 1 if we have support for C11 atomic intrinsics */
 #undef HAVE_C11_ATOMICS
+
+/* Define if C11 _Static_assert is supported. */
+#undef HAVE_C11__STATIC_ASSERT
 
 /* Define to 1 if you have the `clock_getres' function. */
 #undef HAVE_CLOCK_GETRES
@@ -63,6 +81,9 @@
    if you don't. */
 #undef HAVE_DECL__SC_NPROCESSORS_ONLN
 
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
 /* Define to 1 if you have the <drd.h> header file. */
 #undef HAVE_DRD_H
 
@@ -77,6 +98,9 @@
 
 /* Define to 1 if you have the `fdopen' function. */
 #undef HAVE_FDOPEN
+
+/* Define if GNU __attribute__ is supported */
+#undef HAVE_GCC_ATTRIBUTE
 
 /* Define to 1 if we have support for gcc __atomic intrinsics */
 #undef HAVE_GCC_INTRINSIC_ATOMIC
@@ -117,14 +141,29 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `abt' library (-labt). */
+#undef HAVE_LIBABT
+
+/* Define to 1 if you have the `cuda' library (-lcuda). */
+#undef HAVE_LIBCUDA
+
 /* Define to 1 if you have the `dl' library (-ldl). */
 #undef HAVE_LIBDL
 
 /* Define to 1 if you have the <libdrm/i915_drm.h> header file. */
 #undef HAVE_LIBDRM_I915_DRM_H
 
+/* Define to 1 if you have the `qthread' library (-lqthread). */
+#undef HAVE_LIBQTHREAD
+
+/* Define to 1 if you have the `uti' library (-luti). */
+#undef HAVE_LIBUTI
+
 /* Define to 1 if you have the `mach_absolute_time' function. */
 #undef HAVE_MACH_ABSOLUTE_TIME
+
+/* Define if C99-style variable argument list macro functionality */
+#undef HAVE_MACRO_VA_ARGS
 
 /* Define to 1 if you have the <memcheck.h> header file. */
 #undef HAVE_MEMCHECK_H
@@ -137,6 +176,12 @@
 
 /* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
+
+/* Define to 1 if you have the `mmap' function. */
+#undef HAVE_MMAP
+
+/* Define to 1 if you have the `munmap' function. */
+#undef HAVE_MUNMAP
 
 /* Define to 1 if we have support for Windows NT atomic intrinsics */
 #undef HAVE_NT_INTRINSICS
@@ -170,6 +215,18 @@
 
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
+
+/* Define to 1 if you have the `shmat' function. */
+#undef HAVE_SHMAT
+
+/* Define to 1 if you have the `shmctl' function. */
+#undef HAVE_SHMCTL
+
+/* Define to 1 if you have the `shmdt' function. */
+#undef HAVE_SHMDT
+
+/* Define to 1 if you have the `shmget' function. */
+#undef HAVE_SHMGET
 
 /* Define to 1 if you have the `sleep' function. */
 #undef HAVE_SLEEP
@@ -246,6 +303,12 @@
 /* Define to 1 if you have the <valgrind/valgrind.h> header file. */
 #undef HAVE_VALGRIND_VALGRIND_H
 
+/* Define to 1 if the system has the `aligned' variable attribute */
+#undef HAVE_VAR_ATTRIBUTE_ALIGNED
+
+/* Define to 1 if the system has the `used' variable attribute */
+#undef HAVE_VAR_ATTRIBUTE_USED
+
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
@@ -282,8 +345,38 @@
 /* Define which x86 cycle counter to use */
 #undef LINUX86_CYCLE_RDTSCP
 
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
+
+/* Define if aligned_alloc needs a declaration */
+#undef NEEDS_ALIGNED_ALLOC_DECL
+
+/* Define if fdopen needs a declaration */
+#undef NEEDS_FDOPEN_DECL
+
+/* Define if mkstemp needs a declaration */
+#undef NEEDS_MKSTEMP_DECL
+
+/* Define if pthread_mutexattr_settype needs a declaration */
+#undef NEEDS_PTHREAD_MUTEXATTR_SETTYPE_DECL
+
+/* Define if putenv needs a declaration */
+#undef NEEDS_PUTENV_DECL
+
+/* Define if strdup needs a declaration */
+#undef NEEDS_STRDUP_DECL
+
+/* Define if strerror needs a declaration */
+#undef NEEDS_STRERROR_DECL
+
 /* Define if sys/time.h is required to get timer definitions */
 #undef NEEDS_SYS_TIME_H
+
+/* Define if usleep needs a declaration */
+#undef NEEDS_USLEEP_DECL
+
+/* Name of package */
+#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -324,6 +417,9 @@
 /* set to the name of the thread package */
 #undef THREAD_PACKAGE_NAME
 
+/* Define if performing coverage tests */
+#undef USE_COVERAGE
+
 /* Define to enable logging macros */
 #undef USE_DBG_LOGGING
 
@@ -333,11 +429,17 @@
 /* Define to enable memory tracing */
 #undef USE_MEMORY_TRACING
 
+/* Define if we have sysv shared memory */
+#undef USE_MMAP_SHM
+
 /* Define to use nothing to yield processor */
 #undef USE_NOTHING_FOR_YIELD
 
 /* Define to 1 if no atomic primitives are used */
 #undef USE_NO_ATOMIC_PRIMITIVES
+
+/* Define if use Windows shared memory */
+#undef USE_NT_SHM
 
 /* Define to use sched_yield to yield processor */
 #undef USE_SCHED_YIELD_FOR_YIELD
@@ -436,11 +538,20 @@
 #endif
 
 
+/* Define if we have sysv shared memory */
+#undef USE_SYSV_SHM
+
 /* Define to use usleep to yield processor */
 #undef USE_USLEEP_FOR_YIELD
 
 /* Define to use yield to yield processor */
 #undef USE_YIELD_FOR_YIELD
+
+/* Version number of package */
+#undef VERSION
+
+/* Defined to return type of backtrace(). */
+#undef backtrace_size_t
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

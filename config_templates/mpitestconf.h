@@ -17,11 +17,51 @@
 /* Define if configured with --enable-strictmpi */
 #undef ENABLE_STRICTMPI
 
+/* Fortran names are lowercase with no trailing underscore */
+#undef F77_NAME_LOWER
+
+/* Fortran names are lowercase with two trailing underscores */
+#undef F77_NAME_LOWER_2USCORE
+
+/* Fortran names are lowercase with two trailing underscores in stdcall */
+#undef F77_NAME_LOWER_2USCORE_STDCALL
+
+/* Fortran names are lowercase with no trailing underscore in stdcall */
+#undef F77_NAME_LOWER_STDCALL
+
+/* Fortran names are lowercase with one trailing underscore */
+#undef F77_NAME_LOWER_USCORE
+
+/* Fortran names are lowercase with one trailing underscore in stdcall */
+#undef F77_NAME_LOWER_USCORE_STDCALL
+
+/* Fortran names preserve the original case */
+#undef F77_NAME_MIXED
+
+/* Fortran names preserve the original case in stdcall */
+#undef F77_NAME_MIXED_STDCALL
+
+/* Fortran names preserve the original case with one trailing underscore */
+#undef F77_NAME_MIXED_USCORE
+
+/* Fortran names preserve the original case with one trailing underscore in
+   stdcall */
+#undef F77_NAME_MIXED_USCORE_STDCALL
+
+/* Fortran names are uppercase */
+#undef F77_NAME_UPPER
+
+/* Fortran names are uppercase in stdcall */
+#undef F77_NAME_UPPER_STDCALL
+
 /* Define if _Atomic is supported */
 #undef HAVE_ATOMIC
 
 /* Define if CUDA is available */
 #undef HAVE_CUDA
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
 
 /* Define to 1 if the system has the type `double _Complex'. */
 #undef HAVE_DOUBLE__COMPLEX
@@ -53,6 +93,12 @@
 /* Define to 1 if you have the <iostream.h> header file. */
 #undef HAVE_IOSTREAM_H
 
+/* Define to 1 if you have the `abt' library (-labt). */
+#undef HAVE_LIBABT
+
+/* Define to 1 if you have the `qthread' library (-lqthread). */
+#undef HAVE_LIBQTHREAD
+
 /* Define if long double is supported */
 #undef HAVE_LONG_DOUBLE
 
@@ -82,6 +128,12 @@
 
 /* Define if MPI_Win_create is available */
 #undef HAVE_MPI_WIN_CREATE
+
+/* define if the compiler implements namespaces */
+#undef HAVE_NAMESPACES
+
+/* define if the compiler implements namespace std */
+#undef HAVE_NAMESPACE_STD
 
 /* Define to 1 if you have the <pthread.h> header file. */
 #undef HAVE_PTHREAD_H
@@ -137,6 +189,9 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
+
 /* define if it is mpich with ch4:ofi */
 #undef MPICH_CH4_OFI
 
@@ -148,6 +203,15 @@
 
 /* define to use larger port name size in MPI_Open_port via info hints */
 #undef MTEST_LARGE_PORT_NAME
+
+/* Define if strdup needs a declaration */
+#undef NEEDS_STRDUP_DECL
+
+/* Define if usleep needs a declaration */
+#undef NEEDS_USLEEP_DECL
+
+/* Name of package */
+#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -187,6 +251,9 @@
 
 /* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
+
+/* Define calling convention */
+#undef STDCALL
 
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
@@ -289,6 +356,9 @@
 # undef _XOPEN_SOURCE
 #endif
 
+
+/* Version number of package */
+#undef VERSION
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
