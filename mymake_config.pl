@@ -535,6 +535,7 @@ if ($config eq "mpich") {
         $temp{ENABLE_PMI2} = undef;
         $temp{ENABLE_PMIX} = 1;
         $temp{PMI_FROM_3RD_PARTY} = 1;
+        $temp{HAVE_PMIX_INFO_LOAD} = 1;
     }
 
     if (!$opts{disable_romio}) {
