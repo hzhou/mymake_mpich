@@ -8,6 +8,9 @@
 #define MPICHCONF_H_INCLUDED
 
 
+/* Define if building universal (internal helper macro) */
+#undef AC_APPLE_UNIVERSAL_BUILD
+
 /* The normal alignment of `double', in bytes. */
 #undef ALIGNOF_DOUBLE
 
@@ -44,8 +47,23 @@
 /* The normal alignment of `__int128', in bytes. */
 #undef ALIGNOF___INT128
 
+/* Define the number of CH3_RANK_BITS */
+#undef CH3_RANK_BITS
+
+/* Define the number of rank bits used in UCX */
+#undef CH4_UCX_RANKBITS
+
+/* Define the search path for machines files */
+#undef DEFAULT_MACHINES_PATH
+
+/* Define the default remote shell program to use */
+#undef DEFAULT_REMOTE_SHELL
+
 /* Define to workaround interprocess mutex issue on FreeBSD */
 #undef DELAY_SHM_MUTEX_DESTROY
+
+/* Define to enable shared-memory collectives */
+#undef ENABLED_SHM_COLLECTIVES
 
 /* define if have any ccls */
 #undef ENABLE_CCLCOMM
@@ -97,6 +115,52 @@
 /* "set to enable threadcomm feature" */
 #undef ENABLE_THREADCOMM
 
+/* The value of false in Fortran */
+#undef F77_FALSE_VALUE
+
+/* Fortran names are lowercase with no trailing underscore */
+#undef F77_NAME_LOWER
+
+/* Fortran names are lowercase with two trailing underscores */
+#undef F77_NAME_LOWER_2USCORE
+
+/* Fortran names are lowercase with two trailing underscores in stdcall */
+#undef F77_NAME_LOWER_2USCORE_STDCALL
+
+/* Fortran names are lowercase with no trailing underscore in stdcall */
+#undef F77_NAME_LOWER_STDCALL
+
+/* Fortran names are lowercase with one trailing underscore */
+#undef F77_NAME_LOWER_USCORE
+
+/* Fortran names are lowercase with one trailing underscore in stdcall */
+#undef F77_NAME_LOWER_USCORE_STDCALL
+
+/* Fortran names preserve the original case */
+#undef F77_NAME_MIXED
+
+/* Fortran names preserve the original case in stdcall */
+#undef F77_NAME_MIXED_STDCALL
+
+/* Fortran names preserve the original case with one trailing underscore */
+#undef F77_NAME_MIXED_USCORE
+
+/* Fortran names preserve the original case with one trailing underscore in
+   stdcall */
+#undef F77_NAME_MIXED_USCORE_STDCALL
+
+/* Fortran names are uppercase */
+#undef F77_NAME_UPPER
+
+/* Fortran names are uppercase in stdcall */
+#undef F77_NAME_UPPER_STDCALL
+
+/* The value of true in Fortran */
+#undef F77_TRUE_VALUE
+
+/* Define if we know the value of Fortran true and false */
+#undef F77_TRUE_VALUE_SET
+
 /* Define FALSE */
 #undef FALSE
 
@@ -118,14 +182,44 @@
 /* Define if int64_t works with any alignment */
 #undef HAVE_ANY_INT64_T_ALIGNMENT
 
+/* Define to 1 if you have the <arpa/inet.h> header file. */
+#undef HAVE_ARPA_INET_H
+
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
+
+/* Supports weak attribute */
+#undef HAVE_ATTR_WEAK
+
+/* Supports weak alias attribute */
+#undef HAVE_ATTR_WEAK_ALIAS
 
 /* Define to 1 if you have the `bindprocessor' function. */
 #undef HAVE_BINDPROCESSOR
 
+/* Define to 1 if the compiler supports __builtin_expect. */
+#undef HAVE_BUILTIN_EXPECT
+
+/* Define if C11 _Static_assert is supported. */
+#undef HAVE_C11__STATIC_ASSERT
+
+/* Define to 1 if you have the `CFUUIDCreate' function. */
+#undef HAVE_CFUUIDCREATE
+
 /* Define if debugger support is included for CH4 */
 #undef HAVE_CH4_DEBUGGER_SUPPORT
+
+/* OFI netmod is built */
+#undef HAVE_CH4_NETMOD_OFI
+
+/* UCX netmod is built */
+#undef HAVE_CH4_NETMOD_UCX
+
+/* IQUEUE submodule is built */
+#undef HAVE_CH4_SHM_EAGER_IQUEUE
+
+/* STUB submodule is built */
+#undef HAVE_CH4_SHM_EAGER_STUB
 
 /* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
@@ -136,6 +230,9 @@
 /* Define if cpu_set_t is defined in sched.h */
 #undef HAVE_CPU_SET_T
 
+/* Define to 1 if you have the <ctype.h> header file. */
+#undef HAVE_CTYPE_H
+
 /* Define if C++ is supported */
 #undef HAVE_CXX_BINDING
 
@@ -144,6 +241,9 @@
 
 /* Define if C++ supports complex types */
 #undef HAVE_CXX_COMPLEX
+
+/* define if the compiler supports exceptions */
+#undef HAVE_CXX_EXCEPTIONS
 
 /* Define if C++ supports long double complex */
 #undef HAVE_CXX_LONG_DOUBLE_COMPLEX
@@ -157,6 +257,9 @@
 /* Define to 1 if you have the declaration of `strerror_r', and to 0 if you
    don't. */
 #undef HAVE_DECL_STRERROR_R
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
 
 /* Define to 1 if the system has the type `double _Complex'. */
 #undef HAVE_DOUBLE__COMPLEX
@@ -173,8 +276,14 @@
 /* Define to enable extended context id bit space */
 #undef HAVE_EXTENDED_CONTEXT_BITS
 
+/* Define if environ extern is available */
+#undef HAVE_EXTERN_ENVIRON
+
 /* Define to 1 if we have Fortran 2008 binding */
 #undef HAVE_F08_BINDING
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
 
 /* Define if Fortran integer are the same size as C ints */
 #undef HAVE_FINT_IS_INT
@@ -185,11 +294,47 @@
 /* Define if Fortran is supported */
 #undef HAVE_FORTRAN_BINDING
 
+/* Define if GNU __attribute__ is supported */
+#undef HAVE_GCC_ATTRIBUTE
+
+/* Define to 1 if you have the `gethostname' function. */
+#undef HAVE_GETHOSTNAME
+
+/* Define to 1 if you have the `getsid' function. */
+#undef HAVE_GETSID
+
+/* Define if building hcoll */
+#undef HAVE_HCOLL
+
 /* Define if hwloc is available */
 #undef HAVE_HWLOC
 
+/* Define to 1 if you have the `inet_pton' function. */
+#undef HAVE_INET_PTON
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* Define if struct iovec defined in sys/uio.h */
+#undef HAVE_IOVEC_DEFINITION
+
+/* Define to 1 if you have the `isatty' function. */
+#undef HAVE_ISATTY
+
+/* Define to 1 if you have the `cr' library (-lcr). */
+#undef HAVE_LIBCR
+
+/* Define to 1 if you have the `fabric' library (-lfabric). */
+#undef HAVE_LIBFABRIC
+
+/* Define if libfabric library has nic field in fi_info struct */
+#undef HAVE_LIBFABRIC_NIC
+
+/* Define to 1 if you have the `pmi' library (-lpmi). */
+#undef HAVE_LIBPMI
+
+/* Define to 1 if you have the `ucp' library (-lucp). */
+#undef HAVE_LIBUCP
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
@@ -200,8 +345,14 @@
 /* Define to 1 if the system has the type `long double _Complex'. */
 #undef HAVE_LONG_DOUBLE__COMPLEX
 
+/* Define if long long allowed */
+#undef HAVE_LONG_LONG
+
 /* Define if long long is supported */
 #undef HAVE_LONG_LONG_INT
+
+/* Define if C99-style variable argument list macro functionality */
+#undef HAVE_MACRO_VA_ARGS
 
 /* Define to 1 if you have the <minix/config.h> header file. */
 #undef HAVE_MINIX_CONFIG_H
@@ -217,11 +368,32 @@
    special libraries */
 #undef HAVE_MPI_F_INIT_WORKS_WITH_C
 
+/* Define if multiple weak symbols may be defined */
+#undef HAVE_MULTIPLE_PRAGMA_WEAK
+
 /* Define if a name publishing service is available */
 #undef HAVE_NAMEPUB_SERVICE
 
+/* define if the compiler implements namespaces */
+#undef HAVE_NAMESPACES
+
+/* define if the compiler implements namespace std */
+#undef HAVE_NAMESPACE_STD
+
+/* Define to 1 if you have the <netdb.h> header file. */
+#undef HAVE_NETDB_H
+
+/* Define if netinet/in.h exists */
+#undef HAVE_NETINET_IN_H
+
+/* Define to 1 if you have the <netinet/tcp.h> header file. */
+#undef HAVE_NETINET_TCP_H
+
 /* Define if netloc is available */
 #undef HAVE_NETLOC
+
+/* Define to 1 if you have the <net/if.h> header file. */
+#undef HAVE_NET_IF_H
 
 /* Define if the Fortran types are not available in C */
 #undef HAVE_NO_FORTRAN_MPI_TYPES_IN_C
@@ -241,11 +413,38 @@
 /* Define to 1 if you have the <poll.h> header file. */
 #undef HAVE_POLL_H
 
+/* Cray style weak pragma */
+#undef HAVE_PRAGMA_CRI_DUP
+
+/* HP style weak pragma */
+#undef HAVE_PRAGMA_HP_SEC_DEF
+
+/* Supports weak pragma */
+#undef HAVE_PRAGMA_WEAK
+
+/* Supports weak alias pragma */
+#undef HAVE_PRAGMA_WEAK_ALIAS
+
+/* Define to 1 if you have the `process_vm_readv' function. */
+#undef HAVE_PROCESS_VM_READV
+
+/* Define to 1 if you have the `ptrace' function. */
+#undef HAVE_PTRACE
+
+/* Define if ptrace parameters available */
+#undef HAVE_PTRACE_CONT
+
 /* Define to 1 if you have the `putenv' function. */
 #undef HAVE_PUTENV
 
 /* Define to 1 if you have the `qsort' function. */
 #undef HAVE_QSORT
+
+/* Define to 1 if you have the <random.h> header file. */
+#undef HAVE_RANDOM_H
+
+/* Define to 1 if you have the `random_r' function. */
+#undef HAVE_RANDOM_R
 
 /* Define if ROMIO is enabled */
 #undef HAVE_ROMIO
@@ -253,17 +452,35 @@
 /* Define to 1 if you have the `sched_getaffinity' function. */
 #undef HAVE_SCHED_GETAFFINITY
 
+/* Define to 1 if you have the <sched.h> header file. */
+#undef HAVE_SCHED_H
+
 /* Define to 1 if you have the `sched_setaffinity' function. */
 #undef HAVE_SCHED_SETAFFINITY
 
+/* Define to 1 if you have the `select' function. */
+#undef HAVE_SELECT
+
 /* Define to 1 if you have the `setitimer' function. */
 #undef HAVE_SETITIMER
+
+/* Define to 1 if you have the `setsid' function. */
+#undef HAVE_SETSID
+
+/* Define to 1 if you have the `sigaction' function. */
+#undef HAVE_SIGACTION
 
 /* Define to 1 if you have the `signal' function. */
 #undef HAVE_SIGNAL
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
+
+/* Define to 1 if you have the `sigset' function. */
+#undef HAVE_SIGSET
+
+/* Define if socklen_t is available */
+#undef HAVE_SOCKLEN_T
 
 /* Define to 1 if you have the <stdarg.h> header file. */
 #undef HAVE_STDARG_H
@@ -301,14 +518,44 @@
 /* Define to 1 if you have the `strncasecmp' function. */
 #undef HAVE_STRNCASECMP
 
+/* Define to 1 if you have the `strsignal' function. */
+#undef HAVE_STRSIGNAL
+
+/* Define to 1 if the system has the type `struct random_data'. */
+#undef HAVE_STRUCT_RANDOM_DATA
+
 /* Define if sys/bitypes.h exists */
 #undef HAVE_SYS_BITYPES_H
+
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/ipc.h> header file. */
+#undef HAVE_SYS_IPC_H
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
 
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
 
+/* Define to 1 if you have the <sys/poll.h> header file. */
+#undef HAVE_SYS_POLL_H
+
+/* Define to 1 if you have the <sys/ptrace.h> header file. */
+#undef HAVE_SYS_PTRACE_H
+
+/* Define to 1 if you have the <sys/select.h> header file. */
+#undef HAVE_SYS_SELECT_H
+
+/* Define to 1 if you have the <sys/shm.h> header file. */
+#undef HAVE_SYS_SHM_H
+
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
+
+/* Define to 1 if you have the <sys/sockio.h> header file. */
+#undef HAVE_SYS_SOCKIO_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
@@ -319,7 +566,7 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
-/* Define if you have the <sys/uio.h> header file. */
+/* Define to 1 if you have the <sys/uio.h> header file. */
 #undef HAVE_SYS_UIO_H
 
 /* Define to enable tag error bits */
@@ -328,8 +575,32 @@
 /* Define to 1 if you have the `thread_policy_set' function. */
 #undef HAVE_THREAD_POLICY_SET
 
+/* Define to 1 if you have the `time' function. */
+#undef HAVE_TIME
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
+
+/* Define if building ucc */
+#undef HAVE_UCC
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `unsetenv' function. */
+#undef HAVE_UNSETENV
+
+/* Define to 1 if you have the `usleep' function. */
+#undef HAVE_USLEEP
+
+/* Define to 1 if you have the `uuid_generate' function. */
+#undef HAVE_UUID_GENERATE
+
+/* Define to 1 if you have the <uuid/uuid.h> header file. */
+#undef HAVE_UUID_UUID_H
+
+/* Whether C compiler supports symbol visibility or not */
+#undef HAVE_VISIBILITY
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
@@ -337,11 +608,17 @@
 /* Define to 1 if you have the `vsprintf' function. */
 #undef HAVE_VSPRINTF
 
+/* Define to 1 if you have the <wait.h> header file. */
+#undef HAVE_WAIT_H
+
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
+
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
 
 /* Controls byte alignment of structures (for aligning allocated structures)
    */
@@ -352,6 +629,9 @@
 
 /* Git HEAD commit hash */
 #undef MPICH_COMMIT_HASH
+
+/* Datatype engine */
+#undef MPICH_DATATYPE_ENGINE
 
 /* Define to enable checking of handles still allocated at MPI_Finalize */
 #undef MPICH_DEBUG_HANDLEALLOC
@@ -390,6 +670,75 @@
 /* define to disable reference counting predefined objects like MPI_COMM_WORLD
    */
 #undef MPICH_THREAD_SUPPRESS_PREDEFINED_REFCOUNTS
+
+/* CH4 Directly transfers data through the chosen netmode */
+#undef MPIDI_CH4_DIRECT_NETMOD
+
+/* Number of VCIs configured in CH4 */
+#undef MPIDI_CH4_MAX_VCIS
+
+/* Define to use bgq capability set */
+#undef MPIDI_CH4_OFI_USE_SET_BGQ
+
+/* Define to use cxi capability set */
+#undef MPIDI_CH4_OFI_USE_SET_CXI
+
+/* Define to use gni capability set */
+#undef MPIDI_CH4_OFI_USE_SET_GNI
+
+/* Define to use PSM2 capability set */
+#undef MPIDI_CH4_OFI_USE_SET_PSM2
+
+/* Define to use PSM3 capability set */
+#undef MPIDI_CH4_OFI_USE_SET_PSM3
+
+/* Define to use runtime capability set */
+#undef MPIDI_CH4_OFI_USE_SET_RUNTIME
+
+/* Define to use sockets capability set */
+#undef MPIDI_CH4_OFI_USE_SET_SOCKETS
+
+/* Define to use verbs;ofi_rxm capability set */
+#undef MPIDI_CH4_OFI_USE_SET_VERBS_RXM
+
+/* Enable CMA IPC in CH4 */
+#undef MPIDI_CH4_SHM_ENABLE_CMA
+
+/* Define if GPU IPC submodule is enabled */
+#undef MPIDI_CH4_SHM_ENABLE_GPU
+
+/* Enable XPMEM shared memory submodule in CH4 */
+#undef MPIDI_CH4_SHM_ENABLE_XPMEM
+
+/* Silently disable XPMEM, if it fails at runtime */
+#undef MPIDI_CH4_SHM_XPMEM_ALLOW_SILENT_FALLBACK
+
+/* Define to enable direct multi-threading model */
+#undef MPIDI_CH4_USE_MT_DIRECT
+
+/* Define to enable lockless multi-threading model */
+#undef MPIDI_CH4_USE_MT_LOCKLESS
+
+/* Define to enable runtime multi-threading model */
+#undef MPIDI_CH4_USE_MT_RUNTIME
+
+/* Method used to select vci */
+#undef MPIDI_CH4_VCI_METHOD
+
+/* Enables AM-only communication */
+#undef MPIDI_ENABLE_AM_ONLY
+
+/* CH4/OFI should use domain for vci contexts */
+#undef MPIDI_OFI_VNI_USE_DOMAIN
+
+/* Define to turn on the inlining optimizations in Nemesis code */
+#undef MPID_NEM_INLINE
+
+/* Method for local large message transfers. */
+#undef MPID_NEM_LOCAL_LMT_IMPL
+
+/* Define if a port may be used to communicate with the processes */
+#undef MPIEXEC_ALLOW_PORT
 
 /* Internal type for MPI_2DOUBLE_PRECISION */
 #undef MPIR_2DOUBLE_PRECISION_INTERNAL
@@ -712,11 +1061,44 @@
 /* Define to enable timing mutexes */
 #undef MPIU_MUTEX_WAIT_TIME
 
+/* Define if /bin must be in path */
+#undef NEEDS_BIN_IN_PATH
+
+/* Define if environ decl needed */
+#undef NEEDS_ENVIRON_DECL
+
+/* Define if gethostname needs a declaration */
+#undef NEEDS_GETHOSTNAME_DECL
+
+/* Define if getsid needs a declaration */
+#undef NEEDS_GETSID_DECL
+
+/* Define if _POSIX_SOURCE needed to get sigaction */
+#undef NEEDS_POSIX_FOR_SIGACTION
+
+/* Define if putenv needs a declaration */
+#undef NEEDS_PUTENV_DECL
+
+/* Define if strdup needs a declaration */
+#undef NEEDS_STRDUP_DECL
+
+/* Define if strerror_r needs a declaration */
+#undef NEEDS_STRERROR_R_DECL
+
 /* Define if strict alignment memory access is required */
 #undef NEEDS_STRICT_ALIGNMENT
 
+/* Define if strsignal needs a declaration */
+#undef NEEDS_STRSIGNAL_DECL
+
+/* Define if vsnprintf needs a declaration */
+#undef NEEDS_VSNPRINTF_DECL
+
 /* The PMI library does not have PMI_Spawn_multiple. */
 #undef NO_PMI_SPAWN_MULTIPLE
+
+/* Name of package */
+#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -740,6 +1122,9 @@
    MPICH extensions) */
 #undef PMI_FROM_3RD_PARTY
 
+/* Define to turn on the prefetching optimization in Nemesis code */
+#undef PREFETCH_CELL
+
 /* The size of `bool', as computed by sizeof. */
 #undef SIZEOF_BOOL
 
@@ -760,6 +1145,18 @@
 
 /* The size of `double _Complex', as computed by sizeof. */
 #undef SIZEOF_DOUBLE__COMPLEX
+
+/* Define size of PAC_TYPE_NAME */
+#undef SIZEOF_F77_DOUBLE_PRECISION
+
+/* Define size of PAC_TYPE_NAME */
+#undef SIZEOF_F77_INTEGER
+
+/* Define size of PAC_TYPE_NAME */
+#undef SIZEOF_F77_LOGICAL
+
+/* Define size of PAC_TYPE_NAME */
+#undef SIZEOF_F77_REAL
 
 /* The size of `float', as computed by sizeof. */
 #undef SIZEOF_FLOAT
@@ -866,6 +1263,9 @@
 /* The size of `__int128', as computed by sizeof. */
 #undef SIZEOF___INT128
 
+/* Define calling convention */
+#undef STDCALL
+
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
@@ -884,6 +1284,12 @@
 /* define to use global config file */
 #undef USE_CONFIGFILE
 
+/* Define if performing coverage tests */
+#undef USE_COVERAGE
+
+/* Define to use the fastboxes in Nemesis code */
+#undef USE_FASTBOX
+
 /* Define if file should be used for name publisher */
 #undef USE_FILE_FOR_NAMEPUB
 
@@ -894,11 +1300,26 @@
 /* Define to enable memory tracing */
 #undef USE_MEMORY_TRACING
 
+/* Define if mpiexec should create a new process group session */
+#undef USE_NEW_SESSION
+
 /* Define if using Slurm PMI 1 */
 #undef USE_PMI1_SLURM
 
 /* Define if using Slurm PMI 2 */
 #undef USE_PMI2_SLURM
+
+/* Define if sigaction should be used to set signals */
+#undef USE_SIGACTION
+
+/* Define if signal should be used to set signals */
+#undef USE_SIGNAL
+
+/* Define it the socket verify macros should be enabled */
+#undef USE_SOCK_VERIFY
+
+/* Define if we can use a symmetric heap */
+#undef USE_SYM_HEAP
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
@@ -991,6 +1412,9 @@
 /* Define if weak symbols should be used */
 #undef USE_WEAK_SYMBOLS
 
+/* Version number of package */
+#undef VERSION
+
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
 #if defined AC_APPLE_UNIVERSAL_BUILD
@@ -1009,6 +1433,9 @@
 /* Define if configure will not tell us, for universal binaries */
 #undef WORDS_UNIVERSAL_ENDIAN
 
+/* define if bool is a built-in type */
+#undef bool
+
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
@@ -1017,6 +1444,9 @@
 #ifndef __cplusplus
 #undef inline
 #endif
+
+/* Define as a signed integer type capable of holding a process identifier. */
+#undef pid_t
 
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
@@ -1035,6 +1465,9 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t
+
+/* Define if socklen_t is not defined */
+#undef socklen_t
 
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
    code using `volatile' can become incorrect without. Disable with care. */

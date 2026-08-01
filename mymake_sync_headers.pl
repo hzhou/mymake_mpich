@@ -23,7 +23,10 @@ system("git clone --branch main --single-branch --depth 1 $mpich_repo $mpich_dir
 foreach my $d ("src/mpi/romio", "src/pm/hydra", "test/mpi") {
     system "cp $mpich_dir/maint/version.m4 $mpich_dir/$d/version.m4";
 }
-system "touch $mpich_dir/subsys_include.m4";
+my $old_dir = getcwd();
+chdir $mpich_dir or die "Can't chdir $mpich_dir: $!\n";
+system "perl maint/gen_subcfg_m4";
+chdir $old_dir;
 
 my $template_dir = $mymake_dir . "/config_templates";
 if (!-d $template_dir) {
