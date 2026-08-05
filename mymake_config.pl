@@ -1236,6 +1236,7 @@ if ($config eq "mpich") {
     $confs{CFLAGS} = "";
     $confs{MPICH_CUSTOM_STRING}="";
     $confs{MPICH_ABIVERSION} = "0:0:0";
+    $confs{MPICH_YAKSA_INFO} = "seq";
     autoconf_file("src/include/mpichinfo.h", \%confs);
     my %confs;
     $confs{FC_REAL_MODEL} = "6, 37";
