@@ -1282,6 +1282,9 @@ sub dump_makefile {
     }
     print Out "\n";
     print Out "CONFIGS = @CONFIGS\n";
+    if ($opts{"with-cuda"}) {
+        print Out "NVCC = $opts{'with-cuda'}/bin/nvcc\n";
+    }
     print Out "\n";
     my $t = get_make_var_unique("DEFS");
     $t .= " @extra_DEFS";

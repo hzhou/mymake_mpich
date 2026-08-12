@@ -1213,14 +1213,14 @@ if ($config eq "mpich") {
     $confs{MPIR_CXX_FLOAT_COMPLEX} = $confs{MPIR_CXX_COMPLEX};
     my $mpi_h;
     if (-f "src/include/mpi_mpich.h.in") {
-        $mpi_h = "src/include/mpi_mpich.h";
+        autoconf_file("src/include/mpi_mpich.h", \%confs);
+        system "cp src/include/mpi_mpich.h src/include/mpi.h";
     }
     elsif (-f "src/include/mpi.h.in") {
         $mpi_h = "src/include/mpi.h";
+        autoconf_file("src/include/mpi.h", \%confs);
     }
-    if ($mpi_h) {
-        autoconf_file($mpi_h, \%confs);
-    }
+
     $mpi_h_confs = \%confs;
     my %confs;
     $confs{HAVE_ERROR_CHECKING} = 1;
