@@ -9,6 +9,7 @@ our %config_cflags;
 our %config_ldflags;
 our %hash_defines;
 our %hash_define_vals;
+our $version;
 our %objects;
 our @programs;
 our @ltlibs;
@@ -674,6 +675,7 @@ else {
     }
     if (-e "src/binding/fortran/Makefile.am") {
         system "cp maint/version.m4 src/binding/fortran/";
+        system "touch src/binding/fortran/localdefs";
         my $mkfile="src/binding/fortran/Makefile";
         push @extra_make_rules, ".PHONY: mpifort mpifort-install";
         push @extra_make_rules, "mpifort: $mkfile";
@@ -1373,12 +1375,17 @@ else {
     my $bin="\x24(PREFIX)/bin";
     $dst_hash{"mymake/mpicc"}=$bin;
     $dst_hash{"mymake/mpicxx"}=$bin;
-    if (-e "src/env/mpifort.bash.in") {
-        $dst_hash{"mymake/mpifort"}=$bin;
-    }
     if ($opts{"enable-mpi-abi"}) {
         $dst_hash{"LN_S-$bin/mpicc_abi"}="$bin/mpicc";
     }
+    open In, "maint/version.m4" or die "Can't open maint/version.m4: $!\n";
+    while(<In>){
+        if (/m4_define\(\[MPICH_VERSION_m4\],\[(.*)\]/) {
+            $version = $1;
+            last;
+        }
+    }
+    close In;
 
     my $ret=0;
     my $t = `uname -m`;
@@ -1792,110 +1799,109 @@ else {
             }
         }
         close In;
-        my $script;
-        if (-f "src/env/mpicc.bash") {
-            $script = "src/env/mpicc.bash";
+        my %confs;
+        $confs{BASH_SHELL} = "/bin/bash";
+        $confs{LDFLAGS} = $ENV{LDFLAGS};
+        if ($opts{"with-cuda"}) {
+            my $p = $opts{"with-cuda"};
+            $confs{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
         }
-        elsif (-f "src/binding/fortran/env/mpicc.bash") {
-            $script = "src/binding/fortran/env/mpicc.bash";
+        elsif ($opts{"with-hip"}) {
+            my $p = $opts{"with-hip"};
+            $confs{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
         }
-        if ($script) {
-            my @lines;
-            {
-                open In, "$script" or die "Can't open $script.\n";
-                @lines=<In>;
-                close In;
+        $confs{LIBS} = $ENV{LIBS};
+        $confs{MPILIBNAME} = "mpi";
+        $confs{PMPILIBNAME} = "pmpi";
+        $confs{MPIABILIBNAME} = "mpi_abi";
+        if ($opts{cc_weak} eq "no") {
+            $confs{LPMPILIBNAME} = "-lpmpi";
+        }
+        else {
+            $confs{LPMPILIBNAME} = "";
+        }
+        $confs{MPICH_VERSION} = $version;
+        $confs{CC} = $opts{CC};
+        $confs{CXX} = $opts{CXX};
+        $confs{FC} = $opts{FC};
+        $confs{FCINC} = "-I";
+        $confs{with_wrapper_dl_type} = "runpath";
+        $confs{INTERLIB_DEPS} = "yes";
+        $confs{MPIFCLIBNAME} = "mpifort";
+
+        $confs{WRAPPER_CFLAGS}="";
+        $confs{WRAPPER_CPPFLAGS}="";
+        $confs{WRAPPER_LDFLAGS}="";
+        $confs{WRAPPER_LIBS} = "";
+
+        if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
+            $confs{WRAPPER_CFLAGS} .= " -fsanitize=$1";
+        }
+
+        my $tag="cc";
+        open In, "libtool" or die "Can't open libtool: $!\n";
+        while(<In>){
+            if (/^wl=/) {
+                $confs{"${tag}_shlib_conf"} .= $_;
             }
-            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-            open Out, ">mymake/mpicc" or die "Can't write mymake/mpicc: $!\n";
-            print "  --> [mymake/mpicc]\n";
-            foreach my $l (@lines) {
-                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
-                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
+            if (/^hardcode_libdir_flag_spec=/) {
+                $confs{"${tag}_shlib_conf"} .= $_;
+                if ($opts{uname}=~/Linux/i) {
+                    my $dtags="enable_dtags_flag=\"\\\$wl--enable-new-dtags\"\n";
+                    $dtags  .="disable_dtags_flag=\"\\\$wl--disble-new-dtags\"\n";
+                    $confs{"${tag}_shlib_conf"} .= $dtags;
                 }
-                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
-                    my ($c, $flags) = ($1, $2);
-                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
+            }
+            elsif (/# ### BEGIN LIBTOOL TAG CONFIG: (\w+)/) {
+                $tag = lc($1);
+            }
+        }
+        close In;
+        $confs{PREFIX}=$opts{prefix};
+        $confs{EXEC_PREFIX}="$opts{prefix}/bin";
+        $confs{SYSCONFDIR}="$opts{prefix}/etc";
+        $confs{INCLUDEDIR}="$opts{prefix}/include";
+        $confs{LIBDIR}="$opts{prefix}/lib";
+
+        foreach my $p ("cc", "cc_abi", "cxx", "f77", "fort") {
+            my $P = uc($p);
+            $confs{"MPICH_MPI${P}_CFLAGS"}="";
+            $confs{"MPICH_MPI${P}_CPPFLAGS"}="";
+            $confs{"MPICH_MPI${P}_LDFLAGS"}="";
+            $confs{"MPICH_MPI${P}_LIBS"}="";
+
+            my $script = "src/env/mpi$p.bash.in";
+            if ($p eq "fort") {
+                if (!-f $script) {
+                    $script = "src/binding/fortran/env/mpifort.bash.in";
+                }
+            }
+            if ($opts{sh}) {
+                $script =~ s/bash/sh/;
+            }
+            if (-f $script) {
+                my @lines;
+                {
+                    open In, "$script" or die "Can't open $script.\n";
+                    @lines=<In>;
+                    close In;
+                }
+                open Out, ">mymake/mpi$p" or die "Can't write mymake/mpi$p: $!\n";
+                print "  --> [mymake/mpi$p]\n";
+                foreach my $l (@lines) {
+                    if ($l=~/cxxlibs="-l"/) {
+                        print Out "    cxxlibs=\n";
+                        next;
                     }
+                    $l=~s/\@(\w+)\@/$confs{$1}/g;
+                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$confs{$1}/;
+                    print Out $l;
                 }
-                elsif ($l=~/cxxlibs="-l"/) {
-                    print Out "    cxxlibs=\n";
-                    next;
-                }
-                print Out $l;
+                close Out;
             }
-            close Out;
-        }
-        my $script;
-        if (-f "src/env/mpicxx.bash") {
-            $script = "src/env/mpicxx.bash";
-        }
-        elsif (-f "src/binding/fortran/env/mpicxx.bash") {
-            $script = "src/binding/fortran/env/mpicxx.bash";
-        }
-        if ($script) {
-            my @lines;
-            {
-                open In, "$script" or die "Can't open $script.\n";
-                @lines=<In>;
-                close In;
+            else {
+                print "skip mpi$p ...\n";
             }
-            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-            open Out, ">mymake/mpicxx" or die "Can't write mymake/mpicxx: $!\n";
-            print "  --> [mymake/mpicxx]\n";
-            foreach my $l (@lines) {
-                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
-                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-                }
-                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
-                    my ($c, $flags) = ($1, $2);
-                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
-                    }
-                }
-                elsif ($l=~/cxxlibs="-l"/) {
-                    print Out "    cxxlibs=\n";
-                    next;
-                }
-                print Out $l;
-            }
-            close Out;
-        }
-        my $script;
-        if (-f "src/env/mpifort.bash") {
-            $script = "src/env/mpifort.bash";
-        }
-        elsif (-f "src/binding/fortran/env/mpifort.bash") {
-            $script = "src/binding/fortran/env/mpifort.bash";
-        }
-        if ($script) {
-            my @lines;
-            {
-                open In, "$script" or die "Can't open $script.\n";
-                @lines=<In>;
-                close In;
-            }
-            my %tmp=(PREFIX=>$opts{prefix}, EXEC_PREFIX=>"$opts{prefix}/bin", SYSCONFDIR=>"$opts{prefix}/etc", INCLUDEDIR=>"$opts{prefix}/include", LIBDIR=>"$opts{prefix}/lib");
-            open Out, ">mymake/mpifort" or die "Can't write mymake/mpifort: $!\n";
-            print "  --> [mymake/mpifort]\n";
-            foreach my $l (@lines) {
-                if ($l=~/_TO_BE_FILLED_AT_INSTALL_TIME__/) {
-                    $l=~s/__(\w+)_TO_BE_FILLED_AT_INSTALL_TIME__/$tmp{$1}/e;
-                }
-                elsif ($l=~/^final_(c|cxx|f|fc)flags="(.*)"/) {
-                    my ($c, $flags) = ($1, $2);
-                    if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
-                        $l = "final_${c}flags=\"$flags -fsanitize=$1\"\n";
-                    }
-                }
-                elsif ($l=~/cxxlibs="-l"/) {
-                    print Out "    cxxlibs=\n";
-                    next;
-                }
-                print Out $l;
-            }
-            close Out;
         }
 
         $ENV{CFLAGS}=$opts{CFLAGS};

@@ -981,6 +981,9 @@ if ($config eq "mpich") {
             }
             close Out;
         }
+        else {
+            print "skip mpi$p ...\n";
+        }
     }
     my $mpi_h_confs;
     my %confs;
