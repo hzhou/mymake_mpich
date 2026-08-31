@@ -499,6 +499,17 @@ if (!$opts{disable_cxx}) {
     chdir $pwd;
 }
 if (!$opts{disable_fortran}) {
+    if (!-f "configure") {
+        if (-f "maint/gen_binding_f77.py") {
+            system "$python maint/gen_binding_f77.py";
+        }
+        if (-f "maint/gen_binding_f90.py") {
+            system "$python maint/gen_binding_f90.py";
+        }
+        if (-f "maint/gen_binding_f08.py") {
+            system "$python maint/gen_binding_f08.py";
+        }
+    }
 }
 
 if ($opts{quick}) {
