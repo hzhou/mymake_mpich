@@ -898,9 +898,15 @@ if ($config eq "mpich") {
         $confs{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
     }
     $confs{LIBS} = $ENV{LIBS};
-    $confs{MPILIBNAME} = "mpi";
-    $confs{PMPILIBNAME} = "pmpi";
-    $confs{MPIABILIBNAME} = "mpi_abi";
+    if ($opts{"enable-mpi-abi"}) {
+        $confs{MPILIBNAME} = "mpi_abi";
+        $confs{PMPILIBNAME} = "pmpi_abi";
+    }
+    else {
+        $confs{MPILIBNAME} = "mpi";
+        $confs{PMPILIBNAME} = "pmpi";
+        $confs{MPIABILIBNAME} = "mpi_abi";
+    }
     if ($opts{cc_weak} eq "no") {
         $confs{LPMPILIBNAME} = "-lpmpi";
     }
@@ -924,6 +930,8 @@ if ($config eq "mpich") {
     if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
         $confs{WRAPPER_CFLAGS} .= " -fsanitize=$1";
     }
+
+    $confs{WRAPPER_EXTRA_F77_FLAGS} = "-fallow-argument-mismatch";
 
     my $tag="cc";
     open In, "libtool" or die "Can't open libtool: $!\n";
@@ -958,8 +966,13 @@ if ($config eq "mpich") {
         $confs{"MPICH_MPI${P}_LIBS"}="";
 
         my $script = "src/env/mpi$p.bash.in";
+        if ($p eq "fort") {
+            if (!-f $script) {
+                $script = "src/binding/fortran/env/mpifort.bash.in";
+            }
+        }
         if ($opts{sh}) {
-            $script = "src/env/mpi$p.sh.in";
+            $script =~ s/bash/sh/;
         }
         if (-f $script) {
             my @lines;
@@ -1225,6 +1238,11 @@ if ($config eq "mpich") {
     }
 
     $mpi_h_confs = \%confs;
+    my %confs;
+    $confs{MPI_FINT} = "int";
+    if (-f "src/include/mpi_fortran.h.in") {
+        autoconf_file("src/include/mpi_fortran.h", \%confs);
+    }
     my %confs;
     $confs{HAVE_ERROR_CHECKING} = 1;
     autoconf_file("src/include/mpir_ext.h", \%confs);

@@ -333,23 +333,26 @@ if ($opts{CC}) {
 elsif ($ENV{CC}) {
     $opts{CC} = $ENV{CC};
 }
+else {
+    $opts{CC} = "gcc";
+}
 if ($opts{CXX}) {
     $ENV{CXX}=$opts{CXX};
 }
 elsif ($ENV{CXX}) {
     $opts{CXX} = $ENV{CXX};
 }
-if ($opts{F77}) {
-    $ENV{F77}=$opts{F77};
-}
-elsif ($ENV{F77}) {
-    $opts{F77} = $ENV{F77};
+else {
+    $opts{CXX} = "g++";
 }
 if ($opts{FC}) {
     $ENV{FC}=$opts{FC};
 }
 elsif ($ENV{FC}) {
     $opts{FC} = $ENV{FC};
+}
+else {
+    $opts{FC} = "gfortran";
 }
 if (!$opts{prefix}) {
     $opts{prefix}="$pwd/_inst";
@@ -496,17 +499,6 @@ if (!$opts{disable_cxx}) {
     chdir $pwd;
 }
 if (!$opts{disable_fortran}) {
-    if (!-f "configure") {
-        if (-f "maint/gen_binding_f77.py") {
-            system "$python maint/gen_binding_f77.py";
-        }
-        if (-f "maint/gen_binding_f90.py") {
-            system "$python maint/gen_binding_f90.py";
-        }
-        if (-f "maint/gen_binding_f08.py") {
-            system "$python maint/gen_binding_f08.py";
-        }
-    }
 }
 
 if ($opts{quick}) {
@@ -1811,9 +1803,15 @@ else {
             $confs{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
         }
         $confs{LIBS} = $ENV{LIBS};
-        $confs{MPILIBNAME} = "mpi";
-        $confs{PMPILIBNAME} = "pmpi";
-        $confs{MPIABILIBNAME} = "mpi_abi";
+        if ($opts{"enable-mpi-abi"}) {
+            $confs{MPILIBNAME} = "mpi_abi";
+            $confs{PMPILIBNAME} = "pmpi_abi";
+        }
+        else {
+            $confs{MPILIBNAME} = "mpi";
+            $confs{PMPILIBNAME} = "pmpi";
+            $confs{MPIABILIBNAME} = "mpi_abi";
+        }
         if ($opts{cc_weak} eq "no") {
             $confs{LPMPILIBNAME} = "-lpmpi";
         }
@@ -1837,6 +1835,8 @@ else {
         if ($opts{CFLAGS}=~/-fsanitize=(address|undefined)/) {
             $confs{WRAPPER_CFLAGS} .= " -fsanitize=$1";
         }
+
+        $confs{WRAPPER_EXTRA_F77_FLAGS} = "-fallow-argument-mismatch";
 
         my $tag="cc";
         open In, "libtool" or die "Can't open libtool: $!\n";

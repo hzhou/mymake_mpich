@@ -137,23 +137,26 @@ if ($opts{CC}) {
 elsif ($ENV{CC}) {
     $opts{CC} = $ENV{CC};
 }
+else {
+    $opts{CC} = "gcc";
+}
 if ($opts{CXX}) {
     $ENV{CXX}=$opts{CXX};
 }
 elsif ($ENV{CXX}) {
     $opts{CXX} = $ENV{CXX};
 }
-if ($opts{F77}) {
-    $ENV{F77}=$opts{F77};
-}
-elsif ($ENV{F77}) {
-    $opts{F77} = $ENV{F77};
+else {
+    $opts{CXX} = "g++";
 }
 if ($opts{FC}) {
     $ENV{FC}=$opts{FC};
 }
 elsif ($ENV{FC}) {
     $opts{FC} = $ENV{FC};
+}
+else {
+    $opts{FC} = "gfortran";
 }
 if (!$opts{prefix}) {
     $opts{prefix}="$pwd/_inst";
