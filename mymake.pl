@@ -1814,15 +1814,19 @@ else {
             $confs{LDFLAGS} .= "  -Wl,-rpath -Wl,$p/lib64";
         }
         $confs{LIBS} = $ENV{LIBS};
+
         if ($opts{"enable-mpi-abi"}) {
+            $confs{DEFAULT_MPI_ABI} = "yes";
             $confs{MPILIBNAME} = "mpi_abi";
             $confs{PMPILIBNAME} = "pmpi_abi";
         }
         else {
+            $confs{DEFAULT_MPI_ABI} = "no";
             $confs{MPILIBNAME} = "mpi";
             $confs{PMPILIBNAME} = "pmpi";
             $confs{MPIABILIBNAME} = "mpi_abi";
         }
+
         if ($opts{cc_weak} eq "no") {
             $confs{LPMPILIBNAME} = "-lpmpi";
         }
