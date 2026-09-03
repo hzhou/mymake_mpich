@@ -3530,6 +3530,9 @@ if ($config eq "mpich") {
     if ($opts{"enable-mpi-abi"}) {
         $make_conds{BUILD_ABI_LIB} = 1;
     }
+    else {
+        $make_conds{BUILD_MPICH_LIB} = 1;
+    }
     if ($opts{cc_weak} eq "no") {
         $make_conds{BUILD_PROFILING_LIB} = 1;
     }
